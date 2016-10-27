@@ -1,85 +1,33 @@
-% \iffalse meta-comment
-%
-% Copyright (C) 2016 by Pierre Senellart
-%
-% This work may be distributed and/or modified under the
-% conditions of the LaTeX Project Public License, either version 1.3
-% of this license or (at your option) any later version.
-% The latest version of this license is in
-%   http://www.latex-project.org/lppl.txt
-% and version 1.3 or later is part of all distributions of LaTeX
-% version 2005/12/01 or later.
-%
-% This work has the LPPL maintenance status `maintained'.
-% 
-% The Current Maintainer of this work is Pierre Senellart
-% <pierre@senellart.com> and a version control system for this work
-% is available at http://github.com/PierreSenellart/apxproof
-%
-% This work consists of the files apxproof.dtx and apxproof.ins
-% and the derived file apxproof.sty.
-%
-% \fi
-% 
-% \iffalse
-%<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
-%<package>\ProvidesPackage{apxproof}
-%<package>  [2016/10/27 v1.0.0 Automatic proofs in appendix]
-%
-%<*driver>
-\documentclass{ltxdoc}
-\usepackage{apxproof}
-\EnableCrossrefs
-\CodelineIndex
-\RecordChanges
-\begin{document}
-  \DocInput{apxproof.dtx}
-\end{document}
-%</driver>
-% \fi
-%
-% \CheckSum{0}
-%
-% \CharacterTable
-%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
-%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
-%   Digits        \0\1\2\3\4\5\6\7\8\9
-%   Exclamation   \!     Double quote  \"     Hash (number) \#
-%   Dollar        \$     Percent       \%     Ampersand     \&
-%   Acute accent  \'     Left paren    \(     Right paren   \)
-%   Asterisk      \*     Plus          \+     Comma         \,
-%   Minus         \-     Point         \.     Solidus       \/
-%   Colon         \:     Semicolon     \;     Less than     \<
-%   Equals        \=     Greater than  \>     Question mark \?
-%   Commercial at \@     Left bracket  \[     Backslash     \\
-%   Right bracket \]     Circumflex    \^     Underscore    \_
-%   Grave accent  \`     Left brace    \{     Vertical bar  \|
-%   Right brace   \}     Tilde         \~}
-%
-% \changes{v1.0.0}{2016/10/27}{Initial version}
-% 
-% \GetFileInfo{apxproof.sty}
-%
-% \DoNotIndex{\newcommand,\newenvironment}
-%
-%
-% \title{The \textsf{apxproof} package\thanks{This document corresponds
-%   to \textsf{apxproof}~\fileversion, dated \filedate.}\\
-%   Proofs in Appendix}
-% \author{Pierre Senellart \\ \texttt{pierre@senellart.com}}
-%
-% \maketitle
-% 
-% \section{Usage}
-% TODO
-% 
-% \StopEventually{
-%   \PrintChanges
-%   \PrintIndex
-% }
-% 
-% \section{Implementation}
-%    \begin{macrocode}
+%%
+%% This is file `apxproof.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% apxproof.dtx  (with options: `package')
+%% 
+%% Copyright (C) 2016 by Pierre Senellart
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status `maintained'.
+%% 
+%% The Current Maintainer of this work is Pierre Senellart
+%% <pierre@senellart.com> and a version control system for this work
+%% is available at http://github.com/PierreSenellart/apxproof
+%% 
+%% This work consists of the files apxproof.dtx and apxproof.ins
+%% and the derived file apxproof.sty.
+%% 
+\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+\ProvidesPackage{apxproof}
+  [2016/10/27 v1.0.0 Automatic proofs in appendix]
 \RequirePackage{fancyvrb}
 \RequirePackage{ifthen}
 \RequirePackage{environ}
@@ -181,5 +129,6 @@
 
 \newenvironment{toappendix}{\VerbatimOut}{\endVerbatimOut}
 \makeatother
-%    \end{macrocode}
-% \Finale
+\endinput
+%%
+%% End of file `apxproof.sty'.
