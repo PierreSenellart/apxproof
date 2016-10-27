@@ -1,7 +1,7 @@
 all: apxproof.pdf apxproof.sty
 
 clean:
-	-rm -f *.sty *.aux *.log *.gl? *.idx *.ilg *.fls *.ind *.axp *.pdf
+	-rm -f *.aux *.log *.gl? *.idx *.ilg *.fls *.ind *.axp
 
 %.pdf: %.dtx %.sty
 	pdflatex $<

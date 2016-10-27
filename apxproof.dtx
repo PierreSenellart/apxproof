@@ -84,25 +84,21 @@
 \RequirePackage{ifthen}
 \RequirePackage{environ}
 \RequirePackage{bibunits}
+\let\proof\undefined
+\let\endproof\undefined
 \RequirePackage{amsthm}
+\RequirePackage{etoolbox}
+\RequirePackage{ifmtarg}
+\RequirePackage{stack}
 
 \makeatletter
-\newtheoremstyle{mystyle}%
-  {3pt}%
-  {3pt}%
-  {\itshape}%
-  {}%
-  {\scshape}%
-  {.}%
-  {.5em}%
-  {}
-\theoremstyle{mystyle}
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ {\the\thm@notefont #3}}}
 \newwrite\axp@proofsfile
 \immediate\openout\axp@proofsfile=\jobname.axp
-\immediate\write\axp@proofsfile{\noexpand\makeatletter\noexpand\let\noexpand\proof\noexpand\oldproof\noexpand\let\noexpand\endproof\noexpand\endoldproof}
+\immediate\write\axp@proofsfile{%
+  \noexpand\makeatletter
+  \noexpand\let\noexpand\proof\noexpand\oldproof
+  \noexpand\let\noexpand\endproof\noexpand\endoldproof
+}
 \def\FVB@VerbatimOut{%
   \@bsphack
   \begingroup
@@ -112,74 +108,96 @@
     \FV@DefineTabOut
     \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
     \let\FV@FontScanPrep\relax
-%% DG/SR modification begin - May. 18, 1998 (to avoid problems with ligatures)
     \let\@noligs\relax
-%% DG/SR modification end
     \FV@Scan}
 \def\FVE@VerbatimOut{\endgroup\@esphack}
 
-\let\oldproof\proof
-\let\endoldproof\endproof
+\let\apxold@proof\proof
+\let\endapxold@proof\endproof
 
 \renewenvironment{proof}
-{\immediate\write\axp@proofsfile{\noexpand\begin{oldproof}}\VerbatimOut}
-{\endVerbatimOut\immediate\write\axp@proofsfile{\noexpand\end{oldproof}}}
+  {\axp@writesection\immediate\write\axp@proofsfile{\noexpand\begin{apxold@proof}}\VerbatimOut}
+  {\endVerbatimOut\immediate\write\axp@proofsfile{\noexpand\end{apxold@proof}}}
 
-\AtEndDocument{
-  \clearpage\onecolumn\appendix%
-  \let\@oldbiblabel\@biblabel
-  \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}
-  \begin{bibunit}[alphaabbr]%
-  \renewcommand{\refname}{REFERENCES FOR THE APPENDIX}%
+\AtEndDocument{%
+  \clearpage\onecolumn\appendix
+  \begin{bibunit}[alpha]%
   \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
-  \putbib%
+  \providecommand{\refname}{References for the Appendix}%
+  \putbib
   \end{bibunit}%
 }
 
+\let\apxold@bibliography\bibliography
+\renewcommand\bibliography[1]{%
+  \defaultbibliography{#1}%
+  \apxold@bibliography{#1}%
+}
+
 \newcounter{axp@rpcounter}
+\newcounter{axp@seccounter}
 
-\newcommand{\definerep}[2]{%
-\newtheorem*{#1rp}{#2}
-\NewEnviron{#1rep}[2][]{%
-  \addtocounter{axp@rpcounter}{1}%
-  \begin{#1}[##1]\label{##2}\BODY\end{#1}%
-  \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
-  \immediate\write\axp@proofsfile{\noexpand\begin{#1rp}[\noexpand\ref{##2}\@ifnotempty{##1}{ \noexpand##1}]\expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{#1rp}}
-}}
-\definerep{proposition}{Proposition}
-\definerep{lemma}{Lemma}
-\definerep{observation}{Observation}
-\definerep{theorem}{Theorem}
-\definerep{corollary}{Corollary}
-
-\newcommand{\mysec}[2]{%
-  \edef\tmptitle{#1}%
-  \section{\tmptitle}\label{#2}%
-  \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{#2}}\noexpand\section{Proofs for Section\noexpand~\noexpand\protect\noexpand\tmp{} (#1)}}%
+\let\apxold@label\label
+\renewcommand{\label}[1]{%
+  \ifcsname c@#1\endcsname
+  \else
+    \newcounter{#1}\apxold@label{#1}%
+  \fi
 }
 
-\newcommand{\mysubsec}[2]{%
-  \edef\tmptitle{#1}%
-  \subsection{\tmptitle}\label{#2}%
-  \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{#2}}\noexpand\subsection{#1 (Section\noexpand~\noexpand\tmp)}}%
+\def\thmhead#1#2#3{%
+  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+  \thmnote{ #3}}
+
+\newcommand{\newtheoremrep}[2]{%
+  \newtheorem*{axp#1rp}{#2}%
+  \newtheorem{#1}{#2}%
+  \NewEnviron{#1rep}[1][]{%
+    \addtocounter{axp@rpcounter}{1}%
+    \begin{#1}[##1]\apxold@label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+    \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
+    \axp@writesection%
+    \immediate\write\axp@proofsfile{%
+      \noexpand\begin{axp#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+      \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp#1rp}
+      }
+  }
 }
 
-\newcommand{\myparagraph}[2]{%
-  \edef\tmptitle{#1}%
-  \paragraph*{\tmptitle}%
-  \immediate\write\axp@proofsfile{\noexpand\subsection{#1}\noexpand\label{#2}}%
+\def\apx@sectitle{}
+
+\let\apxold@section\section
+\def\section{\@ifstar\@section{\@dblarg\@@section}}
+\def\@section#1{%
+  \global\edef\apx@sectitle{#1}%
+  \apxold@section*{#1}%
+  \addtocounter{axp@seccounter}{1}%
+  \label{axp@s\roman{axp@seccounter}}%
+}
+\def\@@section[#1]#2{%
+  \global\edef\apx@sectitle{#1}%
+  \apxold@section{#1}%
+  \addtocounter{axp@seccounter}{1}%
+  \label{axp@s\roman{axp@seccounter}}%
 }
 
-\newcommand{\mysubparagraph}[2]{%
-  \edef\tmptitle{#1.}%
-  \subparagraph*{\tmptitle}%
-  \immediate\write\axp@proofsfile{\noexpand\subsection{#1}\noexpand\label{#2}}%
+\newcommand\axp@writesection{%
+  \ifx\apx@sectitle\empty
+  \else
+    \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}\noexpand\apxold@section{Proofs for Section\noexpand~\noexpand\protect\noexpand\tmp{}
+    (\apx@sectitle)}}%
+    \global\def\apx@sectitle{}%
+  \fi
 }
 
-\newenvironment{proofsketch}{\vskip3pt\noindent\emph{Proof sketch.} }%
-{\hfill\qed\vskip3pt}
+\newenvironment{proofsketch}
+  {\vskip3pt\noindent\emph{Proof sketch.} }
+  {\hfill\qed\vskip3pt}
 
-\newenvironment{toappendix}{\VerbatimOut}{\endVerbatimOut}
+\newenvironment{toappendix}
+  {\axp@writesection\VerbatimOut}
+  {\endVerbatimOut}
+
 \makeatother
 %    \end{macrocode}
 % \Finale
