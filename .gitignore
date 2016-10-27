@@ -1,1 +1,7 @@
 apxproof.sty
+apxproof.pdf
+*.aux
+*.gl?
+*.idx
+*.ilg
+*.axp
