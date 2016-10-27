@@ -67,11 +67,13 @@
   {\axp@writesection\immediate\write\axp@proofsfile{\noexpand\begin{apxold@proof}}\VerbatimOut}
   {\endVerbatimOut\immediate\write\axp@proofsfile{\noexpand\end{apxold@proof}}}
 
+\newcommand{\appendixrefname}{References for the Appendix}
+
 \AtEndDocument{%
   \clearpage\onecolumn\appendix
   \begin{bibunit}[alpha]%
   \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
-  \providecommand{\refname}{References for the Appendix}%
+  \renewcommand{\refname}{\appendixrefname}%
   \putbib
   \end{bibunit}%
 }
@@ -155,6 +157,12 @@
     {.5em}
     {}
   \theoremstyle{mystyle}
+
+  \newcommand{\refname}{REFERENCES}
+  \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+  \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+
+  \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
 \fi
 
 \def\thmhead#1#2#3{%
