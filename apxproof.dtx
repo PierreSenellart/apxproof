@@ -145,12 +145,10 @@
   \fi
 }
 
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ #3}}
-
 \newcommand{\newtheoremrep}[2]{%
   \newtheorem*{axp#1rp}{#2}%
+  \expandafter\let\csname #1\endcsname\undefined
+  \expandafter\let\csname c@#1\endcsname\undefined
   \newtheorem{#1}{#2}%
   \NewEnviron{#1rep}[1][]{%
     \addtocounter{axp@rpcounter}{1}%
@@ -197,6 +195,23 @@
 \newenvironment{toappendix}
   {\axp@writesection\VerbatimOut}
   {\endVerbatimOut}
+
+\ifdefined\@acmtitlebox
+  \newtheoremstyle{mystyle}%
+    {3pt}
+    {3pt}
+    {\itshape}
+    {}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
+\fi
+
+\def\thmhead#1#2#3{%
+  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+  \thmnote{ #3}}
 
 \makeatother
 %    \end{macrocode}
