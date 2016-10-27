@@ -1,0 +1,68 @@
+\usepackage{../../apxproof}
+\usepackage{url}
+
+\newtheoremrep{theorem}{Theorem}
+
+
+\begin{document}
+Hello world!
+
+\begin{theoremrep}
+  \label{th:toto}
+  This is a great result.
+\end{theoremrep}
+
+\begin{proofsketch}
+  This is the proof sketch of Theorem~\ref{th:toto}.
+\end{proofsketch}
+
+\begin{proof}
+  This is the proof of Theorem~\ref{th:toto}.
+\end{proof}
+
+\section{A Section without Theorems}
+
+Since this section does not have any appendix content, it will not appear in the
+appendix. \cite{brin1998anatomy}
+
+\section{A Section with Some Appendix Content}
+
+Not much in the main text.
+
+\begin{toappendix}
+  Hello appendix!
+\end{toappendix}
+
+\section{A Section with Theorems}
+
+\begin{theoremrep}
+  \label{th:titi}
+  Another great result.
+\end{theoremrep}
+
+\begin{proofsketch}
+  Proof sketch of Theorem~\ref{th:titi}.
+\end{proofsketch}
+
+\begin{proof}
+  Proof of Theorem~\ref{th:titi}.
+\end{proof}
+
+\begin{theoremrep}
+  \label{th:tutu}
+  Another great result, without any proof sketch.
+\end{theoremrep}
+
+\begin{proof}
+  Proof of Theorem~\ref{th:tutu}. It has two
+  references~\cite{sitemaps,brin1998anatomy}.
+\end{proof}
+
+\begin{theorem}
+  A regular theorem, not repeated.
+\end{theorem}
+
+\bibliographystyle{plain}
+\bibliography{../common}
+
+\end{document}
