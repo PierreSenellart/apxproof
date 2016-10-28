@@ -84,8 +84,10 @@
 \RequirePackage{ifthen}
 \RequirePackage{environ}
 \RequirePackage{bibunits}
-\let\proof\undefined
-\let\endproof\undefined
+\@ifpackageloaded{amsthm}{}{%
+  \let\proof\undefined
+  \let\endproof\undefined
+}
 \RequirePackage{amsthm}
 \RequirePackage{etoolbox}
 \RequirePackage{ifmtarg}
@@ -98,6 +100,7 @@
   \noexpand\makeatletter
   \noexpand\let\noexpand\proof\noexpand\apxold@proof
   \noexpand\let\noexpand\endproof\noexpand\endapxold@proof
+  \noexpand\let\noexpand\section\noexpand\apxold@section
 }
 \def\FVB@VerbatimOut{%
   \@bsphack
@@ -155,11 +158,23 @@
 \let\nestedproof\apxold@proof
 \let\endnestedproof\endapxold@proof
 
+\def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
+\def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
+\@getclass
+
 \newcommand{\appendixrefname}{References for the Appendix}
+\newcommand{\appendixbibliographystyle}{alpha}
+\newcommand{\appendixbibliographyprelim}{%
+  \ifthenelse{\equal{\@currentclass}{lipics}}{%
+    \global\let\oldbiblabel\@biblabel
+    \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
+  }{}
+}
 
 \AtEndDocument{%
   \clearpage\onecolumn\appendix
-  \begin{bibunit}[alpha]%
+  \appendixbibliographyprelim
+  \begin{bibunit}[\appendixbibliographystyle]%
   \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
   \renewcommand{\refname}{\appendixrefname}%
   \putbib
@@ -175,11 +190,15 @@
 \newcounter{axp@rpcounter}
 \newcounter{axp@seccounter}
 
-\newcommand{\newtheoremrep}[2]{%
-  \newtheorem*{axp#1rp}{#2}%
+
+\newcommand\newtheoremrep[1]{%
+  \@oparg{\axp@newtheoremrep{#1}}[]%
+}
+\def\axp@newtheoremrep#1[#2]#3{%
+  \newtheorem*{axp@#1rp}{#3}%
   \expandafter\let\csname #1\endcsname\undefined
   \expandafter\let\csname c@#1\endcsname\undefined
-  \newtheorem{#1}{#2}%
+  \newtheorem{#1}[#2]{#3}%
   \NewEnviron{#1rep}[1][]{%
     \addtocounter{axp@rpcounter}{1}%
     \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
@@ -187,9 +206,9 @@
     \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
     \axp@writesection%
     \immediate\write\axp@proofsfile{%
-      \noexpand\begin{axp#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+      \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
       \noexpand\let\noexpand\label\noexpand\@gobble%
-      \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp#1rp}
+      \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
       }
   }
 }
@@ -197,18 +216,31 @@
 \def\apx@sectitle{}
 
 \let\apxold@section\section
-\def\section{\@ifstar\@section{\@dblarg\@@section}}
+\def\section{\@ifstar\@section\@@section}
 \def\@section#1{%
   \global\edef\apx@sectitle{#1}%
   \apxold@section*{#1}%
   \addtocounter{axp@seccounter}{1}%
   \label{axp@s\roman{axp@seccounter}}%
 }
-\def\@@section[#1]#2{%
+\def\@@section#1{%
   \global\edef\apx@sectitle{#1}%
   \apxold@section{#1}%
   \addtocounter{axp@seccounter}{1}%
   \label{axp@s\roman{axp@seccounter}}%
+}
+\ifdefined\@acmtitlebox
+  \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
+  \def\@@section#1#2{%
+    \global\edef\apx@sectitle{#2}%
+    \apxold@section{#2}%
+    \addtocounter{axp@seccounter}{1}%
+    \label{axp@s\roman{axp@seccounter}}%
+  }
+\fi
+
+\newcommand{\nosectionappendix}{
+  \global\def\apx@sectitle{}%
 }
 
 \newcommand\axp@writesection{%
@@ -216,7 +248,7 @@
   \else
     \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}\noexpand\apxold@section{Proofs for Section\noexpand~\noexpand\protect\noexpand\tmp{}
     (\apx@sectitle)}}%
-    \global\def\apx@sectitle{}%
+    \nosectionappendix
   \fi
 }
 

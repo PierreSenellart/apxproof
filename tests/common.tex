@@ -106,6 +106,28 @@ And now for no particular reason, two isolated proofs in the appendix,
   cannot change the proof name).
 \end{appendixproof}
 
+\section{Last Section}
+
+\begin{theoremrep}
+  \noproofinappendix
+  Another theorem.
+\end{theoremrep}
+
+\begin{toappendix}
+  This theorem does not have a proof, but a discussion in the appendix,
+  so we use \verb|\noproofinappendix| to prevent the proof of the
+  following theorem to be misinterpreted as the proof of this one.
+\end{toappendix}
+
+\begin{theorem}
+  Last theorem, not repeated.
+\end{theorem}
+
+\begin{proof}
+  Proof, inlined.
+\end{proof}
+
+
 \bibliographystyle{plain}
 \bibliography{../common}
 
