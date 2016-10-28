@@ -2,6 +2,7 @@
 \usepackage{hyperref}
 
 \newtheoremrep{theorem}{Theorem}
+\newtheoremrep{lemma}{Lemma}
 
 \begin{document}
 Hello world!
@@ -45,6 +46,17 @@ Not much in the main text.
 
 \begin{proof}
   Proof of Theorem~\ref{th:titi}.
+
+  For some reason, this proof has an inline Lemma:
+  \begin{lemma}
+    This is the lemma.
+  \end{lemma} 
+
+  \begin{nestedproof}
+    And this lemma has a proof as well!
+  \end{nestedproof}
+
+  This concludes the global proof of Theorem~\ref{th:titi}.
 \end{proof}
 
 \begin{theoremrep}
@@ -60,6 +72,39 @@ Not much in the main text.
 \begin{theorem}
   A regular theorem, not repeated.
 \end{theorem}
+
+\begin{proof}
+This regular theorem is naturally followed with an inline proof.
+\end{proof}
+
+\begin{theoremrep}
+  \label{th:weird}
+  A repeated theorem, but with two proofs, one in Appendix and one in
+  main text.
+\end{theoremrep}
+
+\begin{inlineproof}
+  Main text proof of Theorem~\ref{th:weird}.
+\end{inlineproof}
+
+\begin{proof}
+  Appendix proof of Theorem~\ref{th:weird}.
+\end{proof}
+
+\begin{toappendix}
+And now for no particular reason, two isolated proofs in the appendix,
+  written in two different ways:
+
+  \begin{proof}[Proof of a non-existing result]
+    First with a regular \texttt{proof} environment inside a
+    \texttt{toappendix} environment.
+  \end{proof}
+\end{toappendix}
+
+\begin{appendixproof}
+  Second, with the specific \texttt{appendixproof} environment (but then,
+  cannot change the proof name).
+\end{appendixproof}
 
 \bibliographystyle{plain}
 \bibliography{../common}

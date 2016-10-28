@@ -96,8 +96,8 @@
 \immediate\openout\axp@proofsfile=\jobname.axp
 \immediate\write\axp@proofsfile{%
   \noexpand\makeatletter
-  \noexpand\let\noexpand\proof\noexpand\oldproof
-  \noexpand\let\noexpand\endproof\noexpand\endoldproof
+  \noexpand\let\noexpand\proof\noexpand\apxold@proof
+  \noexpand\let\noexpand\endproof\noexpand\endapxold@proof
 }
 \def\FVB@VerbatimOut{%
   \@bsphack
@@ -115,9 +115,45 @@
 \let\apxold@proof\proof
 \let\endapxold@proof\endproof
 
+\newtoggle{apx@seenreptheorem}
+
+\newenvironment{appendixproof}
+  {%
+    \axp@writesection
+    \immediate\write\axp@proofsfile{%
+      \noexpand\begin{apxold@proof}%
+    }%
+    \VerbatimOut
+  }
+  {%
+    \endVerbatimOut
+    \immediate\write\axp@proofsfile{%
+      \noexpand\end{apxold@proof}%
+    }%
+    \global\togglefalse{apx@seenreptheorem}%
+  }
+
 \renewenvironment{proof}
-  {\axp@writesection\immediate\write\axp@proofsfile{\noexpand\begin{apxold@proof}}\VerbatimOut}
-  {\endVerbatimOut\immediate\write\axp@proofsfile{\noexpand\end{apxold@proof}}}
+  {%
+    \iftoggle{apx@seenreptheorem}{%
+      \appendixproof
+    }{%
+      \apxold@proof
+    }%
+  }
+  {%
+    \iftoggle{apx@seenreptheorem}{%
+      \endappendixproof
+    }{%
+      \endapxold@proof
+    }%
+  }
+
+\let\inlineproof\apxold@proof
+\let\endinlineproof\endapxold@proof
+
+\let\nestedproof\apxold@proof
+\let\endnestedproof\endapxold@proof
 
 \newcommand{\appendixrefname}{References for the Appendix}
 
@@ -147,6 +183,7 @@
   \NewEnviron{#1rep}[1][]{%
     \addtocounter{axp@rpcounter}{1}%
     \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+    \global\toggletrue{apx@seenreptheorem}%
     \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
     \axp@writesection%
     \immediate\write\axp@proofsfile{%
