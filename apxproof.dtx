@@ -63,13 +63,18 @@
 % \DoNotIndex{\newcommand,\newenvironment}
 %
 %
-% \title{The \textsf{apxproof} package\thanks{This document corresponds
-%   to \textsf{apxproof}~\fileversion, dated \filedate.}\\
-%   Proofs in Appendix}
+% \title{The \textsf{apxproof} package}
+% 
 % \author{Pierre Senellart \\ \texttt{pierre@senellart.com}}
+% \date{\filedate \quad \fileversion}
 %
 % \maketitle
 % 
+% \begin{abstract}
+% This package facilitates the writing of scientific article with proofs
+% deferred to the appendix.
+% \end{abstract}
+%
 % \section{Usage}
 % TODO
 % 
@@ -90,195 +95,241 @@
 }
 \RequirePackage{amsthm}
 \RequirePackage{etoolbox}
-\RequirePackage{ifmtarg}
-\RequirePackage{stack}
+\RequirePackage{kvoptions}
 
 \makeatletter
-\newwrite\axp@proofsfile
-\immediate\openout\axp@proofsfile=\jobname.axp
-\immediate\write\axp@proofsfile{%
-  \noexpand\makeatletter
-  \noexpand\let\noexpand\proof\noexpand\apxold@proof
-  \noexpand\let\noexpand\endproof\noexpand\endapxold@proof
-  \noexpand\let\noexpand\section\noexpand\apxold@section
-}
-\def\FVB@VerbatimOut{%
-  \@bsphack
-  \begingroup
-    \FV@UseKeyValues
-    \FV@DefineWhiteSpace
-    \def\FV@Space{\space}%
-    \FV@DefineTabOut
-    \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
-    \let\FV@FontScanPrep\relax
-    \let\@noligs\relax
-    \FV@Scan}
-\def\FVE@VerbatimOut{\endgroup\@esphack}
 
-\let\apxold@proof\proof
-\let\endapxold@proof\endproof
-
-\newtoggle{apx@seenreptheorem}
-
-\newenvironment{appendixproof}
-  {%
-    \axp@writesection
-    \immediate\write\axp@proofsfile{%
-      \noexpand\begin{apxold@proof}%
-    }%
-    \VerbatimOut
-  }
-  {%
-    \endVerbatimOut
-    \immediate\write\axp@proofsfile{%
-      \noexpand\end{apxold@proof}%
-    }%
-    \global\togglefalse{apx@seenreptheorem}%
-  }
-
-\renewenvironment{proof}
-  {%
-    \iftoggle{apx@seenreptheorem}{%
-      \appendixproof
-    }{%
-      \apxold@proof
-    }%
-  }
-  {%
-    \iftoggle{apx@seenreptheorem}{%
-      \endappendixproof
-    }{%
-      \endapxold@proof
-    }%
-  }
-
-\let\inlineproof\apxold@proof
-\let\endinlineproof\endapxold@proof
-
-\let\nestedproof\apxold@proof
-\let\endnestedproof\endapxold@proof
-
-\def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-\def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-\@getclass
-
-\newcommand{\appendixrefname}{References for the Appendix}
-\newcommand{\appendixbibliographystyle}{alpha}
-\newcommand{\appendixbibliographyprelim}{%
-  \ifthenelse{\equal{\@currentclass}{lipics}}{%
-    \global\let\oldbiblabel\@biblabel
-    \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
-  }{}
+\SetupKeyvalOptions{
+  family=AXP,
+  prefix=AXP@
 }
 
-\AtEndDocument{%
-  \clearpage\onecolumn\appendix
-  \appendixbibliographyprelim
-  \begin{bibunit}[\appendixbibliographystyle]%
-  \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
-  \renewcommand{\refname}{\appendixrefname}%
-  \putbib
-  \end{bibunit}%
-}
+\DeclareStringOption[append]{appendix}
 
-\let\apxold@bibliography\bibliography
-\renewcommand\bibliography[1]{%
-  \defaultbibliography{#1}%
-  \apxold@bibliography{#1}%
-}
+\ProcessLocalKeyvalOptions*
 
-\newcounter{axp@rpcounter}
-\newcounter{axp@seccounter}
-
+\ifthenelse{\equal{\AXP@appendix}{append}}{
+  \message{apxproof: Appendix material appended to the document}
+}{\ifthenelse{\equal{\AXP@appendix}{strip}}{
+  \message{apxproof: Appendix material stripped}
+}{\ifthenelse{\equal{\AXP@appendix}{inline}}{
+  \message{apxproof: Appendix material inlined within the document}
+}{
+  \errmessage{Error: unsupported option appendix=\AXP@appendix for
+  package apxproof}
+}}}
 
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
-\def\axp@newtheoremrep#1[#2]#3{%
-  \newtheorem*{axp@#1rp}{#3}%
-  \expandafter\let\csname #1\endcsname\undefined
-  \expandafter\let\csname c@#1\endcsname\undefined
-  \newtheorem{#1}[#2]{#3}%
-  \NewEnviron{#1rep}[1][]{%
-    \addtocounter{axp@rpcounter}{1}%
-    \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
-    \global\toggletrue{apx@seenreptheorem}%
-    \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
-    \axp@writesection%
-    \immediate\write\axp@proofsfile{%
-      \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
-      \noexpand\let\noexpand\label\noexpand\@gobble%
-      \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
-      }
+
+\ifthenelse{\equal{\AXP@appendix}{inline}}{
+  \def\axp@newtheoremrep#1[#2]#3{%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \newtheorem{#1}[#2]{#3}%
+    \NewEnviron{#1rep}[1][]{%
+      \begin{#1}[##1]\BODY\end{#1}%
+    }
   }
-}
+  \newenvironment{toappendix}{}{}
+  \let\inlineproof\proof
+  \let\endinlineproof\endproof
+  \let\nestedproof\proof
+  \let\endnestedproof\endproof
+  \let\appendixproof\proof
+  \let\endappendixproof\endproof
+  \let\noproofinappendix\relax
+  \let\nosectionappendix\relax
+}{
+  \newwrite\axp@proofsfile
+  \immediate\openout\axp@proofsfile=\jobname.axp
+  \immediate\write\axp@proofsfile{%
+    \noexpand\makeatletter
+    \noexpand\let\noexpand\proof\noexpand\axpold@proof
+    \noexpand\let\noexpand\endproof\noexpand\endaxpold@proof
+    \noexpand\let\noexpand\section\noexpand\axpold@section
+  }
+  \def\FVB@VerbatimOut{%
+    \@bsphack
+    \begingroup
+      \FV@UseKeyValues
+      \FV@DefineWhiteSpace
+      \def\FV@Space{\space}%
+      \FV@DefineTabOut
+      \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      \let\FV@FontScanPrep\relax
+      \let\@noligs\relax
+      \FV@Scan}
+  \def\FVE@VerbatimOut{\endgroup\@esphack}
 
-\def\apx@sectitle{}
+  \let\axpold@proof\proof
+  \let\endaxpold@proof\endproof
 
-\let\apxold@section\section
-\def\section{\@ifstar\@section\@@section}
-\def\@section#1{%
-  \global\edef\apx@sectitle{#1}%
-  \apxold@section*{#1}%
-  \addtocounter{axp@seccounter}{1}%
-  \label{axp@s\roman{axp@seccounter}}%
-}
-\def\@@section#1{%
-  \global\edef\apx@sectitle{#1}%
-  \apxold@section{#1}%
-  \addtocounter{axp@seccounter}{1}%
-  \label{axp@s\roman{axp@seccounter}}%
-}
-\ifdefined\@acmtitlebox
-  \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-  \def\@@section#1#2{%
-    \global\edef\apx@sectitle{#2}%
-    \apxold@section{#2}%
+  \newtoggle{axp@seenreptheorem}
+
+  \def\noproofinappendix{%
+    \global\togglefalse{axp@seenreptheorem}%
+  }
+
+  \newenvironment{appendixproof}
+    {%
+      \axp@writesection
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axpold@proof}%
+      }%
+      \VerbatimOut
+    }
+    {%
+      \endVerbatimOut
+      \immediate\write\axp@proofsfile{%
+        \noexpand\end{axpold@proof}%
+      }%
+      \noproofinappendix
+    }
+
+  \renewenvironment{proof}
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof
+      }{%
+        \axpold@proof
+      }%
+    }
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \endappendixproof
+      }{%
+        \endaxpold@proof
+      }%
+    }
+
+  \let\inlineproof\axpold@proof
+  \let\endinlineproof\endaxpold@proof
+
+  \let\nestedproof\axpold@proof
+  \let\endnestedproof\endaxpold@proof
+
+  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
+  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
+  \@getclass
+
+  \newcommand{\appendixrefname}{References for the Appendix}
+  \newcommand{\appendixbibliographystyle}{alpha}
+  \newcommand{\appendixbibliographyprelim}{%
+    \ifthenelse{\equal{\@currentclass}{lipics}}{%
+      \global\let\oldbiblabel\@biblabel
+      \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
+    }{}
+  }
+
+  \ifthenelse{\equal{\AXP@appendix}{append}}{
+    \AtEndDocument{%
+      \clearpage\onecolumn\appendix
+      \appendixbibliographyprelim
+      \begin{bibunit}[\appendixbibliographystyle]%
+      \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
+      \renewcommand{\refname}{\appendixrefname}%
+      \putbib
+      \end{bibunit}%
+    }
+  }{}
+
+  \let\axpold@bibliography\bibliography
+  \renewcommand\bibliography[1]{%
+    \defaultbibliography{#1}%
+    \axpold@bibliography{#1}%
+  }
+
+  \newcounter{axp@rpcounter}
+  \newcounter{axp@seccounter}
+
+  \def\axp@newtheoremrep#1[#2]#3{%
+    \newtheorem*{axp@#1rp}{#3}%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \newtheorem{#1}[#2]{#3}%
+    \NewEnviron{#1rep}[1][]{%
+      \addtocounter{axp@rpcounter}{1}%
+      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \global\toggletrue{axp@seenreptheorem}%
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
+      \axp@writesection%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+        \noexpand\let\noexpand\label\noexpand\@gobble%
+        \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
+        }
+    }
+  }
+
+  \def\axp@sectitle{}
+
+  \let\axpold@section\section
+  \def\section{\@ifstar\@section\@@section}
+  \def\@section#1{%
+    \global\edef\axp@sectitle{#1}%
+    \axpold@section*{#1}%
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
-\fi
+  \def\@@section#1{%
+    \global\edef\axp@sectitle{#1}%
+    \axpold@section{#1}%
+    \addtocounter{axp@seccounter}{1}%
+    \label{axp@s\roman{axp@seccounter}}%
+  }
+  \ifdefined\@acmtitlebox
+    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
+    \def\@@section#1#2{%
+      \global\edef\axp@sectitle{#2}%
+      \axpold@section{#2}%
+      \addtocounter{axp@seccounter}{1}%
+      \label{axp@s\roman{axp@seccounter}}%
+    }
+  \fi
 
-\newcommand{\nosectionappendix}{
-  \global\def\apx@sectitle{}%
-}
+  \newcommand{\nosectionappendix}{
+    \global\def\axp@sectitle{}%
+  }
 
-\newcommand\axp@writesection{%
-  \ifx\apx@sectitle\empty
-  \else
-    \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}\noexpand\apxold@section{Proofs for Section\noexpand~\noexpand\protect\noexpand\tmp{}
-    (\apx@sectitle)}}%
-    \nosectionappendix
+  \newcommand\axp@writesection{%
+    \ifx\axp@sectitle\empty
+    \else
+      \immediate\write\axp@proofsfile{\noexpand\def\noexpand\tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}\noexpand\axpold@section{Proofs for Section\noexpand~\noexpand\protect\noexpand\tmp{}
+      (\axp@sectitle)}}%
+      \nosectionappendix
+    \fi
+  }
+
+  \newenvironment{toappendix}
+    {\axp@writesection\VerbatimOut}
+    {\endVerbatimOut}
+
+  \ifdefined\@acmtitlebox
+    \newtheoremstyle{mystyle}%
+      {3pt}
+      {3pt}
+      {\itshape}
+      {}
+      {\scshape}
+      {.}
+      {.5em}
+      {}
+    \theoremstyle{mystyle}
+
+    \newcommand{\refname}{REFERENCES}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+
+    \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
   \fi
 }
 
 \newenvironment{proofsketch}
   {\vskip3pt\noindent\emph{Proof sketch.} }
   {\hfill\qed\vskip3pt}
-
-\newenvironment{toappendix}
-  {\axp@writesection\VerbatimOut}
-  {\endVerbatimOut}
-
-\ifdefined\@acmtitlebox
-  \newtheoremstyle{mystyle}%
-    {3pt}
-    {3pt}
-    {\itshape}
-    {}
-    {\scshape}
-    {.}
-    {.5em}
-    {}
-  \theoremstyle{mystyle}
-
-  \newcommand{\refname}{REFERENCES}
-  \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-  \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-
-  \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
-\fi
-
+  
 \def\thmhead#1#2#3{%
   \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
   \thmnote{ #3}}
