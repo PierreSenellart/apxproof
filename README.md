@@ -4,7 +4,7 @@
 
 The `apxproof` package facilitates the writing of scientific article
 with proofs deferred to the appendix. The documentation of this package
-is provided in the [apxproof.pdf] file.
+is provided in the [apxproof.pdf](apxproof.pdf) file.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ distributions:
 
 ## Manual installation
 
-Simply copy the file [apxproof.sty] in your LaTeX working directory, or
+Simply copy the file [apxproof.sty](apxproof.sty) in your LaTeX working directory, or
 in any other directory where LaTeX searches for packages.
 
 ## License
