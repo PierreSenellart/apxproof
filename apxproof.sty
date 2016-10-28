@@ -87,14 +87,6 @@
 \newcounter{axp@rpcounter}
 \newcounter{axp@seccounter}
 
-\let\apxold@label\label
-\renewcommand{\label}[1]{%
-  \ifcsname c@#1\endcsname
-  \else
-    \newcounter{#1}\apxold@label{#1}%
-  \fi
-}
-
 \newcommand{\newtheoremrep}[2]{%
   \newtheorem*{axp#1rp}{#2}%
   \expandafter\let\csname #1\endcsname\undefined
@@ -102,11 +94,12 @@
   \newtheorem{#1}{#2}%
   \NewEnviron{#1rep}[1][]{%
     \addtocounter{axp@rpcounter}{1}%
-    \begin{#1}[##1]\apxold@label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+    \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
     \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
     \axp@writesection%
     \immediate\write\axp@proofsfile{%
       \noexpand\begin{axp#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+      \noexpand\let\noexpand\label\noexpand\@gobble%
       \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp#1rp}
       }
   }
