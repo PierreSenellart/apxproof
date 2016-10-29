@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2016/10/27 v1.0.0-dev Automatic proofs in appendix]
+  [2016/10/29 v1.0.0-dev Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -61,7 +61,7 @@
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
 \newenvironment{proofsketch}
-  {\vskip3pt\noindent\emph{Proof sketch.} }
+  {\vskip3pt\noindent\textit{Proof sketch.} \upshape}
   {\hfill\qed\vskip3pt}
 \def\thmhead#1#2#3{%
   \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
@@ -69,6 +69,7 @@
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
 \ifdefined\@acmtitlebox
   \newtheoremstyle{mystyle}
     {3pt}
@@ -211,8 +212,7 @@
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
         \noexpand\axp@oldsection{%
-          Proofs for Section\noexpand~\noexpand\protect\noexpand\axp@tmp{}
-          (\axp@sectitle)%
+          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
         }%
       }%
       \nosectionappendix

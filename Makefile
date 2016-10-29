@@ -1,12 +1,14 @@
 all: apxproof.pdf apxproof.sty
 
 clean:
-	-rm -f *.aux *.log *.gl? *.idx *.ilg *.fls *.ind *.axp
+	-rm -f *.aux *.log *.gl? *.idx *.ilg *.fls *.ind *.axp *.bbl *.blg *.hd  *.out
 
 %.pdf: %.dtx %.sty
 	pdflatex $<
 	makeindex -s gind.ist $(patsubst %.pdf,%.idx,$@)
 	makeindex -s gglo.ist -o $(patsubst %.pdf,%.gls,$@) $(patsubst %.pdf,%.glo,$@)
+	bibtex $(patsubst %.pdf,%,$@)
+	bibtex bu1
 	pdflatex $<
 	pdflatex $<
 

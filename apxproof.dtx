@@ -24,12 +24,16 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2016/10/27 v1.0.0-dev Automatic proofs in appendix]
+%<package>  [2016/10/29 v1.0.0-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
 \usepackage{apxproof}
 \usepackage{hypdoc}
+\usepackage{textcomp}
+\usepackage[TS1,T1]{fontenc}
+\newtheorem{example}{Example}
+\newtheoremrep{foobar}{Foobar}
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
@@ -39,7 +43,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{0}
+% \CheckSum{413}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -57,32 +61,340 @@
 %   Grave accent  \`     Left brace    \{     Vertical bar  \|
 %   Right brace   \}     Tilde         \~}
 %
-% \changes{v1.0.0-dev}{2016/10/27}{Initial version}
+% \changes{v1.0.0-dev}{2016/10/29}{Initial version}
 % 
 % \GetFileInfo{apxproof.sty}
 %
 % \makeatletter\c@IndexColumns=2\makeatother
-% \DoNotIndex{\newcommand,\newenvironment,\end,\begin,\edef,\if,\else,\fi,\def,%
-% \begingroup,\endgroup,\csname,\let,\noexpand,\protect,\expandafter,\ifthenelse,%
-% \equal,\endcsname,\@empty,\@ifnotempty,\immediate,\addtocounter,\newcounter,%
-% \newtoggle,\global,\ifdefined,\iftoggle,\ifx,\jobname,\makeatletter,\makeatother,%
-% \newwrite,\NewEnviron,\patchcmd,\relax,\renewcommand,\renewenvironment,\RequirePackage,%
-% \roman,\space,\undefined}
+% \DoNotIndex{
+%  \newcommand,\newenvironment,\end,\begin,\edef,\if,\else,\fi,\def,
+%  \begingroup,\endgroup,\csname,\let,\noexpand,\protect,\expandafter,
+%  \ifthenelse,\equal,\endcsname,\@empty,\@ifnotempty,\immediate,
+%  \addtocounter,\newcounter,\newtoggle,\global,\ifdefined,\iftoggle,
+%  \ifx,\jobname,\makeatletter,\makeatother,\newwrite,\NewEnviron,
+%  \patchcmd,\relax,\renewcommand,\renewenvironment,\RequirePackage,
+%  \roman,\space,\undefined
+% }
 %
 % \title{The \textsf{apxproof} package}
 % 
-% \author{Pierre Senellart \\ \texttt{pierre@senellart.com}}
+% \author{Pierre Senellart \\ \texttt{pierre@senellart.com} \\
+% \url{http://github.com/PierreSenellart/apxproof}}
 % \date{\filedate \quad \fileversion}
 %
 % \maketitle
 % 
 % \begin{abstract}
-% This package facilitates the writing of scientific article with proofs
-% deferred to the appendix.
+% This package facilitates the writing of articles with proofs
+% and other material
+% deferred to the appendix. The appendix material is written in the
+% \LaTeX{} code along with the main text it naturally complements,
+% and automatically deferred. The package allows automatic placement of
+% proofs in the appendix, repetition in the appendix of theorem
+% environments stated in the main text, automatic sectioning of the
+% appendix based on the sectioning of the main text, and a separate
+% bibliography for the appendix material.
 % \end{abstract}
 %
 % \section{Usage}
-% TODO
+% The \textsf{apxproof} intends to help writing articles where some of
+% the content needs to be deferred to an appendix. This is in particular
+% useful for the submission of scientific articles to conferences or
+% journals that limit the number of pages in the main text but allow an
+% extra appendix, where proofs of theorems and other material can be added.
+%
+% \subsection{Basics}
+% To use \textsf{apxproof}, first load it in the header of your document:
+% \begin{quote}|\usepackage{apxproof}|\end{quote}
+% On its own, this does not do anything and should not change the
+% appearance of your document. To add an appendix with some material from
+% your document, use the |toappendix| environment:
+% \begin{quote}
+% |\begin{toappendix}|\DescribeEnv{toappendix}\\
+% \hspace*{1em}\dots\\
+% |\end{toappendix}|
+% \end{quote}
+% The content will appear at the end of your document, in a section
+% automatically generated, referring to the current section in the main
+% text.
+% \begin{example}
+% Throughout this documentation, all examples produce content
+% deferred to the appendix, at the very end of this document.
+% \begin{verbatim}
+% \begin{toappendix}
+% This content is in the appendix.
+% \end{toappendix}
+% \end{verbatim}
+% \begin{toappendix}
+%<*driver>
+This content is in the appendix.
+%</driver>
+% \end{toappendix}
+% \end{example}
+% \subsection{Repeated Theorems and Proofs}
+% In some scientific papers that include proofs, it is common to defer
+% proofs to the appendix. This can easily be achieved using the
+% |appendixproof| environment:
+% \begin{quote}
+% |\begin{appendixproof}|\DescribeEnv{appendixproof}\\
+% \hspace*{1em}\dots\\
+% |\end{appendixproof}|
+% \end{quote}
+% This behaves similarly as the |toappendix| environment, except that 
+% a proof environment is generated.
+% \begin{example}We now send a proof to the appendix:
+% \begin{verbatim}
+% \begin{appendixproof}
+% This proof is in the appendix.
+% \end{appendixproof}
+% \end{verbatim}
+% \begin{appendixproof}
+%<*driver>
+This proof is in the appendix.
+%</driver>
+% \end{appendixproof}
+% \end{example}
+%
+% When deferring proofs to the appendix, an annoying problem is that the
+% statement of the theorem remains in the main text; it is hard to read a
+% proof that is far away from the statement it proves. \textsf{apxproof}
+% solves this issue by allowing statements of theorems to be repeated:
+% once in the main text, and once in the appendix before the proof of
+% this statement. To use this feature, you can define a new
+% \emph{repeated theorem} environment using the |\newtheoremrep| command:
+% \begin{quote}
+% |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\DescribeMacro{\newtheoremrep}
+% \end{quote}
+% Usage is exactly the same as that of AMS \LaTeX{}'s |\newtheorem|
+% macro: \meta{name} (e.g., |theorem|) is the name of an environment that is created for this kind of
+% theorem, \meta{counter} (e.g., |definition|) is an optional counter the numbering of this
+% kind of environment is supposed to inherit from, and \meta{title}
+% (e.g., |Theorem| is
+% the title that will be used to display this theorem environment. What
+% differs from |\newtheorem| is that with a call such as:
+% \begin{quote}
+% |\newtheoremrep{foobar}{Foobar}|
+% \end{quote}
+% then \emph{two} environments are defined: the \verb|foobar|
+% environment, which behaves as if |\newtheorem| had been used, and the
+% |foobarrep| environment, which results in the statement of this
+% environment being repeated in the appendix.
+%
+% One interesting feature of \textsf{apxproof} is that in most
+% situations, there is no need to use the |appendixproof| environment.
+% Indeed, the |proof| \DescribeEnv{proof} environment is redefined by \textsf{apxproof} to
+% automatically put the proof either in the main text (if it follows a
+% regular theorem) or in the appendix (if it follows a repeated
+% theorem).
+% \begin{example}
+% Assume we have first defined a repeated theorem environment |foobar| as
+% above.
+% We can now use this theorem environment, first for a regular theorem in
+% the main text, then for a theorem repeated in the main text and in the
+% appendix:
+% \begin{quote}
+% \begin{verbatim}
+% \begin{foobar}
+% This foobar is a regular one, in the main text.
+% \end{foobar}
+% \begin{proof}
+% This is the proof of the regular foobar.
+% \end{proof}
+% \end{verbatim}
+% \end{quote}
+% We obtain:
+% \begin{foobar}
+% This foobar is a regular one, in the main text.
+% \end{foobar}
+% \begin{proof}
+% This is the proof of the regular foobar.
+% \end{proof}
+% \begin{quote}
+% \begin{verbatim}
+% \begin{foobarrep}
+% This foobar is repeated in the appendix.
+% \end{foobarrep}
+% \begin{proof}
+% This is the proof of the repeated foobar.
+% \end{proof}
+% \end{verbatim}
+% \end{quote}
+% We now obtain:
+% \begin{foobarrep}
+% This foobar is repeated in the appendix.
+% \end{foobarrep}
+% \begin{proof}
+%<*driver>
+This is the proof of the repeated foobar.
+%</driver>
+% \end{proof}
+% \end{example}
+%
+% When the proof is deferred to the appendix, it is common practice to
+% add a proof sketch in the main text. \textsf{apxproof} defines a simple
+% |proofsketch| environment for this purpose:
+% \begin{quote}
+% |\begin{proofsketch}|\DescribeEnv{proofsketch}\\
+% \hspace*{1em}\dots\\
+% |\end{proofsketch}|
+% \end{quote}
+% The proof sketch is typeset similarly to a proof, but is always in the
+% main text. Similarly, an |inlineproof| \DescribeEnv{inlineproof}
+% environment is provided so as to
+% be able to have both a proof in the appendix (using the regualr |proof|
+% environment, or alternatively the |appendixproof| environment) and a
+% different proof in the main text (using the |inlineproof| environment).
+% \begin{example} Here are simple examples of proof sketches and inline
+% proofs:
+% \begin{verbatim}
+% \begin{proofsketch}
+% This is a proof sketch.
+% \end{proofsketch}
+% \end{verbatim}
+% \begin{proofsketch}
+% This is a proof sketch.
+% \end{proofsketch}
+% \begin{verbatim}
+% \begin{inlineproof}
+% This is an inline proof.
+% \end{inlineproof}
+% \end{verbatim}
+% \begin{inlineproof}
+% This is an inline proof.
+% \end{inlineproof}
+% \end{example}
+% 
+% \subsection{Bibliography}
+% \textsf{apxproof} automatically adds a bibliography in the appendix
+% with only the references cited in the appendix material. This allows for a
+% clean separation of references used solely in the main text, and those
+% used in the appendix.
+% \begin{example}
+% Assume we have citations both in the main text and in the appendix.
+% \begin{verbatim}
+% This is a citation in the main text~\cite{lamport86}.
+% \begin{toappendix}
+% This is a citation in the appendix~\cite{proofsAreHard}.
+% \end{toappendix}
+% \end{verbatim}
+% This is a citation in the main text~\cite{lamport86}.
+% \begin{toappendix}
+%<*driver>
+This is a citation in the appendix~\cite{proofsAreHard}.
+%</driver>
+% \end{toappendix}
+% \end{example}
+% The bibliography in the appendix can (and by default does) use
+% different style and heading than the bibliography of the main text (see
+% Section~\ref{sec:customization} for how to configure the appearance of
+% the bibliography).
+% \subsection{Mode}
+% An optional \meta{mode} can be specified when loading the package:
+% \begin{quote}|\usepackage[appendix=|\meta{mode}|]{apxproof}|\end{quote}
+% \meta{mode} can take one of the following three values:
+% \begin{description}
+% \item[|append|] This is the default.
+% Appendix material gathered by \textsf{apxproof} is appended to
+% the main text.
+% \item[|inline|] In this mode, \textsf{apxproof} simply inline the
+% content along with the main text.
+% \item[|strip|] This mode functions similarly to |append| except that
+% the appendix is not appended at the end of the document. All appendix
+% material is therefore removed.
+% \end{description}
+%
+% \subsection{Customization}
+% \label{sec:customization}
+% \textsf{apxproof} provides a few macros that can be redefined (using
+% |\renewcommand|) to customize the appearance of the appendix:
+% \begin{description}
+% \item[\textbackslash|appendixsectionformat|\marg{number}\marg{title}]\DescribeMacro{\appendixsectionformat} is a macro
+% that indicates how to format the section titles in the Appendix, given
+% the number and title of the section in the main text. By
+% default, they appear as ``Proofs for Section~\meta{number}
+% (\meta{title})''.
+% \item[\textbackslash|appendixrefname|]\DescribeMacro{\appendixrefname} contains the heading that is displayed before
+% the bibliography. By default, this is ``References for the
+% Appendix''.
+% \item[\textbackslash|appendixbibliographystyle|]\DescribeMacro{\appendixbibliographystyle} contains the |.bst| bibliography
+% style that is used in the bibliography in appendix. By default, this is
+% |alpha|.
+% \item[\textbackslash|appendixbibliographyprelim|]\DescribeMacro{\appendixbibliographyprelim} contains arbitrary code that is executed
+% just before the production of the bibliography in appendix, which can
+% be used to configure way it is displayed.
+% \end{description}
+%
+% \subsection{Advanced Commands}
+% We now describe a few advanced macros and environment, whose usage is limited to
+% special cases:
+% \begin{description}
+% \item[|nestedproof|]\DescribeEnv{nestedproof} is an environment that
+% can be used within a |proof| environment deferred in the appendix; this
+% is required because for technical reasons, no |proof| environment can
+% be nested within a deferred |proof| environmen.
+% \item[\textbackslash|noproofinappendix|]\DescribeMacro{\noproofinappendix}
+% is to be used inside repeated theorems that are not followed by a
+% |proof| or |appendixproof| theorem, in order to mistake a further
+% |proof| environment as that of this theorem.
+% \item[\textbackslash|nosectionappendix|]\DescribeMacro{\nosectionappendix}
+% is to be used inside a section that does contain appendix material, but
+% for which a section in the appendix should not be created.
+% \end{description}
+% \section{Supported Document Classes}
+% Because \textsf{apxproof} modifies sectioning commands, bibliographies,
+% proofs, it may not work straightaway with arbitrary document classes.
+% It has currently been tested with and is supported for the following
+% document classes:
+% \begin{itemize}
+% \item \LaTeX{} standard document classes (e.g., |article.cls|)
+% \item \href{https://www.ctan.org/pkg/koma-script}{KOMA-Script}
+% (e.g., |scrartcl.cls|)
+% \item \href{https://www.acm.org/publications/proceedings-template}{ACM
+% SIG Proceedings} (e.g., |sig-alternate.cls|)
+% \item \href{http://www.springer.com/computer/lncs/lncs+authors}{
+% Springer's Lecture Notes in Computer Science} (e.g.,
+% |llncs.cls|)
+% \item
+% \href{https://www.dagstuhl.de/en/publications/lipics}{Schlo\ss{}
+% Dagstuhl's Leibniz International Proceedings in Informatics} (e.g.,
+% |lipics.cls|)
+% \end{itemize}
+% Other classes may work out of the box. Adding support for specific
+% classes is possible and can be requested from the
+% author of this package.
+% \section{Known Issues and Limitations}
+% We report here some issues we are currently aware of:
+% \begin{itemize}
+% \item When using \textsf{hyperref}, the appendix in the bibliography is
+% not hyperlinked. This is to avoid possible issues with multiply defined
+% bibliography entries.
+% \item |proof| environments cannot be nested. This is a limitation of
+% the \textsf{fancyvrb} package that \textsf{apxproof} relies on.
+% \item \textsf{apxproof} is incompatible with a separate use of the
+% \textsf{fancyvrb} package. This is because \textsf{apxproof} redefines
+% some internal mechanisms of \textsf{fancyvrb}.
+% \end{itemize}
+%
+% Issues not listed here should be reported to the author.
+%
+% \section{License}
+% Copyright \textcopyright{} 2016 by Pierre Senellart.
+% 
+% This work may be distributed and/or modified under the conditions of the
+% \LaTeX{} Project Public License, either version 1.3 of this license or (at
+% your option) any later version. The latest version of this license is in
+% \url{http://www.latex-project.org/lppl.txt} and version 1.3 or later is part of
+% all distributions of \LaTeX{} version 2005/12/01 or later.
+% 
+% \section{Contact}
+% \begin{itemize}
+% \item \url{https://github.com/PierreSenellart/apxproof}
+% \item 
+% Pierre Senellart
+% \href{mailto:pierre@senellart.com}{<pierre@senellart.com>}
+% \end{itemize}
+% Bug reports and feature requests are
+% preferably sent through the \emph{Issues} feature of GitHub.
 % 
 % \StopEventually{
 %   \PrintChanges
@@ -191,7 +503,7 @@
 % Simple |proofsketch| environment.
 %    \begin{macrocode}
 \newenvironment{proofsketch}
-  {\vskip3pt\noindent\emph{Proof sketch.} }
+  {\vskip3pt\noindent\textit{Proof sketch.} \upshape}
   {\hfill\qed\vskip3pt}
 %    \end{macrocode}
 % \end{environment}  
@@ -208,6 +520,7 @@
 % \begin{macro}{\appendixrefname}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
+% \begin{macro}{\appendixsectionformat}
 % We provide sensible defaults for these three user-customizable macros.
 % Even though they are only useful in append mode, we define them for
 % all modes so that a |\renewcommand| works in all cases.
@@ -215,7 +528,9 @@
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -541,8 +856,7 @@
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
         \noexpand\axp@oldsection{%
-          Proofs for Section\noexpand~\noexpand\protect\noexpand\axp@tmp{}
-          (\axp@sectitle)%
+          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
         }%
       }%
       \nosectionappendix
@@ -662,3 +976,5 @@
 }
 %    \end{macrocode}
 % \Finale
+% \bibliographystyle{plain}
+% \bibliography{apxproof}

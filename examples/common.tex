@@ -3,6 +3,8 @@
 \newtheoremrep{theorem}{Theorem}
 \newtheoremrep{lemma}{Lemma}
 
+\renewcommand{\appendixsectionformat}[2]{Material for #2 (Section~#1)}
+
 \begin{document}
 Hello world!
 
@@ -19,12 +21,12 @@ Hello world!
   This is the proof of Theorem~\ref{th:toto}.
 \end{proof}
 
-\section{A Section without Theorems}
+\section{Section without Theorems}
 
 Since this section does not have any appendix content, it will not appear in the
 appendix. \cite{brin1998anatomy}
 
-\section{A Section with Some Appendix Content}
+\section{Section with Some Appendix Content}
 
 Not much in the main text.
 
@@ -32,7 +34,7 @@ Not much in the main text.
   Hello appendix!
 \end{toappendix}
 
-\section{A Section with Theorems}
+\section{Section with Theorems}
 
 \begin{theoremrep}
   \label{th:titi}
@@ -125,7 +127,6 @@ And now for no particular reason, two isolated proofs in the appendix,
 \begin{proof}
   Proof, inlined.
 \end{proof}
-
 
 \bibliographystyle{plain}
 \bibliography{../common}
