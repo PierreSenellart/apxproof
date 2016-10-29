@@ -28,29 +28,25 @@
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
   [2016/10/27 v1.0.0-dev Automatic proofs in appendix]
+\RequirePackage{bibunits}
+\RequirePackage{environ}
+\RequirePackage{etoolbox}
 \RequirePackage{fancyvrb}
 \RequirePackage{ifthen}
-\RequirePackage{environ}
-\RequirePackage{bibunits}
-\@ifpackageloaded{amsthm}{}{%
-  \let\proof\undefined
-  \let\endproof\undefined
-}
-\RequirePackage{amsthm}
-\RequirePackage{etoolbox}
 \RequirePackage{kvoptions}
-
+\@ifpackageloaded{amsthm}{
+  }{
+    \let\proof\undefined
+    \let\endproof\undefined
+  }
+\RequirePackage{amsthm}
 \makeatletter
-
 \SetupKeyvalOptions{
   family=AXP,
   prefix=AXP@
 }
-
 \DeclareStringOption[append]{appendix}
-
 \ProcessLocalKeyvalOptions*
-
 \ifthenelse{\equal{\AXP@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
 }{\ifthenelse{\equal{\AXP@appendix}{strip}}{
@@ -61,11 +57,15 @@
   \errmessage{Error: unsupported option appendix=\AXP@appendix for
   package apxproof}
 }}}
-
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
-
+\newenvironment{proofsketch}
+  {\vskip3pt\noindent\emph{Proof sketch.} }
+  {\hfill\qed\vskip3pt}
+\def\thmhead#1#2#3{%
+  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+  \thmnote{ #3}}
 \ifthenelse{\equal{\AXP@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3{%
     \expandafter\let\csname #1\endcsname\undefined
@@ -75,16 +75,30 @@
       \begin{#1}[##1]\BODY\end{#1}%
     }
   }
-  \newenvironment{toappendix}{}{}
   \let\inlineproof\proof
   \let\endinlineproof\endproof
   \let\nestedproof\proof
   \let\endnestedproof\endproof
   \let\appendixproof\proof
   \let\endappendixproof\endproof
+  \newenvironment{toappendix}{}{}
   \let\noproofinappendix\relax
   \let\nosectionappendix\relax
-}{
+  % \textsf{sig-alternate}) needs to be adapted.
+  \ifdefined\@acmtitlebox
+    \newtheoremstyle{mystyle}
+      {3pt}
+      {3pt}
+      {\itshape}
+      {}
+      {\scshape}
+      {.}
+      {.5em}
+      {}
+    \theoremstyle{mystyle}
+  \fi
+}
+{
   \newwrite\axp@proofsfile
   \immediate\openout\axp@proofsfile=\jobname.axp
   \immediate\write\axp@proofsfile{%
@@ -153,18 +167,9 @@
   \let\nestedproof\axpold@proof
   \let\endnestedproof\endaxpold@proof
 
-  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-  \@getclass
-
   \newcommand{\appendixrefname}{References for the Appendix}
   \newcommand{\appendixbibliographystyle}{alpha}
-  \newcommand{\appendixbibliographyprelim}{%
-    \ifthenelse{\equal{\@currentclass}{lipics}}{%
-      \global\let\oldbiblabel\@biblabel
-      \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
-    }{}
-  }
+  \newcommand{\appendixbibliographyprelim}{}
 
   \ifthenelse{\equal{\AXP@appendix}{append}}{
     \AtEndDocument{%
@@ -223,13 +228,6 @@
     \label{axp@s\roman{axp@seccounter}}%
   }
   \ifdefined\@acmtitlebox
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section#1#2{%
-      \global\edef\axp@sectitle{#2}%
-      \axpold@section{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
   \fi
 
   \newcommand{\nosectionappendix}{
@@ -248,36 +246,29 @@
   \newenvironment{toappendix}
     {\axp@writesection\VerbatimOut}
     {\endVerbatimOut}
-
+  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
+  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
+  \@getclass
   \ifdefined\@acmtitlebox
-    \newtheoremstyle{mystyle}%
-      {3pt}
-      {3pt}
-      {\itshape}
-      {}
-      {\scshape}
-      {.}
-      {.5em}
-      {}
-    \theoremstyle{mystyle}
-
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
-    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
+    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
+    \def\@@section#1#2{%
+      \global\edef\axp@sectitle{#2}%
+      \axpold@section{#2}%
+      \addtocounter{axp@seccounter}{1}%
+      \label{axp@s\roman{axp@seccounter}}%
+    }
   \fi
+   \ifthenelse{\equal{\@currentclass}{lipics}}{
+    \renewcommand{\appendixbibliographyprelim}{%
+      \global\let\oldbiblabel\@biblabel
+      \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
+    }
+  }
 }
-
-\newenvironment{proofsketch}
-  {\vskip3pt\noindent\emph{Proof sketch.} }
-  {\hfill\qed\vskip3pt}
-
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ #3}}
-
-\makeatother
 \endinput
 %%
 %% End of file `apxproof.sty'.

@@ -29,6 +29,7 @@
 %<*driver>
 \documentclass{ltxdoc}
 \usepackage{apxproof}
+\usepackage{hypdoc}
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
@@ -38,7 +39,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{409}
+% \CheckSum{0}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -56,12 +57,12 @@
 %   Grave accent  \`     Left brace    \{     Vertical bar  \|
 %   Right brace   \}     Tilde         \~}
 %
-% \changes{v1.0.0}{2016/10/27}{Initial version}
+% \changes{v1.0.0-dev}{2016/10/27}{Initial version}
 % 
 % \GetFileInfo{apxproof.sty}
 %
+% \makeatletter\c@IndexColumns=2\makeatother
 % \DoNotIndex{\newcommand,\newenvironment}
-%
 %
 % \title{The \textsf{apxproof} package}
 % 
@@ -84,30 +85,75 @@
 % }
 % 
 % \section{Implementation}
+% We now describe the entire code of the package, in literate programming
+% fashion.
+% \subsection{Dependencies}
+% We first load a few package dependencies:
+% \begin{itemize}
+% \item \textsf{bibunits} to add a second bibliography for the appendix
+% material.
+%    \begin{macrocode}
+\RequirePackage{bibunits}
+%    \end{macrocode}
+% \item \textsf{environ} to easily define the repeated theorem
+% environments.
+%    \begin{macrocode}
+\RequirePackage{environ}
+%    \end{macrocode}
+% \item \textsf{etoolbox} to define simple toggles.
+%    \begin{macrocode}
+\RequirePackage{etoolbox}
+%    \end{macrocode}
+% \item \textsf{fancyvrb} for the bulk of the work of exporting appendix
+% material in an auxiliary file.
 %    \begin{macrocode}
 \RequirePackage{fancyvrb}
+%    \end{macrocode}
+% \item \textsf{ifthen} for easier comparison of character strings.
+%    \begin{macrocode}
 \RequirePackage{ifthen}
-\RequirePackage{environ}
-\RequirePackage{bibunits}
-\@ifpackageloaded{amsthm}{}{%
-  \let\proof\undefined
-  \let\endproof\undefined
-}
-\RequirePackage{amsthm}
-\RequirePackage{etoolbox}
+%    \end{macrocode}
+% \item \textsf{kvoptions} to manage options passed to the package.
+%    \begin{macrocode}
 \RequirePackage{kvoptions}
-
+%    \end{macrocode}
+% \item \textsf{amsthm} for its |\newteorem| macro.
+% Some document classes (e.g., \textsf{lipics})
+% preload the \textsf{amsthm}: this is fine, |\RequirePackage{amsthm}|
+% will simply have no effect. On the other hand, some other document
+% classes (e.g., \textsf{llncs} or \textsf{sig-alternate}) define a
+% |proof| environment that conflicts with \textsf{amsthm}, so we have to
+% undefine this environment before loading \textsf{amsthm}.
+%    \begin{macrocode}
+\@ifpackageloaded{amsthm}{
+  }{
+    \let\proof\undefined
+    \let\endproof\undefined
+  }
+\RequirePackage{amsthm}
+%    \end{macrocode}
+% \end{itemize}
+% \subsection{Option Processing}
+% Many names througout the package use an arobase (|@|) to avoid name
+% conflict with user-defined names. To simplify the compilation of the
+% documentation, we simply make it a regular character in all the rest.
+%    \begin{macrocode}
 \makeatletter
-
+%    \end{macrocode}
+% We setup the processing of options using \textsf{keyval} facilities;
+% the only declared options is named |appendix|, with a default value of
+% |append|:
+%    \begin{macrocode}
 \SetupKeyvalOptions{
   family=AXP,
   prefix=AXP@
 }
-
 \DeclareStringOption[append]{appendix}
-
 \ProcessLocalKeyvalOptions*
-
+%    \end{macrocode}
+% We check that the value of the |appendix| option is valid, and add a
+% message to the compilation log.
+%    \begin{macrocode}
 \ifthenelse{\equal{\AXP@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
 }{\ifthenelse{\equal{\AXP@appendix}{strip}}{
@@ -118,12 +164,48 @@
   \errmessage{Error: unsupported option appendix=\AXP@appendix for
   package apxproof}
 }}}
-
+%    \end{macrocode}
+% \subsection{Macros Common to All Compilation Modes}
+% \begin{macro}{\newtheoremrep}
+% We define the high-level |\newtheoremrep| to have the same syntax as
+% \textsf{amsthm}'s |\newtheorem|. For this purpose, we need a little
+% trick to deal with the second optional argument, which is what
+% |\@oparg| is used for. |\axp@newtheoremrep| is defined differently
+% depending on the compilation mode
+%    \begin{macrocode}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
-
+%    \end{macrocode}
+% \end{macro}
+% \begin{environment}{proofsketch}
+% Simple |proofsketch| environment.
+%    \begin{macrocode}
+\newenvironment{proofsketch}
+  {\vskip3pt\noindent\emph{Proof sketch.} }
+  {\hfill\qed\vskip3pt}
+%    \end{macrocode}
+% \end{environment}  
+% \begin{macro}{\thmhead}  
+% We redefine AMS-\LaTeX{}'s |\thmhead| to use a format where the
+% repeated version of a theorem, using a theorem note, can look exactly
+% like the original version of the theorem and its theorem counter.
+%    \begin{macrocode}
+\def\thmhead#1#2#3{%
+  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+  \thmnote{ #3}}
+%    \end{macrocode}
+% \end{macro}  
+% \subsection{Inline Compilation Mode}
+%    \begin{macrocode}
 \ifthenelse{\equal{\AXP@appendix}{inline}}{
+%    \end{macrocode}
+% \begin{macro}{axp@newtheoremrep}
+% In the inline mode, |axp@newtheoremrep| undefines the existing
+% theorem environment if it has already been defined (e.g., by the
+% document class), invokes |\newtheorem| and creates a repeated theorem
+% environment that behaves exactly as the regular theorem environment.
+%    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
@@ -132,16 +214,65 @@
       \begin{#1}[##1]\BODY\end{#1}%
     }
   }
-  \newenvironment{toappendix}{}{}
+%    \end{macrocode}
+% \end{macro}  
+% \begin{environment}{inlineproof}
+% \begin{environment}{nestedproof}
+% \begin{environment}{appendixproof}
+% In the inline mode, these environments behave like the regular |proof|
+% environment.
+%    \begin{macrocode}
   \let\inlineproof\proof
   \let\endinlineproof\endproof
   \let\nestedproof\proof
   \let\endnestedproof\endproof
   \let\appendixproof\proof
   \let\endappendixproof\endproof
+%    \end{macrocode}
+% \end{environment}  
+% \end{environment}  
+% \end{environment}  
+% \begin{environment}{toappendix}
+% \begin{macro}{\noproofinappendix}
+% \begin{macro}{\nosectionappendix}
+% In the inline mode, this environment and these macros are no-op.  
+%    \begin{macrocode}
+  \newenvironment{toappendix}{}{}
   \let\noproofinappendix\relax
   \let\nosectionappendix\relax
-}{
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}  
+% \end{environment}  
+% Finally, some class-specific behavior so that theorems created by
+% |\newtheoremrep| appear with the correct style.
+% For now, only the styling for ACM document class (e.g.,
+  % \textsf{sig-alternate}) needs to be adapted.  
+%    \begin{macrocode}
+  \ifdefined\@acmtitlebox
+    \newtheoremstyle{mystyle}
+      {3pt}
+      {3pt}
+      {\itshape}
+      {}
+      {\scshape}
+      {.}
+      {.5em}
+      {}
+    \theoremstyle{mystyle}
+  \fi
+%    \end{macrocode}
+%    \begin{macrocode}
+} 
+%    \end{macrocode}
+% \subsection{Append or Strip Compilation Modes}
+%    \begin{macrocode}
+{
+%    \end{macrocode}
+% We now deal with the case where \textsf{apxproof} really does something
+% useful: either append the appendix material to the document, or strip
+% it entirely.
+%    \begin{macrocode}
   \newwrite\axp@proofsfile
   \immediate\openout\axp@proofsfile=\jobname.axp
   \immediate\write\axp@proofsfile{%
@@ -210,18 +341,9 @@
   \let\nestedproof\axpold@proof
   \let\endnestedproof\endaxpold@proof
 
-  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-  \@getclass
-
   \newcommand{\appendixrefname}{References for the Appendix}
   \newcommand{\appendixbibliographystyle}{alpha}
-  \newcommand{\appendixbibliographyprelim}{%
-    \ifthenelse{\equal{\@currentclass}{lipics}}{%
-      \global\let\oldbiblabel\@biblabel
-      \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
-    }{}
-  }
+  \newcommand{\appendixbibliographyprelim}{}
 
   \ifthenelse{\equal{\AXP@appendix}{append}}{
     \AtEndDocument{%
@@ -280,13 +402,6 @@
     \label{axp@s\roman{axp@seccounter}}%
   }
   \ifdefined\@acmtitlebox
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section#1#2{%
-      \global\edef\axp@sectitle{#2}%
-      \axpold@section{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
   \fi
 
   \newcommand{\nosectionappendix}{
@@ -305,35 +420,81 @@
   \newenvironment{toappendix}
     {\axp@writesection\VerbatimOut}
     {\endVerbatimOut}
-
+%    \end{macrocode}
+% \subsubsection{Class-Specific Behavior}    
+% We conclude with some class-specific behavior.
+% \begin{macro}{\@getcl@ss}
+% \begin{macro}{\@getclass}
+% \begin{macro}{\@currentclass}
+% We first use a little trick to store the current document class in
+% macro |\@currentclass|, from
+% \url{http://tex.stackexchange.com/a/43541}.
+%    \begin{macrocode}
+  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
+  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
+  \@getclass
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \paragraph{ACM Document Classes}
+%    \begin{macrocode}
   \ifdefined\@acmtitlebox
-    \newtheoremstyle{mystyle}%
-      {3pt}
-      {3pt}
-      {\itshape}
-      {}
-      {\scshape}
-      {.}
-      {.5em}
-      {}
-    \theoremstyle{mystyle}
-
+%    \end{macrocode}
+% \begin{macro}{\thebibliography}
+% \begin{macro}{\refname}
+% \begin{macro}{\appendixrefname}
+% The section title of the bibliography is in uppercase in these document
+% classes. In addition, the |\thebibliography| macro hard-codes twice
+% the section title, so we un-hardcode it so that it can be modified
+% in the appendix.    
+%    \begin{macrocode}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
-    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
-
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\section}
+% \begin{macro}{\@@section}
+% These document classes redefine |\section| in a weird way, adding
+% the possibility of an optional argument. We redefine this in a sane
+% way.    
+%    \begin{macrocode}
+    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
+    \def\@@section#1#2{%
+      \global\edef\axp@sectitle{#2}%
+      \axpold@section{#2}%
+      \addtocounter{axp@seccounter}{1}%
+      \label{axp@s\roman{axp@seccounter}}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
   \fi
+%    \end{macrocode}
+% \paragraph{\textsf{lipcs}}
+%    \begin{macrocode}
+   \ifthenelse{\equal{\@currentclass}{lipics}}{
+%    \end{macrocode}
+% \begin{macro}{\appendixbibliographyprelim}  
+% The default bibliography in the \textsf{lipics} document class
+% formatting is not compatible with the
+% \textsf{alpha} bibliography style. We fix this here.
+%    \begin{macrocode}
+    \renewcommand{\appendixbibliographyprelim}{%
+      \global\let\oldbiblabel\@biblabel
+      \def\@biblabel{\hspace*{-2em}\small\oldbiblabel}%
+    }    
+%    \end{macrocode}
+% \end{macro}    
+%    \begin{macrocode}
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
 }
-
-\newenvironment{proofsketch}
-  {\vskip3pt\noindent\emph{Proof sketch.} }
-  {\hfill\qed\vskip3pt}
-  
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ #3}}
-
-\makeatother
 %    \end{macrocode}
 % \Finale

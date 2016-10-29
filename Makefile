@@ -5,6 +5,7 @@ clean:
 
 %.pdf: %.dtx %.sty
 	pdflatex $<
+	makeindex -s gind.ist $(patsubst %.pdf,%.idx,$@)
 	makeindex -s gglo.ist -o $(patsubst %.pdf,%.gls,$@) $(patsubst %.pdf,%.glo,$@)
 	pdflatex $<
 	pdflatex $<
