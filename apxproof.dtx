@@ -85,19 +85,17 @@
 % \maketitle
 % 
 % \begin{abstract}
-% This package facilitates the writing of articles with proofs
-% and other material
-% deferred to the appendix. The appendix material is written in the
-% \LaTeX{} code along with the main text it naturally complements,
-% and automatically deferred. The package allows automatic placement of
-% proofs in the appendix, repetition in the appendix of theorem
-% environments stated in the main text, automatic sectioning of the
-% appendix based on the sectioning of the main text, and a separate
-% bibliography for the appendix material.
+% This package makes it easier to write articles where proofs and other material
+% are deferred to the appendix. The appendix material is written in the \LaTeX{}
+% code along with the main text which it naturally complements, and it is
+% automatically deferred. The package can automatically send proofs in the
+% appendix, can repeat in the appendix the theorem environments stated in the
+% main text, can section the appendix automatically based on the sectioning of
+% the main text, and supports a separate bibliography for the appendix material.
 % \end{abstract}
 %
 % \section{Usage}
-% The \textsf{apxproof} package is intended to help the writing articles where some of
+% The \textsf{apxproof} package is intended to simplify the writing of articles where some of
 % the content needs to be deferred to an appendix. This is in particular
 % useful for the submission of scientific articles to conferences or
 % journals that limit the number of pages in the main text but allow an
@@ -114,8 +112,8 @@
 % \hspace*{1em}\dots\\
 % |\end{toappendix}|
 % \end{quote}
-% The content will appear at the end of your document, in a section
-% automatically generated, referring to the current section in the main
+% The content will appear at the end of your document, in an
+% automatically generated section that refers to the current section in the main
 % text.
 % \begin{example}
 % Throughout this documentation, all examples produce content
@@ -140,7 +138,7 @@ This content is in the appendix.
 % \hspace*{1em}\dots\\
 % |\end{appendixproof}|
 % \end{quote}
-% This behaves similarly as the |toappendix| environment, except that 
+% This behaves like the |toappendix| environment, except that 
 % a proof environment is generated.
 % \begin{example}We now send a proof to the appendix:
 % \begin{verbatim}
@@ -158,20 +156,21 @@ This proof is in the appendix.
 % When deferring proofs to the appendix, an annoying problem is that the
 % statement of the theorem remains in the main text; it is hard to read a
 % proof that is far away from the statement it proves. \textsf{apxproof}
-% solves this issue by allowing statements of theorems to be repeated:
+% solves this issue by allowing statements of theorems to be \emph{repeated}:
 % once in the main text, and once in the appendix before the proof of
-% this statement. To use this feature, you can define a new
+% the statement. To use this feature, you can define a new
 % \emph{repeated theorem} environment using the |\newtheoremrep| command:
 % \begin{quote}
 % |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\DescribeMacro{\newtheoremrep}
 % \end{quote}
 % Usage is exactly the same as that of AMS \LaTeX{}'s |\newtheorem|
 % macro: \meta{name} (e.g., |theorem|) is the name of an environment that is created for this kind of
-% theorem, \meta{counter} (e.g., |definition|) is an optional counter the numbering of this
-% kind of environment is supposed to inherit from, and \meta{title}
+% theorem, \meta{counter} (e.g., |definition|) is an optional counter describing
+% from which kind of enviroment should the numbering of these environments be
+% inherited, and \meta{title}
 % (e.g., |Theorem| is
 % the title that will be used to display this theorem environment. What
-% differs from |\newtheorem| is that with a call such as:
+% differs from |\newtheorem| is that, when the following is written:
 % \begin{quote}
 % |\newtheoremrep{foobar}{Foobar}|
 % \end{quote}
@@ -284,10 +283,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %</driver>
 % \end{toappendix}
 % \end{example}
-% The bibliography in the appendix can (and by default does) use
-% different style and heading than the bibliography of the main text (see
+% The bibliography in the appendix can use
+% a different style and heading than the bibliography in the main text (and, by
+% default, it does). See
 % Section~\ref{sec:customization} for how to configure the appearance of
-% the bibliography).
+% that bibliography.
 % \subsection{Mode}
 % An optional \meta{mode} can be specified when loading the package:
 % \begin{quote}|\usepackage[appendix=|\meta{mode}|]{apxproof}|\end{quote}
@@ -321,28 +321,29 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |alpha|.
 % \item[\textbackslash|appendixbibliographyprelim|]\DescribeMacro{\appendixbibliographyprelim} contains arbitrary code that is executed
 % just before the production of the bibliography in appendix, which can
-% be used to configure way it is displayed.
+% be used to configure the way it is displayed.
 % \end{description}
 %
 % \subsection{Advanced Commands}
-% We now describe a few advanced macros and environment, whose usage is limited to
+% We now describe a few advanced macros and environments, whose usage is limited to
 % special cases:
 % \begin{description}
 % \item[|nestedproof|]\DescribeEnv{nestedproof} is an environment that
 % can be used within a |proof| environment deferred in the appendix; this
-% is required because for technical reasons, no |proof| environment can
-% be nested within a deferred |proof| environmen.
+% is required because, for technical reasons, no |proof| environment can
+% be nested within a deferred |proof| environment.
 % \item[\textbackslash|noproofinappendix|]\DescribeMacro{\noproofinappendix}
 % is to be used inside repeated theorems that are not followed by a
-% |proof| or |appendixproof| theorem, in order to mistake a further
-% |proof| environment as that of this theorem.
+% |proof| or |appendixproof| theorem; the point is to ensure that a further
+% |proof| environment cannot be mistakenly understood as a proof of the repeated
+% theorem.
 % \item[\textbackslash|nosectionappendix|]\DescribeMacro{\nosectionappendix}
 % is to be used inside a section that does contain appendix material, but
 % for which a section in the appendix should not be created.
 % \end{description}
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
-% proofs, it may not work straightaway with arbitrary document classes.
+% and proofs, it may not work straight away with arbitrary document classes.
 % It has currently been tested with and is supported for the following
 % document classes:
 % \begin{itemize}
@@ -351,7 +352,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % (e.g., |scrartcl.cls|)
 % \item \href{https://www.acm.org/publications/proceedings-template}{ACM
 % SIG Proceedings} (e.g., |sig-alternate.cls|)
-% \item \href{http://www.springer.com/computer/lncs/lncs+authors}{
+% \item \href{https://www.springer.com/computer/lncs/lncs+authors}{
 % Springer's Lecture Notes in Computer Science} (e.g.,
 % |llncs.cls|)
 % \item
@@ -393,8 +394,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Pierre Senellart
 % \href{mailto:pierre@senellart.com}{<pierre@senellart.com>}
 % \end{itemize}
-% Bug reports and feature requests are
-% preferably sent through the \emph{Issues} feature of GitHub.
+% Bug reports and feature requests should
+% preferably be submitted through the \emph{Issues} feature of GitHub.
 % 
 % \StopEventually{
 %   \PrintChanges
@@ -402,9 +403,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % }
 % 
 % \section{Implementation}
-% We now describe the entire code of the package, in literate programming
+% We now describe the entire code of the package, in a literate programming
 % fashion. Throughout the package, we use the |axp@| prefix to identify
-% local macros and environment names, not meant to be used by the final
+% local macros and environment names, which are not meant to be used by the final
 % user.
 % \subsection{Dependencies}
 % We first load a few package dependencies:
@@ -461,7 +462,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \begin{macro}{\axp@appendix}
 % We setup the processing of options using \textsf{keyval} facilities;
-% the only declared options is named |appendix|, with a default value of
+% the only declared option is named |appendix|, with a default value of
 % |append|:
 %    \begin{macrocode}
 \SetupKeyvalOptions{
@@ -534,7 +535,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% Finally, some class-specific behavior so that theorems created by
+% Finally, some class-specific behavior ensures that the theorems created by
 % |\newtheoremrep| appear with the correct style.
 % For now, only the styling for ACM document classes (e.g.,
 % \textsf{sig-alternate}) needs to be adapted.  
@@ -656,8 +657,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % \end{macro}  
 % \begin{environment}{toappendix}
-% The entire content of this environment in put in appendix, possibly
-% after starting a new appendix section if needed.
+% The entire content of this environment is put in appendix,
+% starting a new appendix section beforehand if needed.
 %    \begin{macrocode}  
   \newenvironment{toappendix}
     {\axp@writesection\VerbatimOut}
