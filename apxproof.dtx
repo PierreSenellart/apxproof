@@ -272,7 +272,8 @@
 % We now deal with the case where \textsf{apxproof} really does something
 % useful: either append the appendix material to the document, or strip
 % it entirely.
-%    \begin{macrocode}
+%    \subsubsection{Auxiliary File for the Appendix}  
+%    \begin{macrocode}  
   \newwrite\axp@proofsfile
   \immediate\openout\axp@proofsfile=\jobname.axp
   \immediate\write\axp@proofsfile{%
@@ -293,11 +294,39 @@
       \let\@noligs\relax
       \FV@Scan}
   \def\FVE@VerbatimOut{\endgroup\@esphack}
+  \newenvironment{toappendix}
+    {\axp@writesection\VerbatimOut}
+    {\endVerbatimOut}
+%    \end{macrocode}  
+%    \subsubsection{Definition of New Theorems}  
+%    \begin{macrocode}  
+  \newtoggle{axp@seenreptheorem}
+  \newcounter{axp@rpcounter}
+  \newcounter{axp@seccounter}
 
+  \def\axp@newtheoremrep#1[#2]#3{%
+    \newtheorem*{axp@#1rp}{#3}%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \newtheorem{#1}[#2]{#3}%
+    \NewEnviron{#1rep}[1][]{%
+      \addtocounter{axp@rpcounter}{1}%
+      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \global\toggletrue{axp@seenreptheorem}%
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
+      \axp@writesection%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+        \noexpand\let\noexpand\label\noexpand\@gobble%
+        \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
+        }
+    }
+  }
+%    \end{macrocode}  
+%    \subsubsection{Proof Environments}  
+%    \begin{macrocode}  
   \let\axpold@proof\proof
   \let\endaxpold@proof\endproof
-
-  \newtoggle{axp@seenreptheorem}
 
   \def\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
@@ -340,51 +369,9 @@
 
   \let\nestedproof\axpold@proof
   \let\endnestedproof\endaxpold@proof
-
-  \newcommand{\appendixrefname}{References for the Appendix}
-  \newcommand{\appendixbibliographystyle}{alpha}
-  \newcommand{\appendixbibliographyprelim}{}
-
-  \ifthenelse{\equal{\AXP@appendix}{append}}{
-    \AtEndDocument{%
-      \clearpage\onecolumn\appendix
-      \appendixbibliographyprelim
-      \begin{bibunit}[\appendixbibliographystyle]%
-      \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
-      \renewcommand{\refname}{\appendixrefname}%
-      \putbib
-      \end{bibunit}%
-    }
-  }{}
-
-  \let\axpold@bibliography\bibliography
-  \renewcommand\bibliography[1]{%
-    \defaultbibliography{#1}%
-    \axpold@bibliography{#1}%
-  }
-
-  \newcounter{axp@rpcounter}
-  \newcounter{axp@seccounter}
-
-  \def\axp@newtheoremrep#1[#2]#3{%
-    \newtheorem*{axp@#1rp}{#3}%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
-    \NewEnviron{#1rep}[1][]{%
-      \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
-      \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
-      \axp@writesection%
-      \immediate\write\axp@proofsfile{%
-        \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
-        \noexpand\let\noexpand\label\noexpand\@gobble%
-        \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
-        }
-    }
-  }
-
+%    \end{macrocode}  
+%    \subsubsection{Section Management}  
+%    \begin{macrocode}  
   \def\axp@sectitle{}
 
   \let\axpold@section\section
@@ -401,8 +388,6 @@
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
-  \ifdefined\@acmtitlebox
-  \fi
 
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
@@ -416,10 +401,29 @@
       \nosectionappendix
     \fi
   }
+%    \end{macrocode}  
+%    \subsubsection{Append Compilation Mode}  
+%    \begin{macrocode}  
+  \let\axpold@bibliography\bibliography
+  \renewcommand\bibliography[1]{%
+    \defaultbibliography{#1}%
+    \axpold@bibliography{#1}%
+  }
+  \newcommand{\appendixrefname}{References for the Appendix}
+  \newcommand{\appendixbibliographystyle}{alpha}
+  \newcommand{\appendixbibliographyprelim}{}
 
-  \newenvironment{toappendix}
-    {\axp@writesection\VerbatimOut}
-    {\endVerbatimOut}
+  \ifthenelse{\equal{\AXP@appendix}{append}}{
+    \AtEndDocument{%
+      \clearpage\onecolumn\appendix
+      \appendixbibliographyprelim
+      \begin{bibunit}[\appendixbibliographystyle]%
+      \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
+      \renewcommand{\refname}{\appendixrefname}%
+      \putbib
+      \end{bibunit}%
+    }
+  }{}
 %    \end{macrocode}
 % \subsubsection{Class-Specific Behavior}    
 % We conclude with some class-specific behavior.

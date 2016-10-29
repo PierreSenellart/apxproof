@@ -119,11 +119,33 @@
       \let\@noligs\relax
       \FV@Scan}
   \def\FVE@VerbatimOut{\endgroup\@esphack}
+  \newenvironment{toappendix}
+    {\axp@writesection\VerbatimOut}
+    {\endVerbatimOut}
+  \newtoggle{axp@seenreptheorem}
+  \newcounter{axp@rpcounter}
+  \newcounter{axp@seccounter}
 
+  \def\axp@newtheoremrep#1[#2]#3{%
+    \newtheorem*{axp@#1rp}{#3}%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \newtheorem{#1}[#2]{#3}%
+    \NewEnviron{#1rep}[1][]{%
+      \addtocounter{axp@rpcounter}{1}%
+      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \global\toggletrue{axp@seenreptheorem}%
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
+      \axp@writesection%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+        \noexpand\let\noexpand\label\noexpand\@gobble%
+        \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
+        }
+    }
+  }
   \let\axpold@proof\proof
   \let\endaxpold@proof\endproof
-
-  \newtoggle{axp@seenreptheorem}
 
   \def\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
@@ -166,51 +188,6 @@
 
   \let\nestedproof\axpold@proof
   \let\endnestedproof\endaxpold@proof
-
-  \newcommand{\appendixrefname}{References for the Appendix}
-  \newcommand{\appendixbibliographystyle}{alpha}
-  \newcommand{\appendixbibliographyprelim}{}
-
-  \ifthenelse{\equal{\AXP@appendix}{append}}{
-    \AtEndDocument{%
-      \clearpage\onecolumn\appendix
-      \appendixbibliographyprelim
-      \begin{bibunit}[\appendixbibliographystyle]%
-      \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
-      \renewcommand{\refname}{\appendixrefname}%
-      \putbib
-      \end{bibunit}%
-    }
-  }{}
-
-  \let\axpold@bibliography\bibliography
-  \renewcommand\bibliography[1]{%
-    \defaultbibliography{#1}%
-    \axpold@bibliography{#1}%
-  }
-
-  \newcounter{axp@rpcounter}
-  \newcounter{axp@seccounter}
-
-  \def\axp@newtheoremrep#1[#2]#3{%
-    \newtheorem*{axp@#1rp}{#3}%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
-    \NewEnviron{#1rep}[1][]{%
-      \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
-      \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname\BODY%
-      \axp@writesection%
-      \immediate\write\axp@proofsfile{%
-        \noexpand\begin{axp@#1rp}[\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
-        \noexpand\let\noexpand\label\noexpand\@gobble%
-        \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname\noexpand\end{axp@#1rp}
-        }
-    }
-  }
-
   \def\axp@sectitle{}
 
   \let\axpold@section\section
@@ -227,8 +204,6 @@
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
-  \ifdefined\@acmtitlebox
-  \fi
 
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
@@ -242,10 +217,26 @@
       \nosectionappendix
     \fi
   }
+  \let\axpold@bibliography\bibliography
+  \renewcommand\bibliography[1]{%
+    \defaultbibliography{#1}%
+    \axpold@bibliography{#1}%
+  }
+  \newcommand{\appendixrefname}{References for the Appendix}
+  \newcommand{\appendixbibliographystyle}{alpha}
+  \newcommand{\appendixbibliographyprelim}{}
 
-  \newenvironment{toappendix}
-    {\axp@writesection\VerbatimOut}
-    {\endVerbatimOut}
+  \ifthenelse{\equal{\AXP@appendix}{append}}{
+    \AtEndDocument{%
+      \clearpage\onecolumn\appendix
+      \appendixbibliographyprelim
+      \begin{bibunit}[\appendixbibliographystyle]%
+      \immediate\closeout\axp@proofsfile\input{\jobname.axp}%
+      \renewcommand{\refname}{\appendixrefname}%
+      \putbib
+      \end{bibunit}%
+    }
+  }{}
   \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
   \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
   \@getclass
