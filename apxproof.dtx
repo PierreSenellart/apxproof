@@ -32,6 +32,7 @@
 \usepackage{hypdoc}
 \usepackage{textcomp}
 \usepackage[TS1,T1]{fontenc}
+\usepackage{microtype}
 \newtheorem{example}{Example}
 \newtheoremrep{foobar}{Foobar}
 \EnableCrossrefs
@@ -227,6 +228,9 @@ This proof is in the appendix.
 This is the proof of the repeated foobar.
 %</driver>
 % \end{proof}
+% Note that, since |hyperref| is loaded, there is a hyperlink
+% created from the statement of the theorem in the appendix to that in
+% the main text.
 % \end{example}
 %
 % When the proof is deferred to the appendix, it is common practice to
@@ -620,6 +624,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % We now deal with the case where \textsf{apxproof} really does something
 % useful: either append the appendix material to the document, or strip
 % it entirely.
+% \bigskip
 %    \subsubsection{Auxiliary File for the Appendix}  
 % \begin{macro}{\axp@proofsfile}  
 % We open a new auxiliary file, with extension |.axp|, where the appendix
@@ -716,7 +721,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % theorem's body.
 %    \begin{macrocode}  
       \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
+                             \endcsname
       \BODY
 %    \end{macrocode}  
 % Possibly after starting a new appendix section if needed, we typeset a
@@ -728,9 +734,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
-          [\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+          [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
+           \@ifnotempty{##1}{\noexpand##1}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
-          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname
+          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
+                               \endcsname
         \noexpand\end{axp@#1rp}
       }
     }
@@ -886,9 +894,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \ifx\axp@sectitle\@empty
     \else
       \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
+        \noexpand\def\noexpand\axp@tmp{%
+          \noexpand\ref{axp@s\roman{axp@seccounter}}
+        }
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
+          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
+                                         {\axp@sectitle}%
         }%
       }%
       \nosectionappendix
@@ -936,7 +947,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\@getcl@ss}
 % \begin{macro}{\@getclass}
 % \begin{macro}{\@currentclass}
-% We first use a little trick to store the current document class in
+% We first use a little trick to store the document class in
 % macro |\@currentclass|, from
 % \url{http://tex.stackexchange.com/a/43541}.
 %    \begin{macrocode}

@@ -137,14 +137,17 @@
       \addtocounter{axp@rpcounter}{1}%
       \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
       \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}\endcsname
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
+                             \endcsname
       \BODY
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
-          [\noexpand\ref{axp@r\roman{axp@rpcounter}}\@ifnotempty{##1}{\noexpand##1}]%
+          [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
+           \@ifnotempty{##1}{\noexpand##1}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
-          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}\endcsname
+          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
+                               \endcsname
         \noexpand\end{axp@#1rp}
       }
     }
@@ -218,9 +221,12 @@
     \ifx\axp@sectitle\@empty
     \else
       \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
+        \noexpand\def\noexpand\axp@tmp{%
+          \noexpand\ref{axp@s\roman{axp@seccounter}}
+        }
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
+          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
+                                         {\axp@sectitle}%
         }%
       }%
       \nosectionappendix
