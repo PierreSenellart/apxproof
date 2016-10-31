@@ -40,5 +40,5 @@ https://github.com/PierreSenellart/apxproof
 
 Pierre Senellart <pierre@senellart.com>
 
-Bug reports and feature requests are
-preferably sent through the *Issues* feature of GitHub.
+Bug reports and feature requests should
+preferably be submitted through the *Issues* feature of GitHub.

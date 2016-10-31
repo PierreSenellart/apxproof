@@ -5,3 +5,9 @@
 *.axp
 *.hd
 *.ind
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
