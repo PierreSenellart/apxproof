@@ -374,8 +374,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \item When using \textsf{hyperref}, the appendix in the bibliography is
 % not hyperlinked. This is to avoid possible issues with multiply defined
 % bibliography entries.
-% \item |proof| environments cannot be nested. This is a limitation of
-% the \textsf{fancyvrb} package that \textsf{apxproof} relies on.
+% \item |appendixproof|, |proof|, |toappendix| environments cannot be nested. This is a limitation of
+% the \textsf{fancyvrb} package that \textsf{apxproof} relies on. Note
+% the existence of the |nestedproof| environment for nested proofs.
 % \item \textsf{apxproof} is incompatible with a separate use of the
 % \textsf{fancyvrb} package. This is because \textsf{apxproof} redefines
 % some internal mechanisms of \textsf{fancyvrb}.
