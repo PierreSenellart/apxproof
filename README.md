@@ -2,9 +2,17 @@
 
 ## About
 
-The `apxproof` package facilitates the writing of scientific article
-with proofs deferred to the appendix. The documentation of this package
-is provided in the [apxproof.pdf](apxproof.pdf) file.
+The `apxproof` package makes it easier to write articles where proofs and
+other material are deferred to the appendix. The appendix material is
+written in the LaTeX code along with the main text which it naturally
+complements, and it is automatically deferred. The package can
+automatically send proofs in the appendix, can repeat in the appendix the
+theorem environments stated in the main text, can section the appendix
+automatically based on the sectioning of the main text, and supports a
+separate bibliography for the appendix material.
+
+The documentation of this package is provided in the
+[apxproof.pdf](apxproof.pdf) file.
 
 ## Prerequisites
 
