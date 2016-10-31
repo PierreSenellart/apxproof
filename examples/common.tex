@@ -110,14 +110,14 @@ And now for no particular reason, two isolated proofs in the appendix,
 \section{Last Section}
 
 \begin{theoremrep}
-  \noproofinappendix
   Another theorem.
 \end{theoremrep}
 
 \begin{toappendix}
-  This theorem does not have a proof, but a discussion in the appendix,
-  so we use \verb|\noproofinappendix| to prevent the proof of the
-  following theorem to be misinterpreted as the proof of this one.
+  This theorem does not have a proof, but a discussion in the appendix.
+  \textsf{apxproof} can figure, because of the \verb|theorem| environment
+  that follows, that the proof of the following theorem is not a proof of
+  this theorem.
 \end{toappendix}
 
 \begin{theorem}

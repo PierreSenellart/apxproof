@@ -43,7 +43,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{413}
+% \CheckSum{418}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -333,10 +333,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % is required because, for technical reasons, no |proof| environment can
 % be nested within a deferred |proof| environment.
 % \item[\textbackslash|noproofinappendix|]\DescribeMacro{\noproofinappendix}
-% is to be used inside repeated theorems that are not followed by a
+% can be used inside repeated theorems that are not followed by a
 % |proof| or |appendixproof| theorem; the point is to ensure that a further
 % |proof| environment cannot be mistakenly understood as a proof of the repeated
-% theorem.
+% theorem. It should not be needed in most situations as
+% \textsf{apxproof} tries figuring out when a proof follows a repeated
+% theorem automatically, but may occasionally be needed in complex
+% scenarios.
 % \item[\textbackslash|nosectionappendix|]\DescribeMacro{\nosectionappendix}
 % is to be used inside a section that does contain appendix material, but
 % for which a section in the appendix should not be created.
@@ -686,13 +689,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % When called with first argument |foobar|, we first undefine the existing
 % |foobar| environment (and its counter) if it has already been defined (e.g., by the
 % document class), then invoke |\newtheorem| for the regular version
-% of the theorem |foobar| and |\newtheorem*| for an internal version |axp@foobarrp| that
+% of the theorem |foobar| (patching the |\begin{foobar}| so as not to
+% expect a proof in the appendix) and |\newtheorem*| for an internal version |axp@foobarrp| that
 % will be used in the appendix to restate the existing theorem.
 %    \begin{macrocode}  
   \def\axp@newtheoremrep#1[#2]#3{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
     \newtheorem{#1}[#2]{#3}%
+    \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \newtheorem*{axp@#1rp}{#3}%
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
