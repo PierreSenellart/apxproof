@@ -190,6 +190,13 @@
   \let\endnestedproof\endaxp@oldproof
   \newcounter{axp@seccounter}
   \def\axp@sectitle{}
+  \def\axp@section{\@ifstar\axp@@ssection\axp@@section}
+  \def\axp@@ssection#1{%
+    \@ifnextchar\section{}{\axp@oldsection*{#1}}%
+  }
+  \def\axp@@section#1{%
+    \@ifnextchar\section{}{\axp@oldsection{#1}}%
+  }
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
   \def\@section#1{%
@@ -212,7 +219,7 @@
     \else
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
-        \noexpand\axp@oldsection{%
+        \noexpand\axp@section{%
           \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
         }%
       }%

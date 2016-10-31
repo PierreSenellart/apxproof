@@ -43,7 +43,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{418}
+% \CheckSum{433}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -341,8 +341,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % theorem automatically, but may occasionally be needed in complex
 % scenarios.
 % \item[\textbackslash|nosectionappendix|]\DescribeMacro{\nosectionappendix}
-% is to be used inside a section that does contain appendix material, but
-% for which a section in the appendix should not be created.
+% is to be used inside a section that \emph{does} contain appendix material, but
+% for which a section in the appendix should not be created. This should
+% be rarely needed. When this command is present, appendix material is
+% appended to the end of the previously created section.
 % \end{description}
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
@@ -817,6 +819,26 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\axp@sectitle{}
 %    \end{macrocode}  
 % \end{macro}  
+% \begin{macro}{\axp@section}  
+% \begin{macro}{\axp@@ssection}  
+% \begin{macro}{\axp@@section}  
+% This command behaves similarly to |\axp@oldsection|, except that it first
+% tests whether a |\section| follows, and if so, does not produce
+% anything. This is useful to avoid producing empty sections in the
+% appendix. As usual, we have to process starred and unstarred version
+% separately.
+%    \begin{macrocode}  
+  \def\axp@section{\@ifstar\axp@@ssection\axp@@section}
+  \def\axp@@ssection#1{%
+    \@ifnextchar\section{}{\axp@oldsection*{#1}}%
+  }
+  \def\axp@@section#1{%
+    \@ifnextchar\section{}{\axp@oldsection{#1}}%
+  }
+%    \end{macrocode}  
+% \end{macro}  
+% \end{macro}  
+% \end{macro}  
 % \begin{macro}{\axp@oldsection}
 % \begin{macro}{\section}
 % \begin{macro}{\@section}
@@ -826,7 +848,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % starred and unstarred use of |\section|, though most likely the former
 % is not going to be used (since no section number will appear to refer
 % to that section in the appendix).
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
   \def\@section#1{%
@@ -864,7 +886,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \else
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{\noexpand\ref{axp@s\roman{axp@seccounter}}}
-        \noexpand\axp@oldsection{%
+        \noexpand\axp@section{%
           \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}{\axp@sectitle}%
         }%
       }%
