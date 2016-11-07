@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2016/10/31 v1.0.0 Automatic proofs in appendix]
+  [2016/11/07 v1.0.1 Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -244,6 +244,9 @@
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
         \renewcommand{\refname}{\appendixrefname}
+        \let\axp@oldthebibliography\thebibliography
+        \renewcommand\thebibliography[1]{%
+          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}

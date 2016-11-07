@@ -3,6 +3,9 @@ all: apxproof.pdf apxproof.sty
 clean:
 	-rm -f *.aux *.log *.gl? *.idx *.ilg *.fls *.ind *.axp *.bbl *.blg *.hd  *.out
 
+ctan:
+	git archive --format zip master --prefix=apxproof/  --output apxproof.zip
+
 %.pdf: %.dtx %.sty
 	pdflatex $<
 	makeindex -s gind.ist $(patsubst %.pdf,%.idx,$@)
