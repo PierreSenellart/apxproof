@@ -244,6 +244,9 @@
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
         \renewcommand{\refname}{\appendixrefname}
+        \let\axp@oldthebibliography\thebibliography
+        \renewcommand\thebibliography[1]{%
+          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}

@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{433}
+% \CheckSum{444}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -926,7 +926,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % After the end of the main text, we add the appendix (on a new page, set
 % in single-column mode) within a |bibunit| environment so as to typeset
-% a separate bibliography for the appendix.
+% a separate bibliography for the appendix. There is an extra test to
+% ensure an empty bibliography environment is not produced.
 %    \begin{macrocode}
     \AtEndDocument{
       \clearpage\onecolumn\appendix
@@ -934,6 +935,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
         \renewcommand{\refname}{\appendixrefname}
+        \let\axp@oldthebibliography\thebibliography
+        \renewcommand\thebibliography[1]{%
+          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}
