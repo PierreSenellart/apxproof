@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2016/11/07 v1.0.1-dev Automatic proofs in appendix]
+%<package>  [2016/12/13 v1.0.2 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{444}
+% \CheckSum{445}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -524,13 +524,17 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{environment}  
 % \begin{macro}{\thmhead}  
+% \changes{v1.0.2}{2016/12/13}{Fix display of repeated theorem counter in
+% some document classes}
 % We redefine AMS-\LaTeX{}'s |\thmhead| to use a format where the
 % repeated version of a theorem, using a theorem note, can look exactly
 % like the original version of the theorem and its theorem counter.
 %    \begin{macrocode}
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ #3}}
+\AtBeginDocument{%
+  \def\thmhead#1#2#3{%
+    \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+    \thmnote{ #3}}%
+}
 %    \end{macrocode}
 % \end{macro}  
 % \begin{macro}{\appendixrefname}
@@ -732,12 +736,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % and a reference to the previously defined label.
 % We ignore any use of |\label| in this environment to avoid multiply
 % defined labels.
+% \changes{v1.0.2}{2016/12/13}{Fix missing space between repeated theorem
+% counter and theorem note}
 %    \begin{macrocode}  
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{\noexpand##1}]%
+           \@ifnotempty{##1}{ \noexpand##1}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
