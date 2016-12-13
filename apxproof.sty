@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2016/11/07 v1.0.1 Automatic proofs in appendix]
+  [2016/12/13 v1.0.2 Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -63,9 +63,11 @@
 \newenvironment{proofsketch}
   {\vskip3pt\noindent\textit{Proof sketch.} \upshape}
   {\hfill\qed\vskip3pt}
-\def\thmhead#1#2#3{%
-  \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-  \thmnote{ #3}}
+\AtBeginDocument{%
+  \def\thmhead#1#2#3{%
+    \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+    \thmnote{ #3}}%
+}
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
@@ -144,7 +146,7 @@
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{\noexpand##1}]%
+           \@ifnotempty{##1}{ \noexpand##1}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
