@@ -132,6 +132,11 @@ This content is in the appendix.
 %</driver>
 % \end{toappendix}
 % \end{example}
+% \changes{v1.0.3}{2017/01/10}{Note on entire sections in appendix}
+% When the content to put in appendix is an entire section, make sure
+% that \verb|\section| is the very first command that appears within the
+% \verb|toappendix| environment. It will disable the automatic production
+% of a section heading.
 % \subsection{Repeated Theorems and Proofs}
 % In some scientific papers that include proofs, it is common to defer
 % proofs to the appendix. This can easily be achieved using the
