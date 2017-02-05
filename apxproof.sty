@@ -270,12 +270,12 @@
       \label{axp@s\roman{axp@seccounter}}%
     }
   \fi
-   \ifthenelse{\equal{\@currentclass}{lipics}}{
+   \ifdefined\lipics@opterrshort
     \renewcommand{\appendixbibliographyprelim}{%
       \global\let\@oldbiblabel\@biblabel
       \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}%
     }
-  }
+  \fi
 }
 \endinput
 %%
