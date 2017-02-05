@@ -1011,7 +1011,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \paragraph{\textsf{lipcs}}
 %    \begin{macrocode}
-   \ifthenelse{\equal{\@currentclass}{lipics}}{
+   \ifdefined\lipics@opterrshort
 %    \end{macrocode}
 % \begin{macro}{\appendixbibliographyprelim}  
 % The default bibliography in the \textsf{lipics} document class
@@ -1025,7 +1025,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{macro}    
 %    \begin{macrocode}
-  }
+  \fi
 %    \end{macrocode}
 %    \begin{macrocode}
 }
