@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2016/12/13 v1.0.2 Automatic proofs in appendix]
+%<package>  [2016/12/13 v1.0.2-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{445}
+% \CheckSum{446}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -132,6 +132,11 @@ This content is in the appendix.
 %</driver>
 % \end{toappendix}
 % \end{example}
+% \changes{v1.0.3}{2017/01/10}{Note on entire sections in appendix}
+% When the content to put in appendix is an entire section, make sure
+% that \verb|\section| is the very first command that appears within the
+% \verb|toappendix| environment. It will disable the automatic production
+% of a section heading.
 % \subsection{Repeated Theorems and Proofs}
 % In some scientific papers that include proofs, it is common to defer
 % proofs to the appendix. This can easily be achieved using the
@@ -519,7 +524,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Simple |proofsketch| environment.
 %    \begin{macrocode}
 \newenvironment{proofsketch}
-  {\vskip3pt\noindent\textit{Proof sketch.} \upshape}
+  {\vskip3pt\noindent\textit{Proof sketch.} \upshape\ignorespaces}
   {\hfill\qed\vskip3pt}
 %    \end{macrocode}
 % \end{environment}  
