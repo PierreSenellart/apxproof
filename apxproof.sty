@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2017/02/06 v1.0.3 Automatic proofs in appendix]
+  [2017/02/06 v1.0.3-dev Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -46,6 +46,8 @@
   prefix=axp@
 }
 \DeclareStringOption[append]{appendix}
+\DeclareStringOption[one]{appendixcol}
+\DeclareStringOption[separate]{bibliography}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
@@ -57,6 +59,22 @@
   \errmessage{Error: unsupported option appendix=\axp@appendix for
   package apxproof}
 }}}
+\ifthenelse{\equal{\axp@appendixcol}{one}}{
+  \message{apxproof: Appendix material typeset on one column}
+}{\ifthenelse{\equal{\axp@appendixcol}{same}}{
+  \message{apxproof: Appendix material column mode same as main text}
+}{
+  \errmessage{Error: unsupported option appendixcol=\axp@appendixcol for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@bibliography}{separate}}{
+  \message{apxproof: Separate bibliography for appendix material}
+}{\ifthenelse{\equal{\axp@bibliography}{common}}{
+  \message{apxproof: Common bibliography for appendix and main text}
+}{
+  \errmessage{Error: unsupported option bibliography=\axp@bibliography for
+  package apxproof}
+}}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
@@ -241,10 +259,15 @@
       \axp@oldbibliography{#1}%
     }
     \AtEndDocument{
-      \clearpage\onecolumn\appendix
+      \clearpage
+      \ifthenelse{\equal{\axp@appendixcol}{one}}{\onecolumn}{}
+      \appendix
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
       \begin{bibunit}[\appendixbibliographystyle]
+      }{}
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
         \renewcommand{\refname}{\appendixrefname}
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
@@ -252,6 +275,7 @@
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}
+      }{}
     }
   }{}
   \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}

@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{446}
+% \CheckSum{477}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -61,6 +61,27 @@
 %   Right bracket \]     Circumflex    \^     Underscore    \_
 %   Grave accent  \`     Left brace    \{     Vertical bar  \|
 %   Right brace   \}     Tilde         \~}
+%
+% \changes{v1.0.4}{2017/03/02}{Show options commented on in margin and index}
+%\iffalse
+% Taken from xkeyval.dtx
+%\fi
+%\makeatletter
+%\def\DescribeOption#1{\leavevmode\@bsphack
+%              \marginpar{\raggedleft\PrintDescribeOption{#1}}%
+%              \SpecialOptionIndex{#1}\@esphack\ignorespaces}
+%\def\PrintDescribeOption#1{\strut\emph{option}\\\MacroFont #1\ }
+%\def\SpecialOptionIndex#1{\@bsphack
+%    \index{#1\actualchar{\protect\ttfamily#1}
+%           (option)\encapchar usage}%
+%    \index{options:\levelchar#1\actualchar{\protect\ttfamily#1}\encapchar
+%           usage}\@esphack}
+%\def\DescribeOptions#1{\leavevmode\@bsphack
+%  \marginpar{\raggedleft\strut\emph{options}%
+%  \@for\@tempa:=#1\do{%
+%    \\\strut\MacroFont\@tempa\SpecialOptionIndex\@tempa
+%  }}\@esphack\ignorespaces}
+%\makeatother
 %
 % \changes{v1.0.0}{2016/10/31}{Initial released version}
 % \changes{v1.0.1}{2016/11/07}{Prevent empty bibliography environment;
@@ -275,7 +296,7 @@ This is the proof of the repeated foobar.
 % \end{example}
 % 
 % \subsection{Bibliography}
-% \textsf{apxproof} automatically adds a bibliography in the appendix
+% By default, \textsf{apxproof} automatically adds a bibliography in the appendix
 % with only the references cited in the appendix material. This allows for a
 % clean separation of references used solely in the main text, and those
 % used in the appendix.
@@ -299,7 +320,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % default, it does). See
 % Section~\ref{sec:customization} for how to configure the appearance of
 % that bibliography.
+%
+% \DescribeOption{bibliography}
+% In order to use a single appendix for the main text and the
+% bibliography, one can specify the
+% value |common| to the |bibliography| option when loading the package.
+% (By default this option is set to |separate|.)
 % \subsection{Mode}
+% \DescribeOption{appendix}
 % An optional \meta{mode} can be specified when loading the package:
 % \begin{quote}|\usepackage[appendix=|\meta{mode}|]{apxproof}|\end{quote}
 % \meta{mode} can take one of the following three values:
@@ -335,7 +363,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % be used to configure the way it is displayed.
 % \end{description}
 %
-% \subsection{Advanced Commands}
+% \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, whose usage is limited to
 % special cases:
 % \begin{description}
@@ -357,6 +385,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
 % \end{description}
+% \DescribeOption{appendixcol}
+% Finally, by default the appendix is set in one-column mode to make it
+% more readable, independently of the style of the main text.
+% To disable this feature and use the same number of columns as in the
+% main text, one can specify the
+%value |same| to the |appendixcol| option when loading the package.
+% (By default this option is set to |one|.)
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
 % and proofs, it may not work straight away with arbitrary document classes.
@@ -481,19 +516,32 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \makeatletter
 %    \end{macrocode}
 % \begin{macro}{\axp@appendix}
-% We setup the processing of options using \textsf{keyval} facilities;
-% the only declared option is named |appendix|, with a default value of
-% |append|:
+% We setup the processing of options using \textsf{keyval} facilities.
 %    \begin{macrocode}
 \SetupKeyvalOptions{
   family=axp,
   prefix=axp@
 }
+%    \end{macrocode}
+% \changes{v1.0.4}{2017/03/02}{|appendixcol| and |bibliography| options}
+% We declare the following options:
+% \begin{itemize}
+%   \item |appendix|, with a default value of |append| (other possible
+%     values: |strip|, |inline|);
+%   \item |appendixcol|, with a default value of |one| (other possible
+%     value: |same|).
+%   \item |bibliography|, with a default value of |separate| (other
+%     possible value: |common|);
+% \end{itemize}
+%    \begin{macrocode}
 \DeclareStringOption[append]{appendix}
+\DeclareStringOption[one]{appendixcol}
+\DeclareStringOption[separate]{bibliography}
 \ProcessLocalKeyvalOptions*
 %    \end{macrocode}
 % \end{macro}
-% We check that the value of the |appendix| option is valid, and add a
+% We check that the value of the |appendix|, |appendixcol|, and
+% |bibliography| options are valid, and add a
 % message to the compilation log.
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{append}}{
@@ -506,6 +554,22 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \errmessage{Error: unsupported option appendix=\axp@appendix for
   package apxproof}
 }}}
+\ifthenelse{\equal{\axp@appendixcol}{one}}{
+  \message{apxproof: Appendix material typeset on one column}
+}{\ifthenelse{\equal{\axp@appendixcol}{same}}{
+  \message{apxproof: Appendix material column mode same as main text}
+}{
+  \errmessage{Error: unsupported option appendixcol=\axp@appendixcol for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@bibliography}{separate}}{
+  \message{apxproof: Separate bibliography for appendix material}
+}{\ifthenelse{\equal{\axp@bibliography}{common}}{
+  \message{apxproof: Common bibliography for appendix and main text}
+}{
+  \errmessage{Error: unsupported option bibliography=\axp@bibliography for
+  package apxproof}
+}}
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\newtheoremrep}
@@ -939,15 +1003,22 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % After the end of the main text, we add the appendix (on a new page, set
-% in single-column mode) within a |bibunit| environment so as to typeset
-% a separate bibliography for the appendix. There is an extra test to
+% in single-column mode if the |appendixcol| option is set to the default)
+% within a |bibunit| environment so as to typeset
+% a separate bibliography for the appendix (unless the |bibliography|
+% option is set to |common|). There is an extra test to
 % ensure an empty bibliography environment is not produced.
 %    \begin{macrocode}
     \AtEndDocument{
-      \clearpage\onecolumn\appendix
+      \clearpage
+      \ifthenelse{\equal{\axp@appendixcol}{one}}{\onecolumn}{}
+      \appendix
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
       \begin{bibunit}[\appendixbibliographystyle]
+      }{}
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
         \renewcommand{\refname}{\appendixrefname}
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
@@ -955,6 +1026,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}
+      }{}
     }
 %    \end{macrocode}  
 %    \begin{macrocode}  
