@@ -46,7 +46,6 @@
   prefix=axp@
 }
 \DeclareStringOption[append]{appendix}
-\DeclareStringOption[one]{appendixcol}
 \DeclareStringOption[separate]{bibliography}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
@@ -59,14 +58,6 @@
   \errmessage{Error: unsupported option appendix=\axp@appendix for
   package apxproof}
 }}}
-\ifthenelse{\equal{\axp@appendixcol}{one}}{
-  \message{apxproof: Appendix material typeset on one column}
-}{\ifthenelse{\equal{\axp@appendixcol}{same}}{
-  \message{apxproof: Appendix material column mode same as main text}
-}{
-  \errmessage{Error: unsupported option appendixcol=\axp@appendixcol for
-  package apxproof}
-}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
   \message{apxproof: Separate bibliography for appendix material}
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
@@ -89,6 +80,7 @@
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
+\newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
 \ifdefined\@acmtitlebox
   \newtheoremstyle{mystyle}
@@ -259,8 +251,7 @@
       \axp@oldbibliography{#1}%
     }
     \AtEndDocument{
-      \clearpage
-      \ifthenelse{\equal{\axp@appendixcol}{one}}{\onecolumn}{}
+      \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
       \begin{bibunit}[\appendixbibliographystyle]

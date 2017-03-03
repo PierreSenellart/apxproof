@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{477}
+% \CheckSum{0}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -361,6 +361,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \item[\textbackslash|appendixbibliographyprelim|]\DescribeMacro{\appendixbibliographyprelim} contains arbitrary code that is executed
 % just before the production of the bibliography in appendix, which can
 % be used to configure the way it is displayed.
+% \item[\textbackslash|appendixprelim|]\DescribeMacro{\appendixprelim} contains arbitrary code that is executed
+% just before the production of the appendix, which can
+% be used to configure the way it is displayed. By default, this command
+% contains |\clearpage\onecolumn| (the appendix is typeset on a new page
+% in single-column mode) but redefining this option allows changing this
+% behavior.
 % \end{description}
 %
 % \subsection{Advanced Features}
@@ -385,13 +391,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
 % \end{description}
-% \DescribeOption{appendixcol}
-% Finally, by default the appendix is set in one-column mode to make it
-% more readable, independently of the style of the main text.
-% To disable this feature and use the same number of columns as in the
-% main text, one can specify the
-%value |same| to the |appendixcol| option when loading the package.
-% (By default this option is set to |one|.)
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
 % and proofs, it may not work straight away with arbitrary document classes.
@@ -515,7 +514,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
 \makeatletter
 %    \end{macrocode}
-% \begin{macro}{\axp@appendix}
 % We setup the processing of options using \textsf{keyval} facilities.
 %    \begin{macrocode}
 \SetupKeyvalOptions{
@@ -523,24 +521,28 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   prefix=axp@
 }
 %    \end{macrocode}
-% \changes{v1.0.4}{2017/03/02}{|appendixcol| and |bibliography| options}
 % We declare the following options:
 % \begin{itemize}
 %   \item |appendix|, with a default value of |append| (other possible
 %     values: |strip|, |inline|);
-%   \item |appendixcol|, with a default value of |one| (other possible
-%     value: |same|).
 %   \item |bibliography|, with a default value of |separate| (other
 %     possible value: |common|);
 % \end{itemize}
+% \begin{macro}{\axp@appendix}
 %    \begin{macrocode}
 \DeclareStringOption[append]{appendix}
-\DeclareStringOption[one]{appendixcol}
-\DeclareStringOption[separate]{bibliography}
-\ProcessLocalKeyvalOptions*
 %    \end{macrocode}
 % \end{macro}
-% We check that the value of the |appendix|, |appendixcol|, and
+% \begin{macro}{\axp@bibliography}
+% \changes{v1.0.4}{2017/03/02}{\texttt{bibliography} option}
+%    \begin{macrocode}
+\DeclareStringOption[separate]{bibliography}
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+\ProcessLocalKeyvalOptions*
+%    \end{macrocode}
+% We check that the value of the |appendix| and
 % |bibliography| options are valid, and add a
 % message to the compilation log.
 %    \begin{macrocode}
@@ -554,14 +556,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \errmessage{Error: unsupported option appendix=\axp@appendix for
   package apxproof}
 }}}
-\ifthenelse{\equal{\axp@appendixcol}{one}}{
-  \message{apxproof: Appendix material typeset on one column}
-}{\ifthenelse{\equal{\axp@appendixcol}{same}}{
-  \message{apxproof: Appendix material column mode same as main text}
-}{
-  \errmessage{Error: unsupported option appendixcol=\axp@appendixcol for
-  package apxproof}
-}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
   \message{apxproof: Separate bibliography for appendix material}
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
@@ -610,16 +604,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\appendixrefname}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
+% \begin{macro}{\appendixprelim}
+% \changes{v1.0.4}{2017/03/03}{Configurable appendix style}
 % \begin{macro}{\appendixsectionformat}
-% We provide sensible defaults for these three user-customizable macros.
+% We provide sensible defaults for these four user-customizable macros.
 % Even though they are only useful in append mode, we define them for
 % all modes so that a |\renewcommand| works in all cases.
 %    \begin{macrocode}
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
+\newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -1002,16 +1000,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}
 % \end{macro}
-% After the end of the main text, we add the appendix (on a new page, set
-% in single-column mode if the |appendixcol| option is set to the default)
+% After the end of the main text, we add the appendix (after the command 
+% |\appendixprelim| is issued)
 % within a |bibunit| environment so as to typeset
 % a separate bibliography for the appendix (unless the |bibliography|
 % option is set to |common|). There is an extra test to
 % ensure an empty bibliography environment is not produced.
 %    \begin{macrocode}
     \AtEndDocument{
-      \clearpage
-      \ifthenelse{\equal{\axp@appendixcol}{one}}{\onecolumn}{}
+      \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
       \begin{bibunit}[\appendixbibliographystyle]
