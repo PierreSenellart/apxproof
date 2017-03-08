@@ -36,10 +36,16 @@
 \RequirePackage{kvoptions}
 \@ifpackageloaded{amsthm}{
   }{
+    \let\apx@oldamsthmproof\proof
+    \let\apx@oldamsthmendproof\endproof
     \let\proof\undefined
     \let\endproof\undefined
   }
 \RequirePackage{amsthm}
+\ifdefined\apx@oldamsthmproof
+  \let\proof\apx@oldamsthmproof
+  \let\endproof\apx@oldamsthmendproof
+\fi
 \makeatletter
 \SetupKeyvalOptions{
   family=axp,
@@ -69,9 +75,7 @@
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremrep{#1}}[]%
 }
-\newenvironment{proofsketch}
-  {\vskip3pt\noindent\textit{Proof sketch.} \upshape\ignorespaces}
-  {\hfill\qed\vskip3pt}
+  \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
 \AtBeginDocument{%
   \def\thmhead#1#2#3{%
     \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
@@ -84,16 +88,20 @@
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
 \ifdefined\@acmtitlebox
   \newtheoremstyle{mystyle}
-    {3pt}
-    {3pt}
+    {6pt}
+    {6pt}
     {\itshape}
-    {}
+    {9pt}
     {\scshape}
     {.}
     {.5em}
     {}
   \theoremstyle{mystyle}
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 \fi
+  \@ifclassloaded{llncs}{
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  }{}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3{%
     \expandafter\let\csname #1\endcsname\undefined

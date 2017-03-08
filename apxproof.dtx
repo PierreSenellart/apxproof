@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{466}
+% \CheckSum{482}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -497,14 +497,23 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % will simply have no effect. On the other hand, some other document
 % classes (e.g., \textsf{llncs} or \textsf{sig-alternate}) define a
 % |proof| environment that conflicts with \textsf{amsthm}, so we have to
-% undefine this environment before loading \textsf{amsthm}.
+% undefine this environment before loading \textsf{amsthm}. In that case,
+% we reestablish the existing proof environments, in case they had been
+% customized (e.g., \textsf{sig-alternate})
+% \changes{v1.0.4}{2017/03/08}{Re-establish custom proof environments}
 %    \begin{macrocode}
 \@ifpackageloaded{amsthm}{
   }{
+    \let\apx@oldamsthmproof\proof
+    \let\apx@oldamsthmendproof\endproof
     \let\proof\undefined
     \let\endproof\undefined
   }
 \RequirePackage{amsthm}
+\ifdefined\apx@oldamsthmproof
+  \let\proof\apx@oldamsthmproof
+  \let\endproof\apx@oldamsthmendproof
+\fi
 %    \end{macrocode}
 % \end{itemize}
 % \subsection{Option Processing}
@@ -582,9 +591,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Simple |proofsketch| environment.
 % \changes{v1.0.3}{2016/12/16}{Ignore spaces after beginning of Proof sketch}
 %    \begin{macrocode}
-\newenvironment{proofsketch}
-  {\vskip3pt\noindent\textit{Proof sketch.} \upshape\ignorespaces}
-  {\hfill\qed\vskip3pt}
+  \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
 %    \end{macrocode}
 % \end{environment}  
 % \begin{macro}{\thmhead}  
@@ -625,20 +632,27 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Finally, some class-specific behavior ensures that the theorems created by
 % |\newtheoremrep| appear with the correct style.
 % For now, only the styling for ACM document classes (e.g.,
-% \textsf{sig-alternate}) needs to be adapted.  
+% \textsf{sig-alternate}) and \textsf{llncs} needs to be adapted, as both
+% redefine the proof environments in different ways.
+% \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
+% \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
 %    \begin{macrocode}
 \ifdefined\@acmtitlebox
   \newtheoremstyle{mystyle}
-    {3pt}
-    {3pt}
+    {6pt}
+    {6pt}
     {\itshape}
-    {}
+    {9pt}
     {\scshape}
     {.}
     {.5em}
     {}
   \theoremstyle{mystyle}
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 \fi
+  \@ifclassloaded{llncs}{
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  }{}
 %    \end{macrocode}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
