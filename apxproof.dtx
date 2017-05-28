@@ -671,6 +671,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
   }{}
 %    \end{macrocode}
+% \begin{environment}{axp@oldproof}
+%   We save the definition of the existing |proof| environment.
+%    \begin{macrocode}  
+  \let\axp@oldproof\proof
+  \let\endaxp@oldproof\endproof
+%    \end{macrocode}  
+% \end{environment}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -861,13 +868,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 %    \subsubsection{Proof Environments}  
-% \begin{environment}{axp@oldproof}
-%   We save the definition of the existing |proof| environment.
-%    \begin{macrocode}  
-  \let\axp@oldproof\proof
-  \let\endaxp@oldproof\endproof
-%    \end{macrocode}  
-% \end{environment}
 % \begin{macro}{\noproofinappendix}
 %   Utility macro that toggles |axp@seenreptheorem| to false.
 %    \begin{macrocode}  

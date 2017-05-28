@@ -105,6 +105,8 @@
   \@ifclassloaded{llncs}{
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
   }{}
+  \let\axp@oldproof\proof
+  \let\endaxp@oldproof\endproof
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
@@ -183,8 +185,6 @@
       }
     }
   }
-  \let\axp@oldproof\proof
-  \let\endaxp@oldproof\endproof
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }
