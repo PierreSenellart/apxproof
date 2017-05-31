@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2017/03/17 v1.0.4 Automatic proofs in appendix]
+  [2017/05/31 v1.0.5 Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -73,7 +73,10 @@
   package apxproof}
 }}
 \newcommand\newtheoremrep[1]{%
-  \@oparg{\axp@newtheoremrep{#1}}[]%
+  \@oparg{\axp@newtheoremreptmp{#1}}[]%
+}
+\def\axp@newtheoremreptmp#1[#2]#3{%
+  \@oparg{\axp@newtheoremrep{#1}[#2]{#3}}[]%
 }
   \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
 \AtBeginDocument{%
@@ -102,11 +105,17 @@
   \@ifclassloaded{llncs}{
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
   }{}
+  \let\axp@oldproof\proof
+  \let\endaxp@oldproof\endproof
 \ifthenelse{\equal{\axp@appendix}{inline}}{
-  \def\axp@newtheoremrep#1[#2]#3{%
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -147,10 +156,14 @@
     {\endVerbatimOut}
   \newtoggle{axp@seenreptheorem}
   \newcounter{axp@rpcounter}
-  \def\axp@newtheoremrep#1[#2]#3{%
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \newtheorem*{axp@#1rp}{#3}%
     \NewEnviron{#1rep}[1][]{%
@@ -172,8 +185,6 @@
       }
     }
   }
-  \let\axp@oldproof\proof
-  \let\endaxp@oldproof\endproof
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }

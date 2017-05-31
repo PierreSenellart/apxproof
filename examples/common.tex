@@ -1,7 +1,9 @@
 \usepackage{hyperref}
 
 \newtheoremrep{theorem}{Theorem}
-\newtheoremrep{lemma}{Lemma}
+\newtheoremrep{lemma}[theorem]{Lemma}
+
+\newtheoremrep{example}{Example}[section]
 
 \renewcommand{\appendixsectionformat}[2]{Material for #2 (Section~#1)}
 
@@ -28,6 +30,10 @@ appendix. \cite{brin1998anatomy}
 
 \section{Section with Some Appendix Content}
 
+\begin{example}
+  Examples are numbered within a section.
+\end{example}
+
 Not much in the main text.
 
 \begin{toappendix}
@@ -50,7 +56,7 @@ Not much in the main text.
 
   For some reason, this proof has an inline Lemma:
   \begin{lemma}
-    This is the lemma.
+    This is the lemma (numbered following the theorem numbering).
   \end{lemma} 
 
   \begin{nestedproof}

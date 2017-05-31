@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2017/03/17 v1.0.4 Automatic proofs in appendix]
+%<package>  [2017/05/31 v1.0.5 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{482}
+% \CheckSum{498}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -189,16 +189,28 @@ This proof is in the appendix.
 % once in the main text, and once in the appendix before the proof of
 % the statement. To use this feature, you can define a new
 % \emph{repeated theorem} environment using the |\newtheoremrep| command:
+% \changes{v1.0.5}{2017/05/31}{Ability to specify a sectioning counter in newtheoremrep}
 % \begin{quote}
-% |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\DescribeMacro{\newtheoremrep}
+% |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\oarg{countersec}\DescribeMacro{\newtheoremrep}
 % \end{quote}
 % Usage is exactly the same as that of AMS \LaTeX{}'s |\newtheorem|
-% macro: \meta{name} (e.g., |theorem|) is the name of an environment that is created for this kind of
-% theorem, \meta{counter} (e.g., |definition|) is an optional counter describing
-% from which kind of enviroment should the numbering of these environments be
-% inherited, and \meta{title}
+% macro: 
+% \begin{itemize}
+% \item \meta{name} (e.g., |theorem|) is the name of an environment that is created for this kind of
+% theorem;
+% \item \meta{counter} (e.g., |definition|) is an optional counter describing
+% from which kind of environment should the numbering of these environments be
+% inherited;
+% \item \meta{title}
 % (e.g., |Theorem|) is
-% the title that will be used to display this theorem environment. What
+% the title that will be used to display this theorem environment;
+% \item \meta{countersec} (e.g., |section|) is an optional counter of a
+% sectioning command indicating that counters for this theorem should
+% be prefixed by this counter (and reset at each occurrence of the
+% sectioning command).
+% \end{itemize}
+% \meta{counter} and \meta{countersec} should not be used together.
+% What
 % differs from |\newtheorem| is that, when the following is written:
 % \begin{quote}
 % |\newtheoremrep{foobar}{Foobar}|
@@ -264,6 +276,7 @@ This is the proof of the repeated foobar.
 % When the proof is deferred to the appendix, it is common practice to
 % add a proof sketch in the main text. \textsf{apxproof} defines a simple
 % |proofsketch| environment for this purpose:
+% \changes{v1.0.5}{2017/05/31}{Fix compilation of proofsketch environment in inline mode}
 % \begin{quote}
 % |\begin{proofsketch}|\DescribeEnv{proofsketch}\\
 % \hspace*{1em}\dots\\
@@ -576,16 +589,22 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\newtheoremrep}
+% \begin{macro}{\axp@newtheoremreptmp}
 % We define the high-level |\newtheoremrep| to have the same syntax as
 % \textsf{amsthm}'s |\newtheorem|. For this purpose, we need a little
-% trick to deal with the second optional argument, which is what
-% |\@oparg| is used for. |\axp@newtheoremrep| is defined differently
+% trick to deal with the second and fourth optional arguments, which is what
+% |\@oparg| and |\axp@newtheoremrep| are 
+% used for. |\axp@newtheoremrep| is defined differently
 % depending on the compilation mode
 %    \begin{macrocode}
 \newcommand\newtheoremrep[1]{%
-  \@oparg{\axp@newtheoremrep{#1}}[]%
+  \@oparg{\axp@newtheoremreptmp{#1}}[]%
+}
+\def\axp@newtheoremreptmp#1[#2]#3{%
+  \@oparg{\axp@newtheoremrep{#1}[#2]{#3}}[]%
 }
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \begin{environment}{proofsketch}
 % Simple |proofsketch| environment.
@@ -654,6 +673,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
   }{}
 %    \end{macrocode}
+% \begin{environment}{axp@oldproof}
+%   We save the definition of the existing |proof| environment.
+%    \begin{macrocode}  
+  \let\axp@oldproof\proof
+  \let\endaxp@oldproof\endproof
+%    \end{macrocode}  
+% \end{environment}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -664,10 +690,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % document class), invokes |\newtheorem| and creates a repeated theorem
 % environment that behaves exactly as the regular theorem environment.
 %    \begin{macrocode}
-  \def\axp@newtheoremrep#1[#2]#3{%
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -789,10 +819,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % expect a proof in the appendix) and |\newtheorem*| for an internal version |axp@foobarrp| that
 % will be used in the appendix to restate the existing theorem.
 %    \begin{macrocode}  
-  \def\axp@newtheoremrep#1[#2]#3{%
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \newtheorem{#1}[#2]{#3}%
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \newtheorem*{axp@#1rp}{#3}%
 %    \end{macrocode}  
@@ -836,13 +870,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 %    \subsubsection{Proof Environments}  
-% \begin{environment}{axp@oldproof}
-%   We save the definition of the existing |proof| environment.
-%    \begin{macrocode}  
-  \let\axp@oldproof\proof
-  \let\endaxp@oldproof\endproof
-%    \end{macrocode}  
-% \end{environment}
 % \begin{macro}{\noproofinappendix}
 %   Utility macro that toggles |axp@seenreptheorem| to false.
 %    \begin{macrocode}  
