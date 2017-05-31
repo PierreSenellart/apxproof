@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2017/02/06 v1.0.4-dev Automatic proofs in appendix]
+%<package>  [2017/05/31 v1.0.5 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -189,6 +189,7 @@ This proof is in the appendix.
 % once in the main text, and once in the appendix before the proof of
 % the statement. To use this feature, you can define a new
 % \emph{repeated theorem} environment using the |\newtheoremrep| command:
+% \changes{v1.0.5}{2017/05/31}{Ability to specify a sectioning counter in newtheoremrep}
 % \begin{quote}
 % |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\oarg{countersec}\DescribeMacro{\newtheoremrep}
 % \end{quote}
@@ -673,6 +674,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \begin{environment}{axp@oldproof}
 %   We save the definition of the existing |proof| environment.
+% \changes{v1.0.5}{2017/05/31}{Fix compilation of |proofsketch| environments in inline mode}
 %    \begin{macrocode}  
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
