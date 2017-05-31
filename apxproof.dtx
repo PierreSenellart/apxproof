@@ -276,6 +276,7 @@ This is the proof of the repeated foobar.
 % When the proof is deferred to the appendix, it is common practice to
 % add a proof sketch in the main text. \textsf{apxproof} defines a simple
 % |proofsketch| environment for this purpose:
+% \changes{v1.0.5}{2017/05/31}{Fix compilation of proofsketch environment in inline mode}
 % \begin{quote}
 % |\begin{proofsketch}|\DescribeEnv{proofsketch}\\
 % \hspace*{1em}\dots\\
@@ -674,7 +675,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \begin{environment}{axp@oldproof}
 %   We save the definition of the existing |proof| environment.
-% \changes{v1.0.5}{2017/05/31}{Fix compilation of |proofsketch| environments in inline mode}
 %    \begin{macrocode}  
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
