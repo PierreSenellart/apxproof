@@ -1,0 +1,316 @@
+%%
+%% This is file `apxproof.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% apxproof.dtx  (with options: `package')
+%% 
+%% Copyright (C) 2016-2017 by Pierre Senellart
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status `maintained'.
+%% 
+%% The Current Maintainer of this work is Pierre Senellart
+%% <pierre@senellart.com> and a version control system for this work
+%% is available at http://github.com/PierreSenellart/apxproof
+%% 
+%% This work consists of the files apxproof.dtx and apxproof.ins
+%% and the derived file apxproof.sty.
+%% 
+\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+\ProvidesPackage{apxproof}
+  [2017/05/31 v1.0.5-dev Automatic proofs in appendix]
+\RequirePackage{bibunits}
+\RequirePackage{environ}
+\RequirePackage{etoolbox}
+\RequirePackage{fancyvrb}
+\RequirePackage{ifthen}
+\RequirePackage{kvoptions}
+\@ifpackageloaded{amsthm}{
+  }{
+    \let\apx@oldamsthmproof\proof
+    \let\apx@oldamsthmendproof\endproof
+    \let\proof\undefined
+    \let\endproof\undefined
+  }
+\RequirePackage{amsthm}
+\ifdefined\apx@oldamsthmproof
+  \let\proof\apx@oldamsthmproof
+  \let\endproof\apx@oldamsthmendproof
+\fi
+\makeatletter
+\SetupKeyvalOptions{
+  family=axp,
+  prefix=axp@
+}
+\DeclareStringOption[append]{appendix}
+\DeclareStringOption[separate]{bibliography}
+\ProcessLocalKeyvalOptions*
+\ifthenelse{\equal{\axp@appendix}{append}}{
+  \message{apxproof: Appendix material appended to the document}
+}{\ifthenelse{\equal{\axp@appendix}{strip}}{
+  \message{apxproof: Appendix material stripped}
+}{\ifthenelse{\equal{\axp@appendix}{inline}}{
+  \message{apxproof: Appendix material inlined within the document}
+}{
+  \errmessage{Error: unsupported option appendix=\axp@appendix for
+  package apxproof}
+}}}
+\ifthenelse{\equal{\axp@bibliography}{separate}}{
+  \message{apxproof: Separate bibliography for appendix material}
+}{\ifthenelse{\equal{\axp@bibliography}{common}}{
+  \message{apxproof: Common bibliography for appendix and main text}
+}{
+  \errmessage{Error: unsupported option bibliography=\axp@bibliography for
+  package apxproof}
+}}
+\newcommand\newtheoremrep[1]{%
+  \@oparg{\axp@newtheoremreptmp{#1}}[]%
+}
+\def\axp@newtheoremreptmp#1[#2]#3{%
+  \@oparg{\axp@newtheoremrep{#1}[#2]{#3}}[]%
+}
+  \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
+\AtBeginDocument{%
+  \def\thmhead#1#2#3{%
+    \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
+    \thmnote{ #3}}%
+}
+\newcommand{\appendixrefname}{References for the Appendix}
+\newcommand{\appendixbibliographystyle}{alpha}
+\newcommand{\appendixbibliographyprelim}{}
+\newcommand{\appendixprelim}{\clearpage\onecolumn}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
+\ifdefined\@acmtitlebox
+  \newtheoremstyle{mystyle}
+    {6pt}
+    {6pt}
+    {\itshape}
+    {10pt}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+\fi
+  \@ifclassloaded{llncs}{
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  }{}
+  \let\axp@oldproof\proof
+  \let\endaxp@oldproof\endproof
+\ifthenelse{\equal{\axp@appendix}{inline}}{
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
+    \NewEnviron{#1rep}[1][]{%
+      \begin{#1}[##1]\BODY\end{#1}%
+    }
+  }
+  \let\inlineproof\proof
+  \let\endinlineproof\endproof
+  \let\nestedproof\proof
+  \let\endnestedproof\endproof
+  \let\appendixproof\proof
+  \let\endappendixproof\endproof
+  \newenvironment{toappendix}{}{}
+  \let\noproofinappendix\relax
+  \let\nosectionappendix\relax
+}
+{
+  \newwrite\axp@proofsfile
+  \immediate\openout\axp@proofsfile=\jobname.axp
+  \immediate\write\axp@proofsfile{%
+    \noexpand\makeatletter
+    \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+    \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
+    \noexpand\let\noexpand\section\noexpand\axp@oldsection
+  }
+  \def\FVB@VerbatimOut{%
+    \@bsphack
+    \begingroup
+      \FV@UseKeyValues
+      \FV@DefineWhiteSpace
+      \def\FV@Space{\space}%
+      \FV@DefineTabOut
+      \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      \let\FV@FontScanPrep\relax
+      \let\@noligs\relax
+      \FV@Scan}
+  \def\FVE@VerbatimOut{\endgroup\@esphack}
+  \newenvironment{toappendix}
+    {\axp@writesection\VerbatimOut}
+    {\endVerbatimOut}
+  \newtoggle{axp@seenreptheorem}
+  \newcounter{axp@rpcounter}
+  \def\axp@newtheoremrep#1[#2]#3[#4]{%
+    \expandafter\let\csname #1\endcsname\undefined
+    \expandafter\let\csname c@#1\endcsname\undefined
+    \ifx\relax#4\relax
+      \newtheorem{#1}[#2]{#3}%
+    \else
+      \newtheorem{#1}{#3}[#4]%
+    \fi
+    \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
+    \newtheorem*{axp@#1rp}{#3}%
+    \NewEnviron{#1rep}[1][]{%
+      \addtocounter{axp@rpcounter}{1}%
+      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \global\toggletrue{axp@seenreptheorem}%
+      \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
+                             \endcsname
+      \BODY
+      \axp@writesection%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axp@#1rp}
+          [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
+           \@ifnotempty{##1}{ \unexpanded{##1}}]%
+          \noexpand\let\noexpand\label\noexpand\@gobble%
+          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
+                               \endcsname
+        \noexpand\end{axp@#1rp}
+      }
+    }
+  }
+  \newcommand\noproofinappendix{%
+    \global\togglefalse{axp@seenreptheorem}%
+  }
+  \newenvironment{appendixproof}
+    {%
+      \axp@writesection
+      \immediate\write\axp@proofsfile{%
+        \noexpand\begin{axp@oldproof}%
+      }%
+      \VerbatimOut
+    }
+    {%
+      \endVerbatimOut
+      \immediate\write\axp@proofsfile{%
+        \noexpand\end{axp@oldproof}%
+      }%
+      \noproofinappendix
+    }
+  \renewenvironment{proof}
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof
+      }{%
+        \axp@oldproof
+      }%
+    }
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \endappendixproof
+      }{%
+        \endaxp@oldproof
+      }%
+    }
+  \let\inlineproof\axp@oldproof
+  \let\endinlineproof\endaxp@oldproof
+  \let\nestedproof\axp@oldproof
+  \let\endnestedproof\endaxp@oldproof
+  \newcounter{axp@seccounter}
+  \def\axp@sectitle{}
+  \def\axp@section{\@ifstar\axp@@ssection\axp@@section}
+  \def\axp@@ssection#1{%
+    \@ifnextchar\section{}{\axp@oldsection*{#1}}%
+  }
+  \def\axp@@section#1{%
+    \@ifnextchar\section{}{\axp@oldsection{#1}}%
+  }
+  \let\axp@oldsection\section
+  \def\section{\@ifstar\@section\@@section}
+  \def\@section#1{%
+    \global\edef\axp@sectitle{#1}%
+    \axp@oldsection*{#1}%
+    \addtocounter{axp@seccounter}{1}%
+    \label{axp@s\roman{axp@seccounter}}%
+  }
+  \def\@@section#1{%
+    \global\edef\axp@sectitle{#1}%
+    \axp@oldsection{#1}%
+    \addtocounter{axp@seccounter}{1}%
+    \label{axp@s\roman{axp@seccounter}}%
+  }
+  \newcommand{\nosectionappendix}{
+    \global\def\axp@sectitle{}%
+  }
+  \newcommand\axp@writesection{%
+    \ifx\axp@sectitle\@empty
+    \else
+      \immediate\write\axp@proofsfile{%
+        \noexpand\def\noexpand\axp@tmp{%
+          \noexpand\ref{axp@s\roman{axp@seccounter}}
+        }
+        \noexpand\axp@section{%
+          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
+                                         {\axp@sectitle}%
+        }%
+      }%
+      \nosectionappendix
+    \fi
+  }
+  \ifthenelse{\equal{\axp@appendix}{append}}{
+    \let\axp@oldbibliography\bibliography
+    \renewcommand\bibliography[1]{%
+      \defaultbibliography{#1}%
+      \axp@oldbibliography{#1}%
+    }
+    \AtEndDocument{
+      \appendixprelim
+      \appendix
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
+      \begin{bibunit}[\appendixbibliographystyle]
+      }{}
+        \immediate\closeout\axp@proofsfile
+        \input{\jobname.axp}
+      \ifthenelse{\equal{\axp@bibliography}{separate}}{
+        \renewcommand{\refname}{\appendixrefname}
+        \let\axp@oldthebibliography\thebibliography
+        \renewcommand\thebibliography[1]{%
+          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
+        \appendixbibliographyprelim
+        \putbib
+      \end{bibunit}
+      }{}
+    }
+  }{}
+  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
+  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
+  \@getclass
+  \ifdefined\@acmtitlebox
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+    \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
+    \newcommand{\refname}{REFERENCES}
+    \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
+    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
+    \def\@@section[#1]#2{%
+      \global\edef\axp@sectitle{#2}%
+      \axp@oldsection{#2}%
+      \addtocounter{axp@seccounter}{1}%
+      \label{axp@s\roman{axp@seccounter}}%
+    }
+  \fi
+   \ifdefined\lipics@opterrshort
+    \renewcommand{\appendixbibliographyprelim}{%
+      \global\let\@oldbiblabel\@biblabel
+      \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}%
+    }
+  \fi
+}
+\endinput
+%%
+%% End of file `apxproof.sty'.
