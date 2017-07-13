@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2017/05/31 v1.0.5 Automatic proofs in appendix]
+%<package>  [2017/05/31 v1.0.5-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -97,7 +97,7 @@
 %  \addtocounter,\newcounter,\newtoggle,\global,\ifdefined,\iftoggle,
 %  \ifx,\jobname,\makeatletter,\makeatother,\newwrite,\NewEnviron,
 %  \patchcmd,\relax,\renewcommand,\renewenvironment,\RequirePackage,
-%  \roman,\space,\undefined
+%  \roman,\space,\undefined,\unexpanded
 % }
 %
 % \title{The \textsf{apxproof} package}
@@ -859,7 +859,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{ \noexpand##1}]%
+           \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
