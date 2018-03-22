@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{496}
+% \CheckSum{484}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -589,6 +589,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheorem}
+% \begin{macro}{\@axp@newtheorem}
+% \begin{macro}{\@@axp@newtheorem}
 % We introduce an intermediate |\axp@newtheorem| command to define a new
 % theorem, differently depending on whether there is a section counter or
 % not. This will be useful, in particular to allow changing this
@@ -606,6 +608,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \def\@@axp@newtheorem#1#2{%
   \newtheorem*{#1}{#2}%
 }
+% \end{macro}
+% \end{macro}
 % \end{macro}
 % \begin{macro}{\newtheoremrep}
 % \begin{macro}{\axp@newtheoremreptmp}
@@ -1088,20 +1092,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsubsection{Class-Specific Behavior}    
 % We conclude with some class-specific behavior.
-% \begin{macro}{\@getcl@ss}
-% \begin{macro}{\@getclass}
-% \begin{macro}{\@currentclass}
-% We first use a little trick to store the document class in
-% macro |\@currentclass|, from
-% \url{http://tex.stackexchange.com/a/43541}.
-%    \begin{macrocode}
-  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-  \@getclass
-%    \end{macrocode}
-% \end{macro}
-% \end{macro}
-% \end{macro}
 % \paragraph{ACM Document Classes}
 %    \begin{macrocode}
   \ifdefined\@acmtitlebox
