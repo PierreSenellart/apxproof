@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{525}
+% \CheckSum{522}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -671,31 +671,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% Finally, some class-specific behavior ensures that the theorems created by
-% |\newtheoremrep| appear with the correct style.
-% For now, only the styling for ACM document classes (e.g.,
-% \textsf{sig-alternate}) and \textsf{llncs} needs to be adapted, as both
-% redefine the proof environments in different ways.
-% \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
-% \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
-%    \begin{macrocode}
-\ifdefined\@acmtitlebox
-  \newtheoremstyle{mystyle}
-    {6pt}
-    {6pt}
-    {\itshape}
-    {10pt}
-    {\scshape}
-    {.}
-    {.5em}
-    {}
-  \theoremstyle{mystyle}
-  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-\fi
-  \@ifclassloaded{llncs}{
-    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-  }{}
-%    \end{macrocode}
 % \begin{environment}{axp@oldproof}
 %   We save the definition of the existing |proof| environment.
 %    \begin{macrocode}  
@@ -1093,8 +1068,28 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \subsubsection{Class-Specific Behavior}    
 % We conclude with some class-specific behavior.
 % \paragraph{ACM Document Classes}
+% \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
+% \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
 %    \begin{macrocode}
   \ifdefined\@acmtitlebox
+%    \end{macrocode}
+% We first redefine the |proofsketch| environment, which is used
+% differently in the base class.    
+%    \begin{macrocode}
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+%    \end{macrocode}
+% We adjust the styling of theorems for the needs of \textsf{apxproof}.
+%    \begin{macrocode}  
+  \newtheoremstyle{mystyle}
+    {6pt}
+    {6pt}
+    {\itshape}
+    {10pt}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
 %    \end{macrocode}
 % \begin{macro}{\thebibliography}
 % \begin{macro}{\refname}
@@ -1152,6 +1147,17 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \paragraph{\textsf{llncs} and other Springer document classes}
 %    \begin{macrocode}
+  \@ifclassloaded{llncs}{
+%    \end{macrocode}
+% \begin{macro}{proofsketch}
+% We first redefine the |proofsketch| environment, which is used
+% differently in the base class.    
+%    \begin{macrocode}
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+  }{}
    \ifdefined\spnewtheorem
 %    \end{macrocode}
 % \begin{macro}{\@axp@newtheorem}

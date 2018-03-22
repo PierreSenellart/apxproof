@@ -100,22 +100,6 @@
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
-\ifdefined\@acmtitlebox
-  \newtheoremstyle{mystyle}
-    {6pt}
-    {6pt}
-    {\itshape}
-    {10pt}
-    {\scshape}
-    {.}
-    {.5em}
-    {}
-  \theoremstyle{mystyle}
-  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-\fi
-  \@ifclassloaded{llncs}{
-    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-  }{}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -296,6 +280,17 @@
     }
   }{}
   \ifdefined\@acmtitlebox
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  \newtheoremstyle{mystyle}
+    {6pt}
+    {6pt}
+    {\itshape}
+    {10pt}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
@@ -314,6 +309,9 @@
       \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}%
     }
   \fi
+  \@ifclassloaded{llncs}{
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  }{}
    \ifdefined\spnewtheorem
 \def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
