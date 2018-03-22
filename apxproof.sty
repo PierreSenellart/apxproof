@@ -72,6 +72,13 @@
   \errmessage{Error: unsupported option bibliography=\axp@bibliography for
   package apxproof}
 }}
+\def\axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \newtheorem{#1}[#2]{#3}%
+  \else
+    \newtheorem{#1}{#3}[#4]%
+  \fi
+}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
 }
@@ -111,11 +118,7 @@
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -159,11 +162,7 @@
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \newtheorem*{axp@#1rp}{#3}%
     \NewEnviron{#1rep}[1][]{%

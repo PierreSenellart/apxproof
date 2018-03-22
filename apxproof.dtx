@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{508}
+% \CheckSum{496}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -588,14 +588,27 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }}
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
+% \begin{macro}{\axp@newtheorem}
+% We introduce an intermediate |\axp@newtheorem| command to define a new
+% theorem, differently depending on whether there is a section counter or
+% not. This will be useful, in particular to allow changing this
+% definition depending on the document class.
+\def\axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \newtheorem{#1}[#2]{#3}%
+  \else
+    \newtheorem{#1}{#3}[#4]%
+  \fi
+}
+% \end{macro}
 % \begin{macro}{\newtheoremrep}
 % \begin{macro}{\axp@newtheoremreptmp}
 % We define the high-level |\newtheoremrep| to have the same syntax as
 % \textsf{amsthm}'s |\newtheorem|. For this purpose, we need a little
 % trick to deal with the second and fourth optional arguments, which is what
-% |\@oparg| and |\axp@newtheoremrep| are 
+% |\@oparg| and |\axp@newtheoremreptmp| are 
 % used for. |\axp@newtheoremrep| is defined differently
-% depending on the compilation mode
+% depending on the compilation mode.
 %    \begin{macrocode}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
@@ -693,11 +706,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -822,11 +831,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \newtheorem*{axp@#1rp}{#3}%
 %    \end{macrocode}  
