@@ -592,13 +592,19 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % We introduce an intermediate |\axp@newtheorem| command to define a new
 % theorem, differently depending on whether there is a section counter or
 % not. This will be useful, in particular to allow changing this
-% definition depending on the document class.
-\def\axp@newtheorem#1#2#3#4{%
+% definition depending on the document class. This command uses two
+% intermediary commands, |\@axp@newtheorem| and |\@@axp@newtheorem|, for
+% the non-starred and starred versions.
+\def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
+\def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
     \newtheorem{#1}[#2]{#3}%
   \else
     \newtheorem{#1}{#3}[#4]%
   \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \newtheorem*{#1}{#2}%
 }
 % \end{macro}
 % \begin{macro}{\newtheoremrep}
@@ -833,7 +839,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \newtheorem*{axp@#1rp}{#3}%
+    \axp@newtheorem*{axp@#1rp}{#3}%
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label

@@ -72,12 +72,16 @@
   \errmessage{Error: unsupported option bibliography=\axp@bibliography for
   package apxproof}
 }}
-\def\axp@newtheorem#1#2#3#4{%
+\def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
+\def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
     \newtheorem{#1}[#2]{#3}%
   \else
     \newtheorem{#1}{#3}[#4]%
   \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \newtheorem*{#1}{#2}%
 }
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
@@ -164,7 +168,7 @@
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \newtheorem*{axp@#1rp}{#3}%
+    \axp@newtheorem*{axp@#1rp}{#3}%
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
