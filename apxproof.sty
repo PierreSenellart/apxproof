@@ -303,6 +303,21 @@
       \label{axp@s\roman{axp@seccounter}}%
     }
   \fi
+  % \paragraph{ACM Document Classes (new version)}
+  \@ifclassloaded{acmart}{
+  \newtheoremstyle{mystyle}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {\@acmplainbodyfont}
+    {\@acmplainindent}
+    {\@acmplainheadfont}
+    {.}
+    {.5em}
+    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainnotefont #3}}}
+  \theoremstyle{mystyle}
+  }{}
    \ifdefined\lipics@opterrshort
     \renewcommand{\appendixbibliographyprelim}{%
       \global\let\@oldbiblabel\@biblabel

@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{522}
+% \CheckSum{542}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1067,7 +1067,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsubsection{Class-Specific Behavior}    
 % We conclude with some class-specific behavior.
-% \paragraph{ACM Document Classes}
+% \paragraph{ACM Document Classes (old versions, till 2017)}
 % \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
 % \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
 %    \begin{macrocode}
@@ -1125,6 +1125,28 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 %    \begin{macrocode}
   \fi
+%    \end{macrocode}
+  % \paragraph{ACM Document Classes (new version)}
+% Again, we adjust the styling of theorems for the needs of \textsf{apxproof}.
+%    \begin{macrocode}
+  \@ifclassloaded{acmart}{  
+%    \end{macrocode}
+%    \begin{macrocode}  
+  \newtheoremstyle{mystyle}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {\@acmplainbodyfont}
+    {\@acmplainindent}
+    {\@acmplainheadfont}
+    {.}
+    {.5em}
+    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainnotefont #3}}}
+  \theoremstyle{mystyle}
+%    \end{macrocode}
+%    \begin{macrocode}
+  }{} 
 %    \end{macrocode}
 % \paragraph{\textsf{lipcs}}
 %    \begin{macrocode}
