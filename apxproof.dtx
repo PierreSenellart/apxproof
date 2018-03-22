@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{498}
+% \CheckSum{508}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -832,11 +832,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
-% derived from the counter.    
+% derived from the counter. We distinguish the case when the theorem
+% argument has a note and when it does not.
 %    \begin{macrocode}  
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \fi    
 %    \end{macrocode}  
 % We set the |axp@seenreptheorem| toggle to indicate that we are looking
 % for the proof of the theorem, then store in a macro the content of the

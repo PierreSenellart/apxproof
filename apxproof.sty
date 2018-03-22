@@ -168,7 +168,11 @@
     \newtheorem*{axp@#1rp}{#3}%
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \fi
       \global\toggletrue{axp@seenreptheorem}%
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname
