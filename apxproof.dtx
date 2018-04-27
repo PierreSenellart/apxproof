@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{542}
+% \CheckSum{552}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1042,6 +1042,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % a separate bibliography for the appendix (unless the |bibliography|
 % option is set to |common|). There is an extra test to
 % ensure an empty bibliography environment is not produced.
+% The name of the bibliography is changed to |\appendixrefname|; in most
+% document classes, it is called |\refname| but it is occasionally
+% (|scrartcl|, |scrreprt|) called |\bibname|.
 %    \begin{macrocode}
     \AtEndDocument{
       \appendixprelim
@@ -1052,7 +1055,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \renewcommand{\refname}{\appendixrefname}
+        \ifdefined\refname
+          \renewcommand{\refname}{\appendixrefname}
+        \else\ifdefined\bibname
+          \renewcommand{\bibname}{\appendixrefname}
+        \fi\fi
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
           \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}

@@ -269,7 +269,11 @@
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \renewcommand{\refname}{\appendixrefname}
+        \ifdefined\refname
+          \renewcommand{\refname}{\appendixrefname}
+        \else\ifdefined\bibname
+          \renewcommand{\bibname}{\appendixrefname}
+        \fi\fi
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
           \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
