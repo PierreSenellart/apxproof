@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2017/05/31 v1.0.5 Automatic proofs in appendix]
+%<package>  [2017/05/31 v1.0.5-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{498}
+% \CheckSum{562}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -97,7 +97,7 @@
 %  \addtocounter,\newcounter,\newtoggle,\global,\ifdefined,\iftoggle,
 %  \ifx,\jobname,\makeatletter,\makeatother,\newwrite,\NewEnviron,
 %  \patchcmd,\relax,\renewcommand,\renewenvironment,\RequirePackage,
-%  \roman,\space,\undefined
+%  \roman,\space,\undefined,\unexpanded
 % }
 %
 % \title{The \textsf{apxproof} package}
@@ -588,14 +588,37 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }}
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
+% \begin{macro}{\axp@newtheorem}
+% \begin{macro}{\@axp@newtheorem}
+% \begin{macro}{\@@axp@newtheorem}
+% We introduce an intermediate |\axp@newtheorem| command to define a new
+% theorem, differently depending on whether there is a section counter or
+% not. This will be useful, in particular to allow changing this
+% definition depending on the document class. This command uses two
+% intermediary commands, |\@axp@newtheorem| and |\@@axp@newtheorem|, for
+% the non-starred and starred versions.
+\def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \newtheorem{#1}[#2]{#3}%
+  \else
+    \newtheorem{#1}{#3}[#4]%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \newtheorem*{#1}{#2}%
+}
+% \end{macro}
+% \end{macro}
+% \end{macro}
 % \begin{macro}{\newtheoremrep}
 % \begin{macro}{\axp@newtheoremreptmp}
 % We define the high-level |\newtheoremrep| to have the same syntax as
 % \textsf{amsthm}'s |\newtheorem|. For this purpose, we need a little
 % trick to deal with the second and fourth optional arguments, which is what
-% |\@oparg| and |\axp@newtheoremrep| are 
+% |\@oparg| and |\axp@newtheoremreptmp| are 
 % used for. |\axp@newtheoremrep| is defined differently
-% depending on the compilation mode
+% depending on the compilation mode.
 %    \begin{macrocode}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
@@ -648,31 +671,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% Finally, some class-specific behavior ensures that the theorems created by
-% |\newtheoremrep| appear with the correct style.
-% For now, only the styling for ACM document classes (e.g.,
-% \textsf{sig-alternate}) and \textsf{llncs} needs to be adapted, as both
-% redefine the proof environments in different ways.
-% \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
-% \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
-%    \begin{macrocode}
-\ifdefined\@acmtitlebox
-  \newtheoremstyle{mystyle}
-    {6pt}
-    {6pt}
-    {\itshape}
-    {10pt}
-    {\scshape}
-    {.}
-    {.5em}
-    {}
-  \theoremstyle{mystyle}
-  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-\fi
-  \@ifclassloaded{llncs}{
-    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-  }{}
-%    \end{macrocode}
 % \begin{environment}{axp@oldproof}
 %   We save the definition of the existing |proof| environment.
 %    \begin{macrocode}  
@@ -680,6 +678,50 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \let\endaxp@oldproof\endproof
 %    \end{macrocode}  
 % \end{environment}
+% \subsubsection{Class-Specific Behavior}    
+% Finally, some class-specific behavior common to all compilation modes  
+% \paragraph{\textsf{llncs} and other Springer document classes}
+%     \begin{macrocode}
+   \ifdefined\spnewtheorem
+%    \end{macrocode}
+% \begin{macro}{\@axp@newtheorem}
+% \begin{macro}{\@@axp@newtheorem}
+% It is necessary to use |\spnewtheorem| instead of |\newtheorem| in
+% Springer document classes to obtain standard formatting.
+%    \begin{macrocode}
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \ifx\relax#2\relax
+      \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+    \else
+      \spnewtheorem{#1}[#2]{#3}{\bfseries}{\itshape}%
+    \fi
+  \else
+    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
+}
+%    \end{macrocode}
+% \end{macro}    
+% \end{macro}    
+% We have to redefine the macro |\@thmcountersep| for proper sectioned
+% counters.
+%    \begin{macrocode}
+\def\@thmcountersep{.}
+%    \end{macrocode}
+% We remove the parentheses added by default for theorem notes, which are
+% not compatible with the use of theorem notes by \textsf{apxproof}.
+%    \begin{macrocode}
+\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
+      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
+\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
+      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
+%    \end{macrocode}
+%    \begin{macrocode}
+  \fi
+%    \end{macrocode}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -693,11 +735,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -822,21 +860,22 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \newtheorem*{axp@#1rp}{#3}%
+    \axp@newtheorem*{axp@#1rp}{#3}%
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
-% derived from the counter.    
+% derived from the counter. We distinguish the case when the theorem
+% argument has a note and when it does not.
 %    \begin{macrocode}  
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \fi    
 %    \end{macrocode}  
 % We set the |axp@seenreptheorem| toggle to indicate that we are looking
 % for the proof of the theorem, then store in a macro the content of the
@@ -859,7 +898,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{ \noexpand##1}]%
+           \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
@@ -1012,7 +1051,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \else
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{%
-          \noexpand\ref{axp@s\roman{axp@seccounter}}
+          \noexpand\ref{axp@s\roman{axp@seccounter}}%
         }
         \noexpand\axp@section{%
           \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
@@ -1047,6 +1086,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % a separate bibliography for the appendix (unless the |bibliography|
 % option is set to |common|). There is an extra test to
 % ensure an empty bibliography environment is not produced.
+% The name of the bibliography is changed to |\appendixrefname|; in most
+% document classes, it is called |\refname| but it is occasionally
+% (|scrartcl|, |scrreprt|) called |\bibname|.
 %    \begin{macrocode}
     \AtEndDocument{
       \appendixprelim
@@ -1057,7 +1099,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \renewcommand{\refname}{\appendixrefname}
+        \ifdefined\refname
+          \renewcommand{\refname}{\appendixrefname}
+        \else\ifdefined\bibname
+          \renewcommand{\bibname}{\appendixrefname}
+        \fi\fi
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
           \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
@@ -1072,23 +1118,29 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsubsection{Class-Specific Behavior}    
 % We conclude with some class-specific behavior.
-% \begin{macro}{\@getcl@ss}
-% \begin{macro}{\@getclass}
-% \begin{macro}{\@currentclass}
-% We first use a little trick to store the document class in
-% macro |\@currentclass|, from
-% \url{http://tex.stackexchange.com/a/43541}.
-%    \begin{macrocode}
-  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-  \@getclass
-%    \end{macrocode}
-% \end{macro}
-% \end{macro}
-% \end{macro}
-% \paragraph{ACM Document Classes}
+% \paragraph{ACM Document Classes (old versions, till 2017)}
+% \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
+% \changes{v1.0.4}{2017/03/08}{More robust coherent styling of proof sketches}
 %    \begin{macrocode}
   \ifdefined\@acmtitlebox
+%    \end{macrocode}
+% We first redefine the |proofsketch| environment, which is used
+% differently in the base class.    
+%    \begin{macrocode}
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+%    \end{macrocode}
+% We adjust the styling of theorems for the needs of \textsf{apxproof}.
+%    \begin{macrocode}  
+  \newtheoremstyle{mystyle}
+    {6pt}
+    {6pt}
+    {\itshape}
+    {10pt}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
 %    \end{macrocode}
 % \begin{macro}{\thebibliography}
 % \begin{macro}{\refname}
@@ -1125,6 +1177,28 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
+% \paragraph{ACM Document Classes (new version)}
+% Again, we adjust the styling of theorems for the needs of \textsf{apxproof}.
+%    \begin{macrocode}
+  \@ifclassloaded{acmart}{  
+%    \end{macrocode}
+%    \begin{macrocode}  
+  \newtheoremstyle{mystyle}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {\@acmplainbodyfont}
+    {\@acmplainindent}
+    {\@acmplainheadfont}
+    {.}
+    {.5em}
+    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainheadfont #3}}}
+  \theoremstyle{mystyle}
+%    \end{macrocode}
+%    \begin{macrocode}
+  }{} 
+%    \end{macrocode}
 % \paragraph{\textsf{lipcs}}
 %    \begin{macrocode}
    \ifdefined\lipics@opterrshort
@@ -1144,6 +1218,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
+% \paragraph{\textsf{llncs} and other Springer document classes}
+%    \begin{macrocode}
+  \@ifclassloaded{llncs}{
+%    \end{macrocode}
+% \begin{macro}{proofsketch}
+% We first redefine the |proofsketch| environment, which is used
+% differently in the base class.    
+%    \begin{macrocode}
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+  }{}
+%     \end{macrocode}
 %    \begin{macrocode}
 }
 %    \end{macrocode}

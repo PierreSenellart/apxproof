@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2017/05/31 v1.0.5 Automatic proofs in appendix]
+  [2017/05/31 v1.0.5-dev Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -72,6 +72,17 @@
   \errmessage{Error: unsupported option bibliography=\axp@bibliography for
   package apxproof}
 }}
+\def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \newtheorem{#1}[#2]{#3}%
+  \else
+    \newtheorem{#1}{#3}[#4]%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \newtheorem*{#1}{#2}%
+}
 \newcommand\newtheoremrep[1]{%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
 }
@@ -89,33 +100,34 @@
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
-\ifdefined\@acmtitlebox
-  \newtheoremstyle{mystyle}
-    {6pt}
-    {6pt}
-    {\itshape}
-    {10pt}
-    {\scshape}
-    {.}
-    {.5em}
-    {}
-  \theoremstyle{mystyle}
-  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-\fi
-  \@ifclassloaded{llncs}{
-    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-  }{}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
+   \ifdefined\spnewtheorem
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \ifx\relax#2\relax
+      \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+    \else
+      \spnewtheorem{#1}[#2]{#3}{\bfseries}{\itshape}%
+    \fi
+  \else
+    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
+}
+\def\@thmcountersep{.}
+\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
+      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
+\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
+      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
+  \fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \begin{#1}[##1]\BODY\end{#1}%
     }
@@ -159,16 +171,16 @@
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
-    \ifx\relax#4\relax
-      \newtheorem{#1}[#2]{#3}%
-    \else
-      \newtheorem{#1}{#3}[#4]%
-    \fi
+    \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \newtheorem*{axp@#1rp}{#3}%
+    \axp@newtheorem*{axp@#1rp}{#3}%
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
-      \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+      \fi
       \global\toggletrue{axp@seenreptheorem}%
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname
@@ -177,7 +189,7 @@
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{ \noexpand##1}]%
+           \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
@@ -253,7 +265,7 @@
     \else
       \immediate\write\axp@proofsfile{%
         \noexpand\def\noexpand\axp@tmp{%
-          \noexpand\ref{axp@s\roman{axp@seccounter}}
+          \noexpand\ref{axp@s\roman{axp@seccounter}}%
         }
         \noexpand\axp@section{%
           \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
@@ -278,7 +290,11 @@
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \renewcommand{\refname}{\appendixrefname}
+        \ifdefined\refname
+          \renewcommand{\refname}{\appendixrefname}
+        \else\ifdefined\bibname
+          \renewcommand{\bibname}{\appendixrefname}
+        \fi\fi
         \let\axp@oldthebibliography\thebibliography
         \renewcommand\thebibliography[1]{%
           \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
@@ -288,10 +304,18 @@
       }{}
     }
   }{}
-  \def\@getcl@ss#1.cls#2\relax{\def\@currentclass{#1}}
-  \def\@getclass{\expandafter\@getcl@ss\@filelist\relax}
-  \@getclass
   \ifdefined\@acmtitlebox
+  \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  \newtheoremstyle{mystyle}
+    {6pt}
+    {6pt}
+    {\itshape}
+    {10pt}
+    {\scshape}
+    {.}
+    {.5em}
+    {}
+  \theoremstyle{mystyle}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
@@ -304,12 +328,29 @@
       \label{axp@s\roman{axp@seccounter}}%
     }
   \fi
+  \@ifclassloaded{acmart}{
+  \newtheoremstyle{mystyle}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {.5\baselineskip\@plus.2\baselineskip
+      \@minus.2\baselineskip}
+    {\@acmplainbodyfont}
+    {\@acmplainindent}
+    {\@acmplainheadfont}
+    {.}
+    {.5em}
+    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainheadfont #3}}}
+  \theoremstyle{mystyle}
+  }{}
    \ifdefined\lipics@opterrshort
     \renewcommand{\appendixbibliographyprelim}{%
       \global\let\@oldbiblabel\@biblabel
       \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}%
     }
   \fi
+  \@ifclassloaded{llncs}{
+    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+  }{}
 }
 \endinput
 %%
