@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{554}
+% \CheckSum{562}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -691,7 +691,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
 \def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
-    \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+    \ifx\relax#2\relax
+      \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+    \else
+      \spnewtheorem{#1}[#2]{#3}{\bfseries}{\itshape}%
+    \fi
   \else
     \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
   \fi
