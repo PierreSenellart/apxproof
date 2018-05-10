@@ -102,6 +102,23 @@
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
+   \ifdefined\spnewtheorem
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+  \else
+    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
+}
+\def\@thmcountersep{.}
+\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
+      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
+\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
+      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
+  \fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
@@ -331,23 +348,6 @@
   \@ifclassloaded{llncs}{
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
   }{}
-   \ifdefined\spnewtheorem
-\def\@axp@newtheorem#1#2#3#4{%
-  \ifx\relax#4\relax
-    \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
-  \else
-    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
-  \fi
-}
-\def\@@axp@newtheorem#1#2{%
-  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
-}
-\def\@thmcountersep{.}
-\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
-      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
-\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
-      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
-  \fi
 }
 \endinput
 %%

@@ -44,7 +44,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{552}
+% \CheckSum{554}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -678,6 +678,46 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \let\endaxp@oldproof\endproof
 %    \end{macrocode}  
 % \end{environment}
+% \subsubsection{Class-Specific Behavior}    
+% Finally, some class-specific behavior common to all compilation modes  
+% \paragraph{\textsf{llncs} and other Springer document classes}
+%     \begin{macrocode}
+   \ifdefined\spnewtheorem
+%    \end{macrocode}
+% \begin{macro}{\@axp@newtheorem}
+% \begin{macro}{\@@axp@newtheorem}
+% It is necessary to use |\spnewtheorem| instead of |\newtheorem| in
+% Springer document classes to obtain standard formatting.
+%    \begin{macrocode}
+\def\@axp@newtheorem#1#2#3#4{%
+  \ifx\relax#4\relax
+    \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
+  \else
+    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
+  \fi
+}
+\def\@@axp@newtheorem#1#2{%
+  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
+}
+%    \end{macrocode}
+% \end{macro}    
+% \end{macro}    
+% We have to redefine the macro |\@thmcountersep| for proper sectioned
+% counters.
+%    \begin{macrocode}
+\def\@thmcountersep{.}
+%    \end{macrocode}
+% We remove the parentheses added by default for theorem notes, which are
+% not compatible with the use of theorem notes by \textsf{apxproof}.
+%    \begin{macrocode}
+\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
+      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
+\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
+      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
+%    \end{macrocode}
+%    \begin{macrocode}
+  \fi
+%    \end{macrocode}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -1187,42 +1227,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 %    \begin{macrocode}
   }{}
-   \ifdefined\spnewtheorem
-%    \end{macrocode}
-% \begin{macro}{\@axp@newtheorem}
-% \begin{macro}{\@@axp@newtheorem}
-% It is necessary to use |\spnewtheorem| instead of |\newtheorem| in
-% Springer document classes to obtain standard formatting.
-%    \begin{macrocode}
-\def\@axp@newtheorem#1#2#3#4{%
-  \ifx\relax#4\relax
-    \spnewtheorem{#1}{#3}{\bfseries}{\itshape}%
-  \else
-    \spnewtheorem{#1}{#3}[#4]{\bfseries}{\itshape}%
-  \fi
-}
-\def\@@axp@newtheorem#1#2{%
-  \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
-}
-%    \end{macrocode}
-% \end{macro}    
-% \end{macro}    
-% We have to redefine the macro |\@thmcountersep| for proper sectioned
-% counters.
-%    \begin{macrocode}
-\def\@thmcountersep{.}
-%    \end{macrocode}
-% We remove the parentheses added by default for theorem notes, which are
-% not compatible with the use of theorem notes by \textsf{apxproof}.
-%    \begin{macrocode}
-\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
-      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
-\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
-      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
-%    \end{macrocode}
-%    \begin{macrocode}
-  \fi
-%    \end{macrocode}
+%     \end{macrocode}
 %    \begin{macrocode}
 }
 %    \end{macrocode}
