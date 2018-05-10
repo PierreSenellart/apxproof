@@ -34,7 +34,7 @@ in any other directory where LaTeX searches for packages.
 
 ## License
 
-Copyright © 2016-2017 by Pierre Senellart.
+Copyright © 2016-2018 by Pierre Senellart.
 
 This work may be distributed and/or modified under the conditions of the
 LaTeX Project Public License, either version 1.3 of this license or (at

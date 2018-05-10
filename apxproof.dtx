@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2016-2017 by Pierre Senellart
+% Copyright (C) 2016-2018 by Pierre Senellart
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2017/05/31 v1.0.5-dev Automatic proofs in appendix]
+%<package>  [2018/05/10 v1.0.6 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -589,6 +589,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheorem}
+% \changes{v1.0.6}{2018/05/10}{Introduce intermediary command for theorem
+% macro}
 % \begin{macro}{\@axp@newtheorem}
 % \begin{macro}{\@@axp@newtheorem}
 % We introduce an intermediate |\axp@newtheorem| command to define a new
@@ -681,6 +683,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \subsubsection{Class-Specific Behavior}    
 % Finally, some class-specific behavior common to all compilation modes  
 % \paragraph{\textsf{llncs} and other Springer document classes}
+% \changes{v1.0.6}{2018/05/10}{Better support of Springer document
+% classes}
 %     \begin{macrocode}
    \ifdefined\spnewtheorem
 %    \end{macrocode}
@@ -868,6 +872,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
 % derived from the counter. We distinguish the case when the theorem
 % argument has a note and when it does not.
+% \changes{v1.0.6}{2018/05/10}{Better handling of note-free theorems in
+% document classes that treat theorems differently when they have an
+% empty note}
 %    \begin{macrocode}  
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
@@ -893,6 +900,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % defined labels.
 % \changes{v1.0.2}{2016/12/13}{Fix missing space between repeated theorem
 % counter and theorem note}
+% \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
+% in optional argument of macro environment}
 %    \begin{macrocode}  
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
@@ -1045,6 +1054,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\axp@writesection}
 % If |\axp@sectitle| is not empty, we create
 % a new section in the appendix, referring to the main text section.
+% \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
+% in appendix titles}
 %    \begin{macrocode}  
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
@@ -1089,6 +1100,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % The name of the bibliography is changed to |\appendixrefname|; in most
 % document classes, it is called |\refname| but it is occasionally
 % (|scrartcl|, |scrreprt|) called |\bibname|.
+% \changes{v1.0.6}{2018/05/10}{Deal with document classes where the
+% bibliography is called \texttt{\textbackslash bibname}}
 %    \begin{macrocode}
     \AtEndDocument{
       \appendixprelim
@@ -1178,6 +1191,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \fi
 %    \end{macrocode}
 % \paragraph{ACM Document Classes (new version)}
+% \changes{v1.0.6}{2018/05/10}{Support of new ACM document class
+% (\texttt{acmart.cls})}
 % Again, we adjust the styling of theorems for the needs of \textsf{apxproof}.
 %    \begin{macrocode}
   \@ifclassloaded{acmart}{  
