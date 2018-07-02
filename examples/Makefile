@@ -8,5 +8,5 @@ clean:
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	cd $(dir $@) && \
 	latexmk -c && \
-	latexmk test ; \
+	latexmk -pdf test ; \
 	cd ..
