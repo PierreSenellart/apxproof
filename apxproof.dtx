@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2018/05/10 v1.0.7 Automatic proofs in appendix]
+%<package>  [2018/05/10 v1.0.6-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -922,16 +922,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % 
 %    \subsubsection{Forward-link mechanism}
-% \changes{v1.0.7}{2018/07/02}{Added forward-link mechanism (K.D. Bauer)}
+% \changes{v1.0.7}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
 % 
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
 % repetition in the appendix.
 % 
 % \begin{macro}{\axp@with@forward}
-% \begin{macro}{\thefoobar}
-% \begin{macro}{\axp@old@thefoobar}
-% In order to make the number of the theorem a link
+% In order to make the number of the |foobarrep| theorem a link
 % to its repeated version, we temporarily redefine the
 % |\thefoobar| command, or, if we inherited the counter
 % from a |bazbar| environment, the |\thebazbar| command.
@@ -945,7 +943,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % for the duration of the |\begin{foobar}| form,
 % resetting it to the old value as soon as possible.
 %
-% Redefining |\thefoobar| has the sideeffect of changing |\newlabel| entries
+% Redefining |\thefoobar| has the side effect of changing |\newlabel| entries
 % in the |.aux| file, so we need to to be able to disable
 % addition of the hyperlink, which is why we use an
 % intermediate |\axp@forward@link|\marg{target}\marg{text} macro,
@@ -956,7 +954,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
      \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
        \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
        \csdef{the\csname axp@cn@#1\endcsname}{%
-         \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}{\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
+         \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
+           {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
        }%
      }{}%
      #2%
@@ -966,8 +965,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
      \global\boolfalse{axp@forward}
    }%
 %    \end{macrocode}
-% \end{macro}
-% \end{macro}
 % \end{macro}
 %
 % \begin{macro}{\axp@forward@link}
