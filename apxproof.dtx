@@ -904,6 +904,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % counter and theorem note}
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
+% \changes{v1.0.6-dev}{2018/07/04}{Fix \cs{label} not being disabled
+% in \textsf{amsmath} environments, where \cs{label@in@display} is
+% used instead.}
 %    \begin{macrocode}  
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
@@ -912,6 +915,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
+          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}

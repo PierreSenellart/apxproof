@@ -193,6 +193,7 @@
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
+          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
