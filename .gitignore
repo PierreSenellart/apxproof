@@ -11,3 +11,5 @@
 *.fls
 *.log
 *.out
+*.vtc
+*.synctex.gz

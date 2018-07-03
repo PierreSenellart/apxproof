@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2018/05/10 v1.0.6 Automatic proofs in appendix]
+%<package>  [2018/05/10 v1.0.6-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -32,6 +32,7 @@
 \usepackage{hypdoc}
 \usepackage{textcomp}
 \usepackage[TS1,T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{microtype}
 \newtheorem{example}{Example}
 \newtheoremrep{foobar}{Foobar}
@@ -44,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{562}
+% \CheckSum{621}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -867,6 +868,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \axp@newtheorem*{axp@#1rp}{#3}%
+    \axp@forward@setup{#1}{#2}{#3}{#4}%
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
@@ -875,13 +877,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.0.6}{2018/05/10}{Better handling of note-free theorems in
 % document classes that treat theorems differently when they have an
 % empty note}
-%    \begin{macrocode}  
+%    \begin{macrocode}
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
-        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
       \else
-        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
       \fi    
 %    \end{macrocode}  
 % We set the |axp@seenreptheorem| toggle to indicate that we are looking
@@ -908,6 +910,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
+          \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
@@ -915,8 +918,109 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       }
     }
   }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}  
+% 
+%    \subsubsection{Forward-link mechanism}
+% \changes{v1.0.7}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
+% 
+% When hyperref is loaded, |foobarrep| environments
+% in the main text have their number link to their
+% repetition in the appendix.
+% 
+%   
+
+% 
+% \begin{macro}{\axp@with@forward}
+% In order to make the number of the |foobarrep| theorem a link
+% to its repeated version, we temporarily redefine the
+% |\thefoobar| command, or, if we inherited the counter
+% from a |bazbar| environment, the |\thebazbar| command.
+% This seems to be the only robust way, to make the number
+% a |\hyperlink|, without adding extensive dependence
+% on internals of |amsthm|, the builtin |\newtheorem|
+% and possibly document-class specific definitions.
+% 
+% In order to allow users to redefine |\thefoobar| without
+% breaking this feature, we redefine |\thefoobar| only
+% for the duration of the |\begin{foobar}| form,
+% resetting it to the old value as soon as possible.
+%
+% Redefining |\thefoobar| has the side effect of changing |\newlabel| entries
+% in the |.aux| file, so we need to to be able to disable
+% addition of the hyperlink, which is why we use an
+% intermediate |\axp@forward@link|\marg{target}\marg{text} macro,
+% and |\protect| it to output it verbatim into the |.aux| file.
+% 
+% These hyperlinks are of course disabled in the |strip| compilation
+% mode.
+%    \begin{macrocode}
+   \newcommand{\axp@with@forward}[2]{%
+     \ifthenelse{\equal{\axp@appendix}{strip}}{#2}{
+       \global\booltrue{axp@forward}%
+       \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
+         \csdef{the\csname axp@cn@#1\endcsname}{%
+           \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
+             {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
+         }%
+       }{}%
+       #2%
+       \ifcsdef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{the\csname axp@cn@#1\endcsname}{axp@old@the\csname axp@cn@#1\endcsname}%
+       }{}%
+       \global\boolfalse{axp@forward}
+     }}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\axp@forward@link}
+% \begin{macro}{axp@forward}
+% Dummy macro, for handling the unwanted change of
+% the |\newlabel| entry in the |.aux| file caused by
+% changing the definition of |\thefoobar|.
+%    \begin{macrocode}
+  \newbool{axp@forward}
+  \newcommand{\axp@forward@link}[2]{%
+    \ifboolexpr{bool {axp@forward} and test {\ifcsdef{hyperlink}}}{%
+      \hyperlink{#1}{#2}%
+    }{%
+      #2%
+    }%
+  }%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\axp@forward@target}
+% Provides the needed |\hypertarget|.
+% Intended to be written to the |.axp| file.
+%    \begin{macrocode}
+  \newcommand{\axp@forward@target}[2]{%
+    \ifcsname hypertarget\endcsname
+      \hypertarget{#1}{#2}%
+    \else
+      #2%
+    \fi
+  }
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\axp@forward@setup}
+% In order to support counter inheritance with the first
+% optional argument of |\newtheoremrep|,
+% we need access to the name of the counter.
+% For compliance with the behavior of |\@axp@newtheorem|,
+% the first optional argument (|#2|) is ignored
+% if the second optional argument (|#4|) is given.
+%    \begin{macrocode}
+  \newcommand{\axp@forward@setup}[4]{%
+    \csedef{axp@cn@#1}{\ifblank{#4}{\ifblank{#2}{#1}{#2}}{#1}}%
+  }
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
 %    \subsubsection{Proof Environments}  
 % \begin{macro}{\noproofinappendix}
 %   Utility macro that toggles |axp@seenreptheorem| to false.
@@ -924,7 +1028,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % \begin{environment}{appendixproof}
 % We dump the content of this in appendix, within an original |proof|

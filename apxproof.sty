@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2018/05/10 v1.0.6 Automatic proofs in appendix]
+  [2018/05/10 v1.0.6-dev Automatic proofs in appendix]
 \RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
@@ -174,12 +174,13 @@
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \axp@newtheorem*{axp@#1rp}{#3}%
+    \axp@forward@setup{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
-        \begin{#1}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
       \else
-        \begin{#1}[##1]\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
       \fi
       \global\toggletrue{axp@seenreptheorem}%
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
@@ -190,12 +191,48 @@
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
+          \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
       }
     }
+  }
+
+   \newcommand{\axp@with@forward}[2]{%
+     \ifthenelse{\equal{\axp@appendix}{strip}}{#2}{
+       \global\booltrue{axp@forward}%
+       \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
+         \csdef{the\csname axp@cn@#1\endcsname}{%
+           \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
+             {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
+         }%
+       }{}%
+       #2%
+       \ifcsdef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{the\csname axp@cn@#1\endcsname}{axp@old@the\csname axp@cn@#1\endcsname}%
+       }{}%
+       \global\boolfalse{axp@forward}
+     }}%
+  \newbool{axp@forward}
+  \newcommand{\axp@forward@link}[2]{%
+    \ifboolexpr{bool {axp@forward} and test {\ifcsdef{hyperlink}}}{%
+      \hyperlink{#1}{#2}%
+    }{%
+      #2%
+    }%
+  }%
+  \newcommand{\axp@forward@target}[2]{%
+    \ifcsname hypertarget\endcsname
+      \hypertarget{#1}{#2}%
+    \else
+      #2%
+    \fi
+  }
+  \newcommand{\axp@forward@setup}[4]{%
+    \csedef{axp@cn@#1}{\ifblank{#4}{\ifblank{#2}{#1}{#2}}{#1}}%
   }
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
