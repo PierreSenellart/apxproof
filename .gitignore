@@ -11,6 +11,5 @@
 *.fls
 *.log
 *.out
-*.pdf
+*.vtc
 *.synctex.gz
-auto
