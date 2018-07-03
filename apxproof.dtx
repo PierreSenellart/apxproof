@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{621}
+% \CheckSum{623}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -922,7 +922,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % 
 %    \subsubsection{Forward-link mechanism}
-% \changes{v1.0.7}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
+% \changes{v1.0.6-dev}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
 % 
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
@@ -1160,12 +1160,17 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % a new section in the appendix, referring to the main text section.
 % \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
 % in appendix titles}
+% \changes{v1.0.6-dev}{2017/07/03}{Added \texttt{\textbackslash global} 
+% to \texttt{\textbackslash def} of \texttt{\textbackslash axp@tmp}, to fix issues
+% caused for fancyhdr by having \texttt{\textbackslash end\{document\}}
+% undefine \texttt{\textbackslash axp@tmp} before header of last page
+% was typeset.}
 %    \begin{macrocode}  
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
       \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{%
+        \noexpand\global\noexpand\def\noexpand\axp@tmp{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
         }
         \noexpand\axp@section{%

@@ -1,9 +1,9 @@
-TARGET = $(foreach dir, $(wildcard */), $(dir)/test.pdf)
+TARGET = $(foreach dir, $(wildcard */), $(dir)test.pdf)
 
 all: $(TARGET)
 
 clean:
-	rm */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out
+	rm -fv */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out */*.pdf
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	cd $(dir $@) && \
