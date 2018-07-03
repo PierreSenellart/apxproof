@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{618}
+% \CheckSum{621}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -928,6 +928,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % in the main text have their number link to their
 % repetition in the appendix.
 % 
+%   
+
+% 
 % \begin{macro}{\axp@with@forward}
 % In order to make the number of the |foobarrep| theorem a link
 % to its repeated version, we temporarily redefine the
@@ -948,22 +951,26 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % addition of the hyperlink, which is why we use an
 % intermediate |\axp@forward@link|\marg{target}\marg{text} macro,
 % and |\protect| it to output it verbatim into the |.aux| file.
+% 
+% These hyperlinks are of course disabled in the |strip| compilation
+% mode.
 %    \begin{macrocode}
    \newcommand{\axp@with@forward}[2]{%
-     \global\booltrue{axp@forward}%
-     \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
-       \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
-       \csdef{the\csname axp@cn@#1\endcsname}{%
-         \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
-           {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
-       }%
-     }{}%
-     #2%
-     \ifcsdef{axp@old@the\csname axp@cn@#1\endcsname}{%
-       \csletcs{the\csname axp@cn@#1\endcsname}{axp@old@the\csname axp@cn@#1\endcsname}%
-     }{}%
-     \global\boolfalse{axp@forward}
-   }%
+     \ifthenelse{\equal{\axp@appendix}{strip}}{#2}{
+       \global\booltrue{axp@forward}%
+       \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
+         \csdef{the\csname axp@cn@#1\endcsname}{%
+           \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
+             {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
+         }%
+       }{}%
+       #2%
+       \ifcsdef{axp@old@the\csname axp@cn@#1\endcsname}{%
+         \csletcs{the\csname axp@cn@#1\endcsname}{axp@old@the\csname axp@cn@#1\endcsname}%
+       }{}%
+       \global\boolfalse{axp@forward}
+     }}%
 %    \end{macrocode}
 % \end{macro}
 %
