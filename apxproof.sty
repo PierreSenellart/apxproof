@@ -301,7 +301,7 @@
     \ifx\axp@sectitle\@empty
     \else
       \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{%
+        \noexpand\global\noexpand\def\noexpand\axp@tmp{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
         }
         \noexpand\axp@section{%
