@@ -3,7 +3,7 @@ TARGET = $(foreach dir, $(wildcard */), $(dir)test.pdf)
 all: $(TARGET)
 
 clean:
-	rm -fv */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out */test.pdf
+	rm */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	cd $(dir $@) && \
