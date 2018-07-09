@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{629}
+% \CheckSum{0}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1162,24 +1162,41 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\axp@writesection}
 % If |\axp@sectitle| is not empty, we create
 % a new section in the appendix, referring to the main text section.
+% 
+% Thereby, we wrap |\ref{axp@si}| into |\axp@protectref@i|, in order
+% to protect the label name from wrongly being converted to uppercase
+% e.g. in \textsf{fancyhdr} with |\pagestyle{fancy}|.
+% 
+% This macro is defined both in the |.aux| file (in order to ensure availability
+% when typesetting the |\tableofcontents|), and immediately before typesetting
+% the appendix section (to ensure availability in the |\section| command).
+% 
+% and when |\axp@writesection| is expanded, in order to ensure that
+% it is defined when typesetting the appendix on the first run,
+% but also when typesetting the |\tableofcontents| on subsequent runs.
 % \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
 % in appendix titles}
-% \changes{v1.0.6-dev}{2017/07/03}{Added \texttt{\textbackslash global} 
-% to \texttt{\textbackslash def} of \texttt{\textbackslash axp@tmp}, to fix issues
-% caused for fancyhdr by having \texttt{\textbackslash end\{document\}}
-% undefine \texttt{\textbackslash axp@tmp} before header of last page
-% was typeset.}
+% \changes{v1.0.6-dev}{2018/07/09}{Replaced \cs{axp@tmp} wrapper by more
+% robust use of \cs{axp@protectref@<Roman Numeral>}. Should resolve issues
+% from use of section title in \textsf{fancyhdr}, and in \cs{tableofcontents}.}
 %    \begin{macrocode}  
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
-      \immediate\write\axp@proofsfile{%
-        \noexpand\global\noexpand\def\noexpand\axp@tmp{%
+      \edef\axp@tmp{%
+        \noexpand\global\noexpand\def
+        \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
-        }
+        }%
+      }%
+      \immediate\write\@auxout{\expandonce{\axp@tmp}}
+      \immediate\write\axp@proofsfile{%
+        \expandonce{\axp@tmp}^^J%
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
-                                         {\axp@sectitle}%
+          \noexpand\appendixsectionformat{%
+            \protect
+            \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
+          }{\axp@sectitle}%
         }%
       }%
       \nosectionappendix

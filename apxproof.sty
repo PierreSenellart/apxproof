@@ -301,13 +301,20 @@
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
-      \immediate\write\axp@proofsfile{%
-        \noexpand\global\noexpand\def\noexpand\axp@tmp{%
+      \edef\axp@tmp{%
+        \noexpand\global\noexpand\def
+        \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
-        }
+        }%
+      }%
+      \immediate\write\@auxout{\expandonce{\axp@tmp}}
+      \immediate\write\axp@proofsfile{%
+        \expandonce{\axp@tmp}^^J%
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
-                                         {\axp@sectitle}%
+          \noexpand\appendixsectionformat{%
+            \protect
+            \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
+          }{\axp@sectitle}%
         }%
       }%
       \nosectionappendix
