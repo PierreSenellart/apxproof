@@ -1,4 +1,0 @@
-\contentsline {section}{\numberline {1}Hello world}{1}{section.1}
-\contentsline {section}{\numberline {2}Other world}{1}{section.2}
-\contentsline {section}{\numberline {A}Proofs for Section\nobreakspace {}\axp@protectref@ii (Hello world)}{1}{appendix.A}
-\contentsline {section}{\numberline {B}Proofs for Section\nobreakspace {}\axp@protectref@iii (Other world)}{1}{appendix.B}
