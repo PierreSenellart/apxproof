@@ -13,5 +13,6 @@
 *.out
 *.vtc
 *.synctex.gz
-auto 
+*.fmt
 *~
+auto 

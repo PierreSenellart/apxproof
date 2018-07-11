@@ -789,10 +789,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \subsubsection{Auxiliary File for the Appendix}  
 % \begin{macro}{\axp@proofsfile}  
 % We open a new auxiliary file, with extension |.axp|, where the appendix
-% material will be dumped.  
+% material will be dumped.
+% \changes{v1.0.6-dev}{2018/07/11}{Initialization deferred to \cs{AtBegindocument}
+% for compatibility with \cs{dump}ed precompiled preambles.}
 %    \begin{macrocode}  
+  \AtBeginDocument{
   \newwrite\axp@proofsfile
   \immediate\openout\axp@proofsfile=\jobname.axp
+  }
 %    \end{macrocode}  
 % \end{macro}  
 % \begin{environment}{proof}
@@ -801,11 +805,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % it will be used in several places for internal names) and reestablish the original definition of
 % the |proof| environment and the |\section| macro.
 %    \begin{macrocode}  
+  \AtBeginDocument{
   \immediate\write\axp@proofsfile{%
     \noexpand\makeatletter
     \noexpand\let\noexpand\proof\noexpand\axp@oldproof
     \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
     \noexpand\let\noexpand\section\noexpand\axp@oldsection
+  }
   }
 %    \end{macrocode}  
 % \end{macro}  
