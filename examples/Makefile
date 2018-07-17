@@ -13,9 +13,9 @@ clean:
 	cd ..
 
 %.fmt: %.tex
-	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\\dump'
+	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
 
-preamble/test.pdf : preamble/test_preamble.fmt
+preamble/test.pdf: preamble/test_preamble.fmt
 
 ../apxproof.sty: ../apxproof.ins ../apxproof.dtx
 	make -C ..
