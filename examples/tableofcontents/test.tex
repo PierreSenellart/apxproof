@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{../../apxproof}
+\let\oldmaketitle\maketitle
+\def\maketitle{\oldmaketitle\tableofcontents\pagestyle{fancy}\section{Introduction}}
+\input{../common}

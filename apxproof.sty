@@ -190,6 +190,7 @@
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname
       \BODY
+      % used instead (K. D. Bauer)}
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
@@ -197,6 +198,7 @@
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
+          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
@@ -304,13 +306,20 @@
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
-      \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{%
+      \edef\axp@tmp{%
+        \noexpand\global\noexpand\def
+        \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
-        }
+        }%
+      }%
+      \immediate\write\@auxout{\expandonce{\axp@tmp}}
+      \immediate\write\axp@proofsfile{%
+        \expandonce{\axp@tmp}^^J%
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
-                                         {\axp@sectitle}%
+          \noexpand\appendixsectionformat{%
+            \protect
+            \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
+          }{\axp@sectitle}%
         }%
       }%
       \nosectionappendix
