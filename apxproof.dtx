@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{623}
+% \CheckSum{644}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -791,7 +791,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % We open a new auxiliary file, with extension |.axp|, where the appendix
 % material will be dumped.  
 % \changes{v1.0.6-dev}{2018/07/11}{Initialization deferred to \cs{AtBeginDocument}
-% for compatibility with \cs{dump}ed precompiled preambles.}
+% for compatibility with \cs{dump}ed precompiled preambles (K. D.
+% Bauer)}
 %    \begin{macrocode}  
   \AtBeginDocument{
     \newwrite\axp@proofsfile
@@ -910,6 +911,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % counter and theorem note}
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
+% \changes{v1.0.6-dev}{2018/07/04}{Fix \cs{label} not being disabled
+% in \textsf{amsmath} environments, where \cs{label@in@display} is
+      % used instead (K. D. Bauer)}
 %    \begin{macrocode}  
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
@@ -918,6 +922,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\let\noexpand\label\noexpand\@gobble%
+          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
@@ -928,7 +933,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % 
 %    \subsubsection{Forward-link mechanism}
-% \changes{v1.0.7}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
+% \changes{v1.0.6-dev}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
 % 
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
@@ -1164,19 +1169,38 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\axp@writesection}
 % If |\axp@sectitle| is not empty, we create
 % a new section in the appendix, referring to the main text section.
+% 
+% Here, we wrap |\ref{axp@si}| into |\axp@protectref@i|, in order
+% to protect the label name from wrongly being converted to uppercase,
+% e.g., in \textsf{fancyhdr} with |\pagestyle{fancy}|.
+% 
+% This macro is defined both in the |.aux| file (in order to ensure availability
+% when typesetting the |\tableofcontents|), and immediately before typesetting
+% the appendix section (to ensure availability in the |\section| command).
+% 
 % \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
 % in appendix titles}
+% \changes{v1.0.6-dev}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust
+% Resolves issues from use of section title in \textsf{fancyhdr}, 
+% and in \cs{tableofcontents} (K. D. Bauer).}
 %    \begin{macrocode}  
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
-      \immediate\write\axp@proofsfile{%
-        \noexpand\def\noexpand\axp@tmp{%
+      \edef\axp@tmp{%
+        \noexpand\global\noexpand\def
+        \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}{%
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
-        }
+        }%
+      }%
+      \immediate\write\@auxout{\expandonce{\axp@tmp}}
+      \immediate\write\axp@proofsfile{%
+        \expandonce{\axp@tmp}^^J%
         \noexpand\axp@section{%
-          \noexpand\appendixsectionformat{\protect\noexpand\axp@tmp}%
-                                         {\axp@sectitle}%
+          \noexpand\appendixsectionformat{%
+            \protect
+            \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
+          }{\axp@sectitle}%
         }%
       }%
       \nosectionappendix
