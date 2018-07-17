@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{644}
+% \CheckSum{645}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -659,6 +659,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\appendixprelim}
 % \changes{v1.0.4}{2017/03/03}{Configurable appendix style}
 % \begin{macro}{\appendixsectionformat}
+% \changes{v1.0.6-dev}{2018/07/17}{Fix missing space in default
+% \cs{appendixsectionformat}}
 % We provide sensible defaults for these four user-customizable macros.
 % Even though they are only useful in append mode, we define them for
 % all modes so that a |\renewcommand| works in all cases.
@@ -667,7 +669,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
-\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
