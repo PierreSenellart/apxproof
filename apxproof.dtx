@@ -250,6 +250,7 @@ This proof is in the appendix.
 % \begin{proof}
 % This is the proof of the regular foobar.
 % \end{proof}
+% Now, if we use a repeated theorem:
 % \begin{quote}
 % \begin{verbatim}
 % \begin{foobarrep}
@@ -269,9 +270,9 @@ This proof is in the appendix.
 This is the proof of the repeated foobar.
 %</driver>
 % \end{proof}
-% Note that, since |hyperref| is loaded, there is a hyperlink
-% created from the statement of the theorem in the appendix to that in
-% the main text.
+% Note that, since |hyperref| is loaded, there are hyperlinks
+% created between the statements of the theorems in the main text and in
+% the appendix.
 % \end{example}
 %
 % When the proof is deferred to the appendix, it is common practice to
@@ -286,7 +287,7 @@ This is the proof of the repeated foobar.
 % The proof sketch is typeset similarly to a proof, but is always in the
 % main text. Similarly, an |inlineproof| \DescribeEnv{inlineproof}
 % environment is provided so as to
-% be able to have both a proof in the appendix (using the regualr |proof|
+% be able to have both a proof in the appendix (using the regular |proof|
 % environment, or alternatively the |appendixproof| environment) and a
 % different proof in the main text (using the |inlineproof| environment).
 % \begin{example} Here are simple examples of proof sketches and inline
@@ -413,16 +414,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{itemize}
 % \item \LaTeX{} standard document classes (e.g., |article.cls|)
 % \item \href{https://www.ctan.org/pkg/koma-script}{KOMA-Script}
-% (e.g., |scrartcl.cls|)
+% (e.g., |scrartcl.cls|, |scrbook.cls|)
 % \item \href{https://www.acm.org/publications/proceedings-template}{ACM
-% SIG Proceedings} (e.g., |sig-alternate.cls|)
+% SIG Proceedings} (e.g., |sig-alternate.cls|, |acmart.cls|)
 % \item \href{https://www.springer.com/computer/lncs/lncs+authors}{
 % Springer's Lecture Notes in Computer Science} (e.g.,
 % |llncs.cls|)
 % \item
 % \href{https://www.dagstuhl.de/en/publications/lipics}{Schlo\ss{}
 % Dagstuhl's Leibniz International Proceedings in Informatics} (e.g.,
-% |lipics.cls|)
+% |lipics.cls|, |lipcs-v2016.cls|)
 % \end{itemize}
 % Other classes may work out of the box. Adding support for specific
 % classes is possible and can be requested from the
@@ -463,7 +464,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % preferably be submitted through the \emph{Issues} feature of GitHub.
 %
 % \section{Acknowledgments}
-% Thanks to Antoine Amarilli for feedback and proofreading. 
+% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
+% Bauer for the implementation of the forward-linking mechanism, and
+% for various bugfixes.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -934,7 +937,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{macro}  
 % 
-%    \subsubsection{Forward-link mechanism}
+%    \subsubsection{Forward-Linking Mechanism}
 % \changes{v1.0.6-dev}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
 % 
 % When hyperref is loaded, |foobarrep| environments
@@ -1383,12 +1386,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
-% \paragraph{\textsf{llncs} and other Springer document classes}
+% \paragraph{\textsf{llncs}}
 %    \begin{macrocode}
   \@ifclassloaded{llncs}{
 %    \end{macrocode}
 % \begin{macro}{proofsketch}
-% We first redefine the |proofsketch| environment, which is used
+% We redefine the |proofsketch| environment, which is used
 % differently in the base class.    
 %    \begin{macrocode}
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
