@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{645}
+% \CheckSum{654}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1209,6 +1209,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \fi
   }
 %    \end{macrocode}  
+% \end{macro}
+% Finally, in a somewhat ad hoc manner, we disable the whole section management
+% for \cs{tableofcontents}, which may be typeset using a section heading,
+% but for which automatic section management does not make sense.
+%   
+% \begin{macro}{\axp@oldtableofcontents}
+% \begin{macro}{\tableofcontents}
+% \changes{v1.0.6-dev}{2018/07/09}{Disable section management for table
+% of contents}
+%    \begin{macrocode}  
+  \let\axp@oldtableofcontents\tableofcontents
+  \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
+%    \end{macrocode}  
+% \end{macro}
 % \end{macro}
 %    \subsubsection{Append Compilation Mode}  
 %    \begin{macrocode}  
