@@ -144,16 +144,16 @@
 }
 {
   \AtBeginDocument{
-  \newwrite\axp@proofsfile
-  \immediate\openout\axp@proofsfile=\jobname.axp
+    \newwrite\axp@proofsfile
+    \immediate\openout\axp@proofsfile=\jobname.axp
   }
   \AtBeginDocument{
-  \immediate\write\axp@proofsfile{%
-    \noexpand\makeatletter
-    \noexpand\let\noexpand\proof\noexpand\axp@oldproof
-    \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
-    \noexpand\let\noexpand\section\noexpand\axp@oldsection
-  }
+    \immediate\write\axp@proofsfile{%
+      \noexpand\makeatletter
+      \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+      \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
+      \noexpand\let\noexpand\section\noexpand\axp@oldsection
+    }
   }
   \def\FVB@VerbatimOut{%
     \@bsphack
