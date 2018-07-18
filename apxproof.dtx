@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{0}
+% \CheckSum{654}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -250,6 +250,7 @@ This proof is in the appendix.
 % \begin{proof}
 % This is the proof of the regular foobar.
 % \end{proof}
+% Now, if we use a repeated theorem:
 % \begin{quote}
 % \begin{verbatim}
 % \begin{foobarrep}
@@ -269,9 +270,9 @@ This proof is in the appendix.
 This is the proof of the repeated foobar.
 %</driver>
 % \end{proof}
-% Note that, since |hyperref| is loaded, there is a hyperlink
-% created from the statement of the theorem in the appendix to that in
-% the main text.
+% Note that, since |hyperref| is loaded, there are hyperlinks
+% created between the statements of the theorems in the main text and in
+% the appendix.
 % \end{example}
 %
 % When the proof is deferred to the appendix, it is common practice to
@@ -286,7 +287,7 @@ This is the proof of the repeated foobar.
 % The proof sketch is typeset similarly to a proof, but is always in the
 % main text. Similarly, an |inlineproof| \DescribeEnv{inlineproof}
 % environment is provided so as to
-% be able to have both a proof in the appendix (using the regualr |proof|
+% be able to have both a proof in the appendix (using the regular |proof|
 % environment, or alternatively the |appendixproof| environment) and a
 % different proof in the main text (using the |inlineproof| environment).
 % \begin{example} Here are simple examples of proof sketches and inline
@@ -413,16 +414,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{itemize}
 % \item \LaTeX{} standard document classes (e.g., |article.cls|)
 % \item \href{https://www.ctan.org/pkg/koma-script}{KOMA-Script}
-% (e.g., |scrartcl.cls|)
+% (e.g., |scrartcl.cls|, |scrbook.cls|)
 % \item \href{https://www.acm.org/publications/proceedings-template}{ACM
-% SIG Proceedings} (e.g., |sig-alternate.cls|)
+% SIG Proceedings} (e.g., |sig-alternate.cls|, |acmart.cls|)
 % \item \href{https://www.springer.com/computer/lncs/lncs+authors}{
 % Springer's Lecture Notes in Computer Science} (e.g.,
 % |llncs.cls|)
 % \item
 % \href{https://www.dagstuhl.de/en/publications/lipics}{Schlo\ss{}
 % Dagstuhl's Leibniz International Proceedings in Informatics} (e.g.,
-% |lipics.cls|)
+% |lipics.cls|, |lipcs-v2016.cls|)
 % \end{itemize}
 % Other classes may work out of the box. Adding support for specific
 % classes is possible and can be requested from the
@@ -463,7 +464,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % preferably be submitted through the \emph{Issues} feature of GitHub.
 %
 % \section{Acknowledgments}
-% Thanks to Antoine Amarilli for feedback and proofreading. 
+% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
+% Bauer for the implementation of the forward-linking mechanism, and
+% for various bugfixes.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -659,6 +662,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\appendixprelim}
 % \changes{v1.0.4}{2017/03/03}{Configurable appendix style}
 % \begin{macro}{\appendixsectionformat}
+% \changes{v1.0.6-dev}{2018/07/17}{Fix missing space in default
+% \cs{appendixsectionformat}}
 % We provide sensible defaults for these four user-customizable macros.
 % Even though they are only useful in append mode, we define them for
 % all modes so that a |\renewcommand| works in all cases.
@@ -667,7 +672,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
-\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
@@ -789,13 +794,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \subsubsection{Auxiliary File for the Appendix}  
 % \begin{macro}{\axp@proofsfile}  
 % We open a new auxiliary file, with extension |.axp|, where the appendix
-% material will be dumped.
-% \changes{v1.0.6-dev}{2018/07/11}{Initialization deferred to \cs{AtBegindocument}
-% for compatibility with \cs{dump}ed precompiled preambles.}
+% material will be dumped.  
+% \changes{v1.0.6-dev}{2018/07/11}{Initialization deferred to \cs{AtBeginDocument}
+% for compatibility with \cs{dump}ed precompiled preambles (K. D.
+% Bauer)}
 %    \begin{macrocode}  
   \AtBeginDocument{
-  \newwrite\axp@proofsfile
-  \immediate\openout\axp@proofsfile=\jobname.axp
+    \newwrite\axp@proofsfile
+    \immediate\openout\axp@proofsfile=\jobname.axp
   }
 %    \end{macrocode}  
 % \end{macro}  
@@ -806,12 +812,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % the |proof| environment and the |\section| macro.
 %    \begin{macrocode}  
   \AtBeginDocument{
-  \immediate\write\axp@proofsfile{%
-    \noexpand\makeatletter
-    \noexpand\let\noexpand\proof\noexpand\axp@oldproof
-    \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
-    \noexpand\let\noexpand\section\noexpand\axp@oldsection
-  }
+    \immediate\write\axp@proofsfile{%
+      \noexpand\makeatletter
+      \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+      \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
+      \noexpand\let\noexpand\section\noexpand\axp@oldsection
+    }
   }
 %    \end{macrocode}  
 % \end{macro}  
@@ -912,7 +918,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % in optional argument of macro environment}
 % \changes{v1.0.6-dev}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
-% used instead.}
+% used instead (K. D. Bauer)}
 %    \begin{macrocode}  
       \axp@writesection%
       \immediate\write\axp@proofsfile{%
@@ -931,7 +937,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{macro}  
 % 
-%    \subsubsection{Forward-link mechanism}
+%    \subsubsection{Forward-Linking Mechanism}
 % \changes{v1.0.6-dev}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
 % 
 % When hyperref is loaded, |foobarrep| environments
@@ -1169,22 +1175,19 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % If |\axp@sectitle| is not empty, we create
 % a new section in the appendix, referring to the main text section.
 % 
-% Thereby, we wrap |\ref{axp@si}| into |\axp@protectref@i|, in order
-% to protect the label name from wrongly being converted to uppercase
-% e.g. in \textsf{fancyhdr} with |\pagestyle{fancy}|.
+% Here, we wrap |\ref{axp@si}| into |\axp@protectref@i|, in order
+% to protect the label name from wrongly being converted to uppercase,
+% e.g., in \textsf{fancyhdr} with |\pagestyle{fancy}|.
 % 
 % This macro is defined both in the |.aux| file (in order to ensure availability
 % when typesetting the |\tableofcontents|), and immediately before typesetting
 % the appendix section (to ensure availability in the |\section| command).
 % 
-% and when |\axp@writesection| is expanded, in order to ensure that
-% it is defined when typesetting the appendix on the first run,
-% but also when typesetting the |\tableofcontents| on subsequent runs.
 % \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
 % in appendix titles}
-% \changes{v1.0.6-dev}{2018/07/09}{Replaced \cs{axp@tmp} wrapper by more
-% robust use of \cs{axp@protectref@<Roman Numeral>}. Should resolve issues
-% from use of section title in \textsf{fancyhdr}, and in \cs{tableofcontents}.}
+% \changes{v1.0.6-dev}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust
+% Resolves issues from use of section title in \textsf{fancyhdr}, 
+% and in \cs{tableofcontents} (K. D. Bauer).}
 %    \begin{macrocode}  
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
@@ -1209,6 +1212,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     \fi
   }
 %    \end{macrocode}  
+% \end{macro}
+% Finally, in a somewhat ad hoc manner, we disable the whole section management
+% for \cs{tableofcontents}, which may be typeset using a section heading,
+% but for which automatic section management does not make sense.
+%   
+% \begin{macro}{\axp@oldtableofcontents}
+% \begin{macro}{\tableofcontents}
+% \changes{v1.0.6-dev}{2018/07/09}{Disable section management for table
+% of contents}
+%    \begin{macrocode}  
+  \let\axp@oldtableofcontents\tableofcontents
+  \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
+%    \end{macrocode}  
+% \end{macro}
 % \end{macro}
 %    \subsubsection{Append Compilation Mode}  
 %    \begin{macrocode}  
@@ -1369,12 +1386,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
-% \paragraph{\textsf{llncs} and other Springer document classes}
+% \paragraph{\textsf{llncs}}
 %    \begin{macrocode}
   \@ifclassloaded{llncs}{
 %    \end{macrocode}
 % \begin{macro}{proofsketch}
-% We first redefine the |proofsketch| environment, which is used
+% We redefine the |proofsketch| environment, which is used
 % differently in the base class.    
 %    \begin{macrocode}
     \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}

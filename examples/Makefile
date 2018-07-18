@@ -13,15 +13,9 @@ clean:
 	cd ..
 
 %.fmt: %.tex
-	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\\dump'
+	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
 
-amsmathlabel/test.pdf: amsmathlabel/test.tex ../apxproof.sty
-	cd amsmathlabel && \
-	latexmk -c && \
-	latexmk -pdf -f -interaction=nonstopmode test ; \
-	cd ..
-
-preamble/test.pdf : preamble/test_preamble.fmt
+preamble/test.pdf: preamble/test_preamble.fmt
 
 ../apxproof.sty: ../apxproof.ins ../apxproof.dtx
 	make -C ..

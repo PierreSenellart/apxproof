@@ -99,7 +99,7 @@
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
-\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1 (#2)}
+\newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
    \ifdefined\spnewtheorem
@@ -144,16 +144,16 @@
 }
 {
   \AtBeginDocument{
-  \newwrite\axp@proofsfile
-  \immediate\openout\axp@proofsfile=\jobname.axp
+    \newwrite\axp@proofsfile
+    \immediate\openout\axp@proofsfile=\jobname.axp
   }
   \AtBeginDocument{
-  \immediate\write\axp@proofsfile{%
-    \noexpand\makeatletter
-    \noexpand\let\noexpand\proof\noexpand\axp@oldproof
-    \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
-    \noexpand\let\noexpand\section\noexpand\axp@oldsection
-  }
+    \immediate\write\axp@proofsfile{%
+      \noexpand\makeatletter
+      \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+      \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
+      \noexpand\let\noexpand\section\noexpand\axp@oldsection
+    }
   }
   \def\FVB@VerbatimOut{%
     \@bsphack
@@ -324,6 +324,8 @@
       \nosectionappendix
     \fi
   }
+  \let\axp@oldtableofcontents\tableofcontents
+  \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
   \ifthenelse{\equal{\axp@appendix}{append}}{
     \let\axp@oldbibliography\bibliography
     \renewcommand\bibliography[1]{%
