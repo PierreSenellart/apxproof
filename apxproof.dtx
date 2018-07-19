@@ -995,11 +995,19 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Dummy macro, for handling the unwanted change of
 % the |\newlabel| entry in the |.aux| file caused by
 % changing the definition of |\thefoobar|.
+% 
+% \changes{v1.0.6-dev}{2017/07/19}{Replaced use of
+% \cs{ifboolexpr} by theoretically equivalent use of
+% nested conditionals. (See Github issue 13.)}
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifboolexpr{bool {axp@forward} and test {\ifcsdef{hyperlink}}}{%
-      \hyperlink{#1}{#2}%
+    \ifbool{axp@forward}{%
+      \ifcsdef{hyperlink}{%
+        \hyperlink{#1}{#2}%
+      }{%
+        #2%
+      }
     }{%
       #2%
     }%

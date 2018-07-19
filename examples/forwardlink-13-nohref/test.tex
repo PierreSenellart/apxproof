@@ -1,0 +1,23 @@
+%% https://github.com/PierreSenellart/apxproof/issues/13#issuecomment-405880968
+%% Testcase without hyperref.
+\documentclass{scrartcl}
+
+\usepackage{../../apxproof}
+
+\newtheoremrep{theorem}{Theorem}
+
+\begin{document}
+\tableofcontents
+
+\section{First Section of Document}
+\label{seq:first-section}
+
+\begin{theoremrep}
+  \label{thm:foo}
+  Foo
+\end{theoremrep}
+
+\begin{toappendix}
+  \section{Proof of Theorem~\ref{thm:foo}}
+\end{toappendix}
+\end{document}
