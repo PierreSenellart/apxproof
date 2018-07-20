@@ -14,7 +14,4 @@
 *.vtc
 *.synctex.gz
 *.fmt
-*~
-auto 
-*.fmt
 *.toc
