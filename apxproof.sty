@@ -223,8 +223,12 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifboolexpr{bool {axp@forward} and test {\ifcsdef{hyperlink}}}{%
-      \hyperlink{#1}{#2}%
+    \ifbool{axp@forward}{%
+      \ifcsdef{hyperlink}{%
+        \hyperlink{#1}{#2}%
+      }{%
+        #2%
+      }
     }{%
       #2%
     }%
