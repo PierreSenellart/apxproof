@@ -1,0 +1,34 @@
+\documentclass[12pt]{article}
+\usepackage[appendix=inline]{../../apxproof}
+\usepackage{amsmath}
+\newtheoremrep{thm}[section]{Theorem}
+\begin{document}
+
+\begin{thmrep}
+  \begin{equation}
+    \label{eq:1}
+    E=m\mathrm{c}^2
+  \end{equation}
+\end{thmrep}
+
+\begin{thmrep}
+  \begin{equation}
+    \label{eq:2}
+    E=\frac 1 2 mv^2
+  \end{equation}
+\end{thmrep}
+
+\begin{equation}
+  \mathrm{e}^{\mathrm{i}\pi}+1=0 \label{eq:3}
+\end{equation}
+  
+\begin{toappendix}
+  \begin{equation}
+    \sum_{k=1}^{n} 1/k=\Theta(\log(n))\label{eq:4}
+  \end{equation}
+
+  \eqref{eq:1} should be (1), \eqref{eq:2} should be (2), \eqref{eq:3}
+  should be (3), \eqref{eq:1-apx} should be~(1), \eqref{eq:2-apx} should
+  be~(2), \eqref{eq:4} should be (4).
+\end{toappendix}                  
+\end{document}

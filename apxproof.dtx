@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{654}
+% \CheckSum{0}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -383,6 +383,17 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % in single-column mode) but redefining this option allows changing this
 % behavior.
 % \end{description}
+% \DescribeOption{repeqn}
+% Another customization capability concerns \emph{numbered equations} that are present
+% within repeated theorems. An optional |repeqn| option can be specified
+% when loading the package, which controls whether
+% equation numbers should be as in the same text (by setting this option
+% to |same|, the default) or independently
+% numbered (by setting this option to |independent|). In the latter case,
+% whenever a referenceable counter is set with |\label{|\meta{counter}|}|,
+% |\ref{|\meta{counter}|}| references the counter in the main text, while
+% |\ref{|\meta{counter}|-apx}| references the counter in the appendix
+% (except in |inline| mode, where both have the same effect).
 %
 % \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, whose usage is limited to
@@ -557,6 +568,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %     values: |strip|, |inline|);
 %   \item |bibliography|, with a default value of |separate| (other
 %     possible value: |common|);
+%   \item |repeqn|, with a default value of |same| (other possible value:
+%   |independent|).
 % \end{itemize}
 % \begin{macro}{\axp@appendix}
 %    \begin{macrocode}
@@ -569,11 +582,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \DeclareStringOption[separate]{bibliography}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\axp@repeqn}
+% \changes{v1.0.6-dev}{2018/07/20}{\texttt{repeqn} option}
+%    \begin{macrocode}
+\DeclareStringOption[same]{repeqn}
+%    \end{macrocode}
+% \end{macro}
 %    \begin{macrocode}
 \ProcessLocalKeyvalOptions*
 %    \end{macrocode}
-% We check that the value of the |appendix| and
-% |bibliography| options are valid, and add a
+% We check that the value of the options are valid, and add a
 % message to the compilation log.
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{append}}{
@@ -583,7 +601,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }{\ifthenelse{\equal{\axp@appendix}{inline}}{
   \message{apxproof: Appendix material inlined within the document}
 }{
-  \errmessage{Error: unsupported option appendix=\axp@appendix for
+  \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
 }}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
@@ -591,7 +609,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
 }{
-  \errmessage{Error: unsupported option bibliography=\axp@bibliography for
+  \errmessage{Error: unsupported option bibliography=\axp@bibliography\ for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@repeqn}{same}}{
+  \message{apxproof: Repeated equations keep the same numbering}
+}{\ifthenelse{\equal{\axp@repeqn}{independent}}{
+  \message{apxproof: Repeated equations are independently numbered}
+}{
+  \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
   package apxproof}
 }}
 %    \end{macrocode}
@@ -690,6 +716,37 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \let\endaxp@oldproof\endproof
 %    \end{macrocode}  
 % \end{environment}
+% We define a utility macro that will be used to properly set the
+% |\label| command (and its \textsf{amsmath} counterpart,
+% |\label@in@display|) for equations within repeated theorems, depending on the
+% compilation mode.
+% \begin{macro}{\axp@redefinelabels}
+% \changes{v1.0.6-dev}{2018/07/04}{Fix \cs{label} not being disabled
+% in \textsf{amsmath} environments, where \cs{label@in@display} is
+% used instead (K. D. Bauer)}
+%    \begin{macrocode}  
+  \newcommand{\axp@redefinelabels}{%
+    \providecommand\label@in@display{}
+    \ifthenelse{\equal{\axp@appendix}{inline}}{
+      \let\axp@oldlabel\label
+      \let\axp@oldlabel@in@display\label@in@display
+      \renewcommand\label[1]{%
+        \axp@oldlabel{##1}%
+        \axp@oldlabel{##1-apx}%
+      }%
+      \renewcommand\label@in@display[1]{%
+        \axp@oldlabel@in@display{##1}%
+        \axp@oldlabel{##1-apx}%
+      }%
+    }{%
+      \let\axp@oldlabel\label
+      \let\axp@oldlabel@in@display\label@in@display
+      \renewcommand\label[1]{\axp@oldlabel{##1-apx}}%
+      \renewcommand\label@in@display[1]{\axp@oldlabel@in@display{##1-apx}}%
+    }%
+  }
+%    \end{macrocode}  
+% \end{macro}  
 % \subsubsection{Class-Specific Behavior}    
 % Finally, some class-specific behavior common to all compilation modes  
 % \paragraph{\textsf{llncs} and other Springer document classes}
@@ -744,14 +801,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % In inline mode, |\axp@newtheoremrep| undefines the existing
 % theorem environment if it has already been defined (e.g., by the
 % document class), invokes |\newtheorem| and creates a repeated theorem
-% environment that behaves exactly as the regular theorem environment.
+% environment that behaves exactly as the regular theorem environment,
+% while calling |\axp@redefinelabels| to make sure that |-axp| variants
+% of equation counters are defined.
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
-      \begin{#1}[##1]\BODY\end{#1}%
+      \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
     }
   }
 %    \end{macrocode}
@@ -870,6 +929,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \newcounter{axp@rpcounter}
 %    \end{macrocode}  
 % \end{macro}  
+% \begin{macro}{axp@equation}
+% \begin{macro}{axp@equationx}
+% Used to save the value of the |equation| counter, when |repeqn| is set
+% to |same|.
+%    \begin{macrocode}  
+  \newcounter{axp@equation}
+  \newcounter{axp@equationx}
+%    \end{macrocode}  
+% \end{macro}
+% \end{macro}
 % \begin{macro}{axp@newtheoremrep}
 % When called with first argument |foobar|, we first undefine the existing
 % |foobar| environment (and its counter) if it has already been defined (e.g., by the
@@ -893,8 +962,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.0.6}{2018/05/10}{Better handling of note-free theorems in
 % document classes that treat theorems differently when they have an
 % empty note}
+% We save the equation counter
+% before typesetting the theorem environment, to reset it to the same
+% value in the repeated environment when |repeqn| is set to |same|.
 %    \begin{macrocode}
     \NewEnviron{#1rep}[1][]{%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \setcounter{axp@equation}{\value{equation}}%
+      }{}%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
         \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
@@ -914,29 +989,36 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Possibly after starting a new appendix section if needed, we typeset a
 % repeated version of the theorem using the |axp@foobarrp| environment
 % and a reference to the previously defined label.
-% We ignore any use of |\label| in this environment to avoid multiply
+% We use |\axp@redefinelabels| in this environment to avoid multiply
 % defined labels.
 % \changes{v1.0.2}{2016/12/13}{Fix missing space between repeated theorem
 % counter and theorem note}
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
-% \changes{v1.0.6-dev}{2018/07/04}{Fix \cs{label} not being disabled
-% in \textsf{amsmath} environments, where \cs{label@in@display} is
-% used instead (K. D. Bauer)}
 %    \begin{macrocode}  
       \axp@writesection%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\setcounter{axp@equationx}{\value{equation}}%
+          \noexpand\setcounter{equation}{\theaxp@equation}%
+        }%
+      }{}%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
-          \noexpand\let\noexpand\label\noexpand\@gobble%
-          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
+          \noexpand\axp@redefinelabels
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
-      }
-    }
+      }%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\setcounter{equation}{\value{axp@equationx}}%
+        }%
+      }{}%
+    }%
   }
 %    \end{macrocode}
 % \end{macro}  

@@ -53,6 +53,7 @@
 }
 \DeclareStringOption[append]{appendix}
 \DeclareStringOption[separate]{bibliography}
+\DeclareStringOption[same]{repeqn}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
@@ -61,7 +62,7 @@
 }{\ifthenelse{\equal{\axp@appendix}{inline}}{
   \message{apxproof: Appendix material inlined within the document}
 }{
-  \errmessage{Error: unsupported option appendix=\axp@appendix for
+  \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
 }}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
@@ -69,7 +70,15 @@
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
 }{
-  \errmessage{Error: unsupported option bibliography=\axp@bibliography for
+  \errmessage{Error: unsupported option bibliography=\axp@bibliography\ for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@repeqn}{same}}{
+  \message{apxproof: Repeated equations keep the same numbering}
+}{\ifthenelse{\equal{\axp@repeqn}{independent}}{
+  \message{apxproof: Repeated equations are independently numbered}
+}{
+  \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
   package apxproof}
 }}
 \def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
@@ -102,6 +111,26 @@
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
+  \newcommand{\axp@redefinelabels}{%
+    \providecommand\label@in@display{}
+    \ifthenelse{\equal{\axp@appendix}{inline}}{
+      \let\axp@oldlabel\label
+      \let\axp@oldlabel@in@display\label@in@display
+      \renewcommand\label[1]{%
+        \axp@oldlabel{##1}%
+        \axp@oldlabel{##1-apx}%
+      }%
+      \renewcommand\label@in@display[1]{%
+        \axp@oldlabel@in@display{##1}%
+        \axp@oldlabel{##1-apx}%
+      }%
+    }{%
+      \let\axp@oldlabel\label
+      \let\axp@oldlabel@in@display\label@in@display
+      \renewcommand\label[1]{\axp@oldlabel{##1-apx}}%
+      \renewcommand\label@in@display[1]{\axp@oldlabel@in@display{##1-apx}}%
+    }%
+  }
    \ifdefined\spnewtheorem
 \def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
@@ -129,7 +158,7 @@
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
-      \begin{#1}[##1]\BODY\end{#1}%
+      \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
     }
   }
   \let\inlineproof\proof
@@ -172,6 +201,8 @@
     {\endVerbatimOut}
   \newtoggle{axp@seenreptheorem}
   \newcounter{axp@rpcounter}
+  \newcounter{axp@equation}
+  \newcounter{axp@equationx}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
@@ -180,6 +211,9 @@
     \axp@newtheorem*{axp@#1rp}{#3}%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \setcounter{axp@equation}{\value{equation}}%
+      }{}%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
         \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
@@ -191,18 +225,28 @@
                              \endcsname
       \BODY
       \axp@writesection%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\setcounter{axp@equationx}{\value{equation}}%
+          \noexpand\setcounter{equation}{\theaxp@equation}%
+        }%
+      }{}%
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
            \@ifnotempty{##1}{ \unexpanded{##1}}]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
-          \noexpand\let\noexpand\label\noexpand\@gobble%
-          \noexpand\let\noexpand\label@in@display\noexpand\@gobble%
+          \noexpand\axp@redefinelabels
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
-      }
-    }
+      }%
+      \ifthenelse{\equal{\axp@repeqn}{same}}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\setcounter{equation}{\value{axp@equationx}}%
+        }%
+      }{}%
+    }%
   }
 
    \newcommand{\axp@with@forward}[2]{%
