@@ -335,15 +335,15 @@
   }
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
-  \def\@section#1{%
-    \global\def\axp@sectitle{#1}%
-    \axp@oldsection*{#1}%
-    \addtocounter{axp@seccounter}{1}%
-    \label{axp@s\roman{axp@seccounter}}%
-  }
-  \def\@@section#1{%
-    \global\def\axp@sectitle{#1}%
-    \axp@oldsection{#1}%
+  \newcommand{\@section}[2][\relax]{\axp@@@section{*}{#1}{#2}}%
+  \newcommand{\@@section}[2][\relax]{\axp@@@section{}{#1}{#2}}%
+  \newcommand{\axp@@@section}[3]{%
+    \global\def\axp@sectitle{#3}%
+    \ifx\relax#2\relax
+      \axp@oldsection#1{#3}%
+    \else
+      \axp@oldsection#1[{#2}]{#3}%
+    \fi
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
@@ -419,13 +419,6 @@
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section[#1]#2{%
-      \global\def\axp@sectitle{#2}%
-      \axp@oldsection{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
   \fi
   \@ifclassloaded{acmart}{
   \newtheoremstyle{mystyle}
