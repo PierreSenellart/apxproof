@@ -46,6 +46,7 @@
   \let\proof\apx@oldamsthmproof
   \let\endproof\apx@oldamsthmendproof
 \fi
+\RequirePackage{xargs}
 \makeatletter
 \SetupKeyvalOptions{
   family=axp,
@@ -291,15 +292,15 @@
   }
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
-  \def\@section#1{%
-    \global\edef\axp@sectitle{#1}%
-    \axp@oldsection*{#1}%
-    \addtocounter{axp@seccounter}{1}%
-    \label{axp@s\roman{axp@seccounter}}%
-  }
-  \def\@@section#1{%
-    \global\edef\axp@sectitle{#1}%
-    \axp@oldsection{#1}%
+  \def\@section{\axp@@@section{*}}
+  \def\@@section{\axp@@@section{}}
+  \newcommandx{\axp@@@section}[3][2=\relax]{%
+    \global\def\axp@sectitle{#3}%
+    \ifx\relax#2\relax
+      \axp@oldsection#1{#3}%
+    \else
+      \axp@oldsection#1[{#2}]{#3}%
+    \fi
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
@@ -322,7 +323,7 @@
           \noexpand\appendixsectionformat{%
             \protect
             \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
-          }{\axp@sectitle}%
+          }{\expandonce{\axp@sectitle}}%
         }%
       }%
       \nosectionappendix

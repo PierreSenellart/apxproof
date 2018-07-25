@@ -1,7 +1,33 @@
 \documentclass{article}
 \usepackage{../../apxproof}
+\usepackage{xcolor}
 \begin{document}
 
-\section{\textit{Hello}}
+\newtheoremrep{thm}{Theorem}[section]
+
+\section{This never failed.}
+
+\begin{thmrep}
+  Bazbabar.
+\end{thmrep}
+
+\subsection{\textit{This never failed either.}}
+
+\section{\textit{This failed due to edef?}}
+
+\begin{thmrep}
+  Foo bar.
+\end{thmrep}
+
+%\section{\color{red}{This failed due to edef?}}
+
+\begin{thmrep}
+  Bar baz.
+\end{thmrep}
+
+\section{This $\mathit{failed}$ due to edef?}
+
+\begin{thmrep}
+  Baz foo.\end{thmrep}
 
 \end{document}
