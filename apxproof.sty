@@ -336,13 +336,13 @@
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
   \def\@section#1{%
-    \global\edef\axp@sectitle{#1}%
+    \global\def\axp@sectitle{#1}%
     \axp@oldsection*{#1}%
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
   \def\@@section#1{%
-    \global\edef\axp@sectitle{#1}%
+    \global\def\axp@sectitle{#1}%
     \axp@oldsection{#1}%
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
@@ -359,14 +359,14 @@
           \noexpand\ref{axp@s\roman{axp@seccounter}}%
         }%
       }%
-      \immediate\write\@auxout{\expandonce{\axp@tmp}}
+      \immediate\write\@auxout{\expandonce\axp@tmp}
       \immediate\write\axp@proofsfile{%
-        \expandonce{\axp@tmp}^^J%
+        \expandonce\axp@tmp^^J%
         \noexpand\axp@section{%
           \noexpand\appendixsectionformat{%
             \protect
             \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%
-          }{\axp@sectitle}%
+          }{\expandonce\axp@sectitle}%
         }%
       }%
       \nosectionappendix
@@ -421,7 +421,7 @@
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
     \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
     \def\@@section[#1]#2{%
-      \global\edef\axp@sectitle{#2}%
+      \global\def\axp@sectitle{#2}%
       \axp@oldsection{#2}%
       \addtocounter{axp@seccounter}{1}%
       \label{axp@s\roman{axp@seccounter}}%
