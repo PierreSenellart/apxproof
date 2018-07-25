@@ -3,7 +3,9 @@ TARGET = $(patsubst %.tex,%.pdf,$(wildcard */test.tex))
 all: $(TARGET)
 
 clean:
-	rm -f */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out */*.fmt
+	rm -f */*.aux */*.blg */*.bbl */*.axp 
+	rm -f */*.fls */*.fdb* */*.log */*.out */*.fmt
+	rm -f */test.pdf
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	@echo ''

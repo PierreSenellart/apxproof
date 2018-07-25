@@ -375,13 +375,6 @@
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \newcommand{\refname}{REFERENCES}
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section[#1]#2{%
-      \global\edef\axp@sectitle{#2}%
-      \axp@oldsection{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
   \fi
   \@ifclassloaded{acmart}{
   \newtheoremstyle{mystyle}

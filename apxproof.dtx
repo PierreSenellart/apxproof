@@ -1333,22 +1333,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% \begin{macro}{\section}
-% \begin{macro}{\@@section}
-% These document classes redefine |\section| in a weird way, adding
-% the possibility of an optional argument. We redefine them in a sane
-% way.    
-%    \begin{macrocode}
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section[#1]#2{%
-      \global\edef\axp@sectitle{#2}%
-      \axp@oldsection{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
-%    \end{macrocode}
-% \end{macro}
-% \end{macro}
+% 
+% \changes{v1.0.6-dev}{2018-07-25}{Definition of \cs{section} with
+% optional argument is now standard behavior and no longer a
+% fix for specific classes.}
+% 
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
