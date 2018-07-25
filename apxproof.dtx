@@ -1147,10 +1147,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\@section}
 % \begin{macro}{\@@section}
 % We redefine the |\section| command to create a label based on
-% |axp@seccounter| and to store its title in |\axp@sectitle|. Two definitions are necessary to cover the
-% starred and unstarred use of |\section|, though most likely the former
-% is not going to be used (since no section number will appear to refer
-% to that section in the appendix).
+% |axp@seccounter| and to store its title in |\axp@sectitle|.
+% In order to support starred and unstarred versions, as well
+% as the optional short-title argument, the intermediate macros
+% \cs{@section} and \cs{@@section} are needed.
 % \changes{1.0.6-dev}{2018-07-25}{Rewrote definition of \cs{section}
 % to enable optional argument and use of formatting. See \#22,\#23.}
 %    \begin{macrocode}
