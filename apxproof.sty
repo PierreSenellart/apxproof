@@ -46,7 +46,6 @@
   \let\proof\apx@oldamsthmproof
   \let\endproof\apx@oldamsthmendproof
 \fi
-\RequirePackage{xargs}
 \makeatletter
 \SetupKeyvalOptions{
   family=axp,
@@ -292,9 +291,9 @@
   }
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
-  \def\@section{\axp@@@section{*}}
-  \def\@@section{\axp@@@section{}}
-  \newcommandx{\axp@@@section}[3][2=\relax]{%
+  \newcommand{\@section}[2][\relax]{\axp@@@section{*}{#1}{#2}}%
+  \newcommand{\@@section}[2][\relax]{\axp@@@section{}{#1}{#2}}%
+  \newcommand{\axp@@@section}[3]{%
     \global\def\axp@sectitle{#3}%
     \ifx\relax#2\relax
       \axp@oldsection#1{#3}%

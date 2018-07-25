@@ -536,10 +536,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \let\endproof\apx@oldamsthmendproof
 \fi
 %    \end{macrocode}
-% \item \textsf{xargs} for \cs{newcommandx}.
-%    \begin{macrocode}
-\RequirePackage{xargs}
-%    \end{macrocode} 
 % \end{itemize}
 % \subsection{Option Processing}
 % Many names throughout the package use an arobase (|@|) to avoid name
@@ -1158,9 +1154,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
-  \def\@section{\axp@@@section{*}}
-  \def\@@section{\axp@@@section{}}
-  \newcommandx{\axp@@@section}[3][2=\relax]{%
+  \newcommand{\@section}[2][\relax]{\axp@@@section{*}{#1}{#2}}%
+  \newcommand{\@@section}[2][\relax]{\axp@@@section{}{#1}{#2}}%
+  \newcommand{\axp@@@section}[3]{%
     \global\def\axp@sectitle{#3}%
     \ifx\relax#2\relax
       \axp@oldsection#1{#3}%

@@ -3,14 +3,12 @@ TARGET = $(patsubst %.tex,%.pdf,$(wildcard */test.tex))
 all: $(TARGET)
 
 clean:
-	rm */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out */*.fmt
+	rm -f */*.aux */*.blg */*.bbl */*.axp */*.fls */*.fdb* */*.log */*.out */*.fmt
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
-	cd $(dir $@) && \
-	latexmk -c && \
-	latexmk -pdf test || \
-	rm -fv test.pdf ; \
-	cd ..
+	@echo ''
+	cd $(dir $@) && latexmk -c
+	cd $(dir $@) && latexmk -pdf test || (rm -fv test.pdf; false)
 
 %.fmt: %.tex
 	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
