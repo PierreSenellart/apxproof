@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{721}
+% \CheckSum{711}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1226,27 +1226,29 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % \begin{macro}{\axp@oldsection}
 % \begin{macro}{\section}
+% \changes{v1.0.6-dev}{2018/07/25}{Rewrote definition of \cs{section}
+% to enable optional argument. See \#23. (K. D. Bauer)}
+% \changes{v1.0.6-dev}{2018/07/25}{Fix handling of fragile macros within
+% section headings. See \#22.}
 % \begin{macro}{\@section}
 % \begin{macro}{\@@section}
-% \changes{v1.0.6-dev}{2018/07/25}{Fix handling of fragile macros within
-% section headings}
 % We redefine the |\section| command to create a label based on
-% |axp@seccounter| and to store its title in |\axp@sectitle|. Two definitions are necessary to cover the
-% starred and unstarred use of |\section|, though most likely the former
-% is not going to be used (since no section number will appear to refer
-% to that section in the appendix).
+% |axp@seccounter| and to store its title in |\axp@sectitle|.
+% In order to support starred and unstarred versions, as well
+% as the optional short-title argument, the intermediate macros
+% \cs{@section} and \cs{@@section} are needed.
 %    \begin{macrocode}
   \let\axp@oldsection\section
   \def\section{\@ifstar\@section\@@section}
-  \def\@section#1{%
-    \global\def\axp@sectitle{#1}%
-    \axp@oldsection*{#1}%
-    \addtocounter{axp@seccounter}{1}%
-    \label{axp@s\roman{axp@seccounter}}%
-  }
-  \def\@@section#1{%
-    \global\def\axp@sectitle{#1}%
-    \axp@oldsection{#1}%
+  \newcommand{\@section}[2][\relax]{\axp@@@section{*}{#1}{#2}}%
+  \newcommand{\@@section}[2][\relax]{\axp@@@section{}{#1}{#2}}%
+  \newcommand{\axp@@@section}[3]{%
+    \global\def\axp@sectitle{#3}%
+    \ifx\relax#2\relax
+      \axp@oldsection#1{#3}%
+    \else
+      \axp@oldsection#1[{#2}]{#3}%
+    \fi
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
@@ -1417,22 +1419,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% \begin{macro}{\section}
-% \begin{macro}{\@@section}
-% These document classes redefine |\section| in a weird way, adding
-% the possibility of an optional argument. We redefine them in a sane
-% way.    
-%    \begin{macrocode}
-    \def\section{\@ifstar\@section{\@dblarg{\@@section}}}
-    \def\@@section[#1]#2{%
-      \global\def\axp@sectitle{#2}%
-      \axp@oldsection{#2}%
-      \addtocounter{axp@seccounter}{1}%
-      \label{axp@s\roman{axp@seccounter}}%
-    }
-%    \end{macrocode}
-% \end{macro}
-% \end{macro}
+% 
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
