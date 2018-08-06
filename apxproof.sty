@@ -254,6 +254,7 @@
        \global\booltrue{axp@forward}%
        \ifcsundef{axp@old@the\csname axp@cn@#1\endcsname}{%
          \csletcs{axp@old@the\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
+         \csletcs{theH\csname axp@cn@#1\endcsname}{the\csname axp@cn@#1\endcsname}%
          \csdef{the\csname axp@cn@#1\endcsname}{%
            \protect\axp@forward@link{axp@fw@r\roman{axp@rpcounter}}%
              {\csname axp@old@the\csname axp@cn@#1\endcsname\endcsname}%
