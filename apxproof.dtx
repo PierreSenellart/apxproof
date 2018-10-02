@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{716}
+% \CheckSum{711}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -448,9 +448,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \item |appendixproof|, |proof|, |toappendix| environments cannot be nested. This is a limitation of
 % the \textsf{fancyvrb} package that \textsf{apxproof} relies on. Note
 % the existence of the |nestedproof| environment for nested proofs.
-% \item \textsf{apxproof} is incompatible with a separate use of the
-% \textsf{fancyvrb} package. This is because \textsf{apxproof} redefines
-% some internal mechanisms of \textsf{fancyvrb}.
 % \item \textsf{apxproof} poorly interacts with Sync\TeX: identifying
 % which source line has produced which box does not work for appendix
 % content managed by \textsf{apxproof} or repeated theorems. No obvious
@@ -885,34 +882,35 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 % \end{environment}  
-% \begin{macro}{\FVB@VerbatimOut}  
-% \begin{macro}{\FVE@VerbatimOut}  
-% We modify the internal behavior of the \textsf{fancyvrb} package to
-% write to the |\axp@proofsfile|, without closing it and re-opening it
-% on every write.  
+% \begin{environment}{axp@VerbatimOut}
+% \begin{macro}{\FVB@axp@VerbatimOut}
+% \begin{macro}{\FVE@axp@VerbatimOut}
+% \changes{v1.1.0-dev}{2018/10/02}{Make \textsf{apxproof} compatible with 
+% independent use of \textsf{fancyvrb}}
+% Using the functionalities of the \textsf{fancyvrb} package, we define a
+% custom verbatim environment |axp@VerbatimOut| that writes every line
+% to the |\axp@proofsfile|.
 %    \begin{macrocode}  
-  \def\FVB@VerbatimOut{%
+  \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
+  \def\FVB@axp@VerbatimOut{%
     \@bsphack
     \begingroup
-      \FV@UseKeyValues
-      \FV@DefineWhiteSpace
-      \def\FV@Space{\space}%
-      \FV@DefineTabOut
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
       \FV@Scan}
-  \def\FVE@VerbatimOut{\endgroup\@esphack}
+  \def\FVE@axp@VerbatimOut{\endgroup\@esphack}
 %    \end{macrocode}  
 % \end{macro}  
 % \end{macro}  
+% \end{environment}  
 % \begin{environment}{toappendix}
 % The entire content of this environment is put in appendix,
 % starting a new appendix section beforehand if needed.
 %    \begin{macrocode}  
   \newenvironment{toappendix}
-    {\axp@writesection\VerbatimOut}
-    {\endVerbatimOut}
+    {\axp@writesection\axp@VerbatimOut}
+    {\endaxp@VerbatimOut}
 %    \end{macrocode}  
 % \end{environment}
 %    \subsubsection{Definition of New Theorems}  
@@ -1150,10 +1148,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@oldproof}%
       }%
-      \VerbatimOut
+      \axp@VerbatimOut
     }
     {%
-      \endVerbatimOut
+      \endaxp@VerbatimOut
       \immediate\write\axp@proofsfile{%
         \noexpand\end{axp@oldproof}%
       }%
