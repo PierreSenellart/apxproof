@@ -188,6 +188,9 @@
   \def\FVB@axp@VerbatimOut{%
     \@bsphack
     \begingroup
+      \FV@DefineWhiteSpace
+      \def\FV@Space{\space}%
+      \FV@DefineTabOut
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax

@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{711}
+% \CheckSum{716}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -895,6 +895,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \def\FVB@axp@VerbatimOut{%
     \@bsphack
     \begingroup
+      \FV@DefineWhiteSpace
+      \def\FV@Space{\space}%
+      \FV@DefineTabOut
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
