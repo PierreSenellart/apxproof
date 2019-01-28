@@ -191,11 +191,11 @@
       \ifnum\count@<255%
       \advance\count@\@ne
     \repeat}
-  \def\FVB@VerbatimOut{%
+  \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
+  \def\FVB@axp@VerbatimOut{%
     \@bsphack
     \begingroup
       \axp@unactivateeightbit
-      \FV@UseKeyValues
       \FV@DefineWhiteSpace
       \def\FV@Space{\space}%
       \FV@DefineTabOut
@@ -203,10 +203,10 @@
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
       \FV@Scan}
-  \def\FVE@VerbatimOut{\endgroup\@esphack}
+  \def\FVE@axp@VerbatimOut{\endgroup\@esphack}
   \newenvironment{toappendix}
-    {\axp@writesection\VerbatimOut}
-    {\endVerbatimOut}
+    {\axp@writesection\axp@VerbatimOut}
+    {\endaxp@VerbatimOut}
   \newtoggle{axp@seenreptheorem}
   \newcounter{axp@rpcounter}
   \newcounter{axp@equation}
@@ -305,10 +305,10 @@
       \immediate\write\axp@proofsfile{%
         \noexpand\begin{axp@oldproof}%
       }%
-      \VerbatimOut
+      \axp@VerbatimOut
     }
     {%
-      \endVerbatimOut
+      \endaxp@VerbatimOut
       \immediate\write\axp@proofsfile{%
         \noexpand\end{axp@oldproof}%
       }%

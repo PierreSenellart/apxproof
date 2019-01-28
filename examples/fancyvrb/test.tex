@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage{fancyvrb}
+\usepackage{../../apxproof}
+\begin{document}
+
+\begin{toappendix}
+First appendix part.
+\end{toappendix}  
+
+\begin{VerbatimOut}{output.txt}
+Verbatim main content
+\end{VerbatimOut}
+
+\VerbatimInput{output.txt}
+
+\begin{toappendix}
+Second appendix part.
+\end{toappendix}  
+
+\end{document}
