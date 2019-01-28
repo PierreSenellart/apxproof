@@ -1,0 +1,25 @@
+\documentclass{scrartcl}
+
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{../../apxproof}
+
+\newtheoremrep{satz}{Theorem}[section]
+
+\begin{document}
+
+\begin{satzrep}[Example theorem]
+Example theorem containing umlauts הצü.
+\end{satzrep}
+
+\begin{proof}
+Proof containing umlauts as well הצü.
+\end{proof}
+
+Test
+
+\begin{toappendix}
+Test toappendix with umlauts הצü.
+\end{toappendix}
+
+\end{document}

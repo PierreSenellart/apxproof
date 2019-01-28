@@ -1,0 +1,25 @@
+\documentclass{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{../../apxproof}
+
+\newtheoremrep{satz}{Theorem}[section]
+
+\begin{document}
+
+\begin{satzrep}[Example theorem]
+Example theorem containing umlauts äöü.
+\end{satzrep}
+
+\begin{proof}
+Proof containing umlauts as well äöü.
+\end{proof}
+
+Test
+
+\begin{toappendix}
+Test toappendix with umlauts äöü.
+\end{toappendix}
+
+\end{document}

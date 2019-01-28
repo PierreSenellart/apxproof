@@ -184,9 +184,17 @@
       \noexpand\let\noexpand\section\noexpand\axp@oldsection
     }
   }
+  \def\axp@unactivateeightbit{%
+    \count@=128%
+    \loop
+      \catcode\count@=12%
+      \ifnum\count@<255%
+      \advance\count@\@ne
+    \repeat}
   \def\FVB@VerbatimOut{%
     \@bsphack
     \begingroup
+      \axp@unactivateeightbit
       \FV@UseKeyValues
       \FV@DefineWhiteSpace
       \def\FV@Space{\space}%

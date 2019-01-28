@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{716}
+% \CheckSum{729}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -885,15 +885,33 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 % \end{environment}  
+% \begin{macro}{\axp@unactivateeightbit}
+% \changes{v1.1.0-dev}{2019/01/28}{Fix compilation of non-ASCII
+% characters with \texttt{\textbackslash usepackage[utf8]\{inputenc\}}}
+% We need an auxiliary macro to disable active characters that have the
+% high bit set when writing to the |.axp| file. See
+% \url{https://tex.stackexchange.com/a/145361/166858}
+%    \begin{macrocode}  
+  \def\axp@unactivateeightbit{%
+    \count@=128%
+    \loop
+      \catcode\count@=12%
+      \ifnum\count@<255%
+      \advance\count@\@ne
+    \repeat}
+%    \end{macrocode}  
+% \end{macro}    
 % \begin{macro}{\FVB@VerbatimOut}  
 % \begin{macro}{\FVE@VerbatimOut}  
 % We modify the internal behavior of the \textsf{fancyvrb} package to
 % write to the |\axp@proofsfile|, without closing it and re-opening it
-% on every write.  
+% on every write. We also use the previous macro to disable active
+% characters with the eighth bit set.
 %    \begin{macrocode}  
   \def\FVB@VerbatimOut{%
     \@bsphack
     \begingroup
+      \axp@unactivateeightbit
       \FV@UseKeyValues
       \FV@DefineWhiteSpace
       \def\FV@Space{\space}%
