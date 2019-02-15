@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{729}
+% \CheckSum{726}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -774,6 +774,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{macro}    
 % \end{macro}    
+% \begin{macro}{proofsketch}
+% \changes{v1.1.1-dev}{2019/02/15}{Fix proof sketches in inline
+% compilation mode for Springer document classes}
+% We redefine the |proofsketch| environment, which is used
+% differently in the base class.    
+%    \begin{macrocode}
+\renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
+%    \end{macrocode}
+% \end{macro}
 % We have to redefine the macro |\@thmcountersep| for proper sectioned
 % counters.
 %    \begin{macrocode}
@@ -1487,22 +1496,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}    
 %    \begin{macrocode}
   \fi
-%    \end{macrocode}
-% \paragraph{\textsf{llncs}}
-%    \begin{macrocode}
-  \@ifclassloaded{llncs}{
-%    \end{macrocode}
-% \begin{macro}{proofsketch}
-% We redefine the |proofsketch| environment, which is used
-% differently in the base class.    
-%    \begin{macrocode}
-    \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
-%    \end{macrocode}
-% \end{macro}
-%    \begin{macrocode}
-  }{}
-%     \end{macrocode}
-%    \begin{macrocode}
 }
 %    \end{macrocode}
 % \Finale
