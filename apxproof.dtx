@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{726}
+% \CheckSum{735}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -810,13 +810,19 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % environment that behaves exactly as the regular theorem environment,
 % while calling |\axp@redefinelabels| to make sure that |-axp| variants
 % of equation counters are defined.
+% \changes{v1.1.1-dev}{2019/02/15}{Fix formatting of theorems without
+% notes in some document classes in inline mode}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \expandafter\let\csname #1\endcsname\undefined
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
-      \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\axp@redefinelabels\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+      \fi
     }
   }
 %    \end{macrocode}

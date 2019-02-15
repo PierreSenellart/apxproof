@@ -159,7 +159,11 @@
     \expandafter\let\csname c@#1\endcsname\undefined
     \axp@newtheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
-      \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+      \ifx\relax##1\relax
+        \begin{#1}\axp@redefinelabels\BODY\end{#1}%
+      \else
+        \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+      \fi
     }
   }
   \let\inlineproof\proof
