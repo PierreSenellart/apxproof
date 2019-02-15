@@ -112,8 +112,8 @@
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
   \newcommand{\axp@redefinelabels}{%
-    \providecommand\label@in@display{}
-    \ifthenelse{\equal{\axp@appendix}{inline}}{
+    \providecommand\label@in@display{}%
+    \ifthenelse{\equal{\axp@appendix}{inline}}{%
       \let\axp@oldlabel\label
       \let\axp@oldlabel@in@display\label@in@display
       \renewcommand\label[1]{%

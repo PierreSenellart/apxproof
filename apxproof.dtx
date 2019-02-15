@@ -721,10 +721,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.1.0}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
 % used instead (K. D. Bauer)}
+% \changes{v1.1.1-dev}{2019/02/15}{Fix extra spacing erroneously
+% introduced within the \texttt{\textbackslash axp@redefinelabels}
+% macro}
 %    \begin{macrocode}  
   \newcommand{\axp@redefinelabels}{%
-    \providecommand\label@in@display{}
-    \ifthenelse{\equal{\axp@appendix}{inline}}{
+    \providecommand\label@in@display{}%
+    \ifthenelse{\equal{\axp@appendix}{inline}}{%
       \let\axp@oldlabel\label
       \let\axp@oldlabel@in@display\label@in@display
       \renewcommand\label[1]{%
