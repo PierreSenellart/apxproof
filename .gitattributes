@@ -1,4 +1,0 @@
-.gitattributes export-ignore  
-.gitignore export-ignore
-/examples/ export-ignore
-apxproof.sty export-ignore
