@@ -28,7 +28,6 @@
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
   [2019/01/28 v1.1.1-dev Automatic proofs in appendix]
-\RequirePackage{bibunits}
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
 \RequirePackage{fancyvrb}
@@ -66,6 +65,7 @@
   package apxproof}
 }}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
+  \RequirePackage{bibunits}
   \message{apxproof: Separate bibliography for appendix material}
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
@@ -389,11 +389,13 @@
   \let\axp@oldtableofcontents\tableofcontents
   \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
   \ifthenelse{\equal{\axp@appendix}{append}}{
-    \let\axp@oldbibliography\bibliography
-    \renewcommand\bibliography[1]{%
-      \defaultbibliography{#1}%
-      \axp@oldbibliography{#1}%
-    }
+    \ifthenelse{\equal{\axp@bibliography}{separate}}{
+      \let\axp@oldbibliography\bibliography
+      \renewcommand\bibliography[1]{%
+        \defaultbibliography{#1}%
+        \axp@oldbibliography{#1}%
+      }
+    }{}
     \AtEndDocument{
       \appendixprelim
       \appendix

@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{735}
+% \CheckSum{738}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -452,6 +452,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % which source line has produced which box does not work for appendix
 % content managed by \textsf{apxproof} or repeated theorems. No obvious
 % fix is known, though this issue will be investigated in the long term.
+% \item Unless the |bibliography| option is set to |common|, the
+% \textsf{bibunits} package
+% is used to generate a second bibliography. This means any package, such
+% as \textsf{biblatex}, that is incompatible with \textsf{bibunits} will not be
+% compatible with \textsf{apxproof} unless |bibliography| is set to |common|.
 % \end{itemize}
 %
 % Issues not listed here should be reported to the author.
@@ -493,11 +498,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \subsection{Dependencies}
 % We first load a few package dependencies:
 % \begin{itemize}
-% \item \textsf{bibunits} to add a second bibliography for the appendix
-% material.
-%    \begin{macrocode}
-\RequirePackage{bibunits}
-%    \end{macrocode}
 % \item \textsf{environ} to easily define the repeated theorem
 % environments.
 %    \begin{macrocode}
@@ -602,6 +602,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   package apxproof}
 }}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
+%    \end{macrocode}
+% The external \textsf{bibunits} package 
+% is used to add a second bibliography for the appendix material.
+% \changes{v1.1.1-dev}{2019/04/17}{Do not load \textsf{binunits} if
+% \texttt{bibliography} is set to \texttt{common}}
+%    \begin{macrocode}
+  \RequirePackage{bibunits}
   \message{apxproof: Separate bibliography for appendix material}
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
@@ -1368,15 +1375,18 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \begin{macro}{\axp@oldbibliography}    
 % \begin{macro}{\bibliography}    
-% Thanks to \textsf{bibunits}'s |\defaultbibliography| macro, we set the appendix
-% bibliography source to be the same as that of the main text.    
-%    \begin{macrocode}  
-    \let\axp@oldbibliography\bibliography
-    \renewcommand\bibliography[1]{%
-      \defaultbibliography{#1}%
-      \axp@oldbibliography{#1}%
-    }
-%    \end{macrocode}  
+% Unless the |bibliography| option is set to |common|, we need to set the
+% appendix bibliography source to be the same as that of the main
+% text, thanks to \textsf{bibunits}'s |\defaultbibliography| macro.
+%    \begin{macrocode}
+    \ifthenelse{\equal{\axp@bibliography}{separate}}{
+      \let\axp@oldbibliography\bibliography
+      \renewcommand\bibliography[1]{%
+        \defaultbibliography{#1}%
+        \axp@oldbibliography{#1}%
+      }
+    }{}
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % After the end of the main text, we add the appendix (after the command 
