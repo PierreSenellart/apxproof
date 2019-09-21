@@ -104,6 +104,7 @@
     \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
     \thmnote{ #3}}%
 }
+\newcommand{\mainbodyrepeatedtheorem}{}
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
@@ -229,10 +230,12 @@
       }{}%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
-        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
       \else
-        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}%
       \fi
+      \mainbodyrepeatedtheorem
+      \BODY\end{#1}%
       \global\toggletrue{axp@seenreptheorem}%
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname

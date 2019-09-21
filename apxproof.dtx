@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{738}
+% \CheckSum{739}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -362,6 +362,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \textsf{apxproof} provides a few macros that can be redefined (using
 % |\renewcommand|) to customize the appearance of the appendix:
 % \begin{description}
+% \item[\textbackslash|mainbodyrepeatedtheorem|]\DescribeMacro{\mainbodyrepeatedtheorem}
+% is a macro that is executed at the beginning of the body of every
+% repeated theorem. This can be used to notify the reader that the
+% theorem is repeated in appendix in some way, e.g., with a margin note.
 % \item[\textbackslash|appendixsectionformat|\marg{number}\marg{title}]\DescribeMacro{\appendixsectionformat} is a macro
 % that indicates how to format the section titles in the Appendix, given
 % the number and title of the section in the main text. By
@@ -690,6 +694,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }
 %    \end{macrocode}
 % \end{macro}  
+% \begin{macro}{\mainbodyrepeatedtheorem}
+% \changes{v1.1.1-dev}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
@@ -698,16 +704,18 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\appendixsectionformat}
 % \changes{v1.1.0}{2018/07/17}{Fix missing space in default
 % \cs{appendixsectionformat}}
-% We provide sensible defaults for these four user-customizable macros.
-% Even though they are only useful in append mode, we define them for
+% We provide sensible defaults for these user-customizable macros.
+% Even though they are not all useful in all modes, we define them for
 % all modes so that a |\renewcommand| works in all cases.
 %    \begin{macrocode}
+\newcommand{\mainbodyrepeatedtheorem}{}
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -1001,7 +1009,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
-% derived from the counter. We distinguish the case when the theorem
+% derived from the counter, along with a possible custom command to
+% identify repeated theorems. We distinguish the case when the theorem
 % argument has a note and when it does not.
 % \changes{v1.0.6}{2018/05/10}{Better handling of note-free theorems in
 % document classes that treat theorems differently when they have an
@@ -1016,10 +1025,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       }{}%
       \addtocounter{axp@rpcounter}{1}%
       \ifx\relax##1\relax
-        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
+        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
       \else
-        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}\BODY\end{#1}%
-      \fi    
+        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}%
+      \fi
+      \mainbodyrepeatedtheorem
+      \BODY\end{#1}%
 %    \end{macrocode}  
 % We set the |axp@seenreptheorem| toggle to indicate that we are looking
 % for the proof of the theorem, then store in a macro the content of the
