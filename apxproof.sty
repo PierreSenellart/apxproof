@@ -149,10 +149,6 @@
 }
 \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 \def\@thmcountersep{.}
-\def\@Opargbegintheorem#1#2#3#4{#4\trivlist
-      \item[\hskip\labelsep{#3#1}]{#3 #2\@thmcounterend\ }}
-\def\@spopargbegintheorem#1#2#3#4#5{\trivlist
-      \item[\hskip\labelsep{#4#1\ #2}]{#4 #3\@thmcounterend\ }#5}
   \fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
@@ -247,16 +243,24 @@
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
-      \immediate\write\axp@proofsfile{%
+      \immediate\write\axp@proofsfile{{%
+        \ifdefined\theopargself
+          \noexpand\theopargself
+        \fi
         \noexpand\begin{axp@#1rp}
           [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \@ifnotempty{##1}{ \unexpanded{##1}}]%
+           \ifdefined\theopargself
+             \@ifnotempty{##1}{ (\unexpanded{##1})}%
+           \else
+             \@ifnotempty{##1}{ \unexpanded{##1}}%
+           \fi
+          ]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\axp@redefinelabels
           \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                \endcsname
         \noexpand\end{axp@#1rp}
-      }%
+      }}%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
         \immediate\write\axp@proofsfile{%
           \noexpand\setcounter{equation}{\value{axp@equationx}}%
