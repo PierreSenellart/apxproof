@@ -1,2 +1,5 @@
 build/
 *~
+*.glo
+*.hd
+*.idx
