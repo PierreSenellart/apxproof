@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{733}
+% \CheckSum{774}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -630,6 +630,34 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 }}
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
+% \begin{macro}{\axp@newtheoremrep@definetheorem}
+% \changes{v1.1.1-dev}{2019/10/01}{Restore predefined theorem counters}
+% Common to all compilation modes, we define
+% |\axp@newtheoremrep@definetheorem|.
+% When called with first argument |foobar|, we first undefine the existing
+% |foobar| environment (and its counter) if it has already been defined (e.g., by the
+% document class), then invoke |\axp@newtheorem| for the regular version
+% of the theorem |foobar|, saving and restoring any existing theorem counter unless the
+% |\newtheoremdep| redefines the base counter.
+%    \begin{macrocode}
+\def\axp@newtheoremrep@definetheorem#1#2#3#4{%
+  \expandafter\let\csname #1\endcsname\undefined
+  \ifcsname c@#1\endcsname
+    \expandafter\expandafter\expandafter\let\expandafter\expandafter
+      \csname c@axp@#1\endcsname\csname c@#1\endcsname
+    \expandafter\let\csname c@#1\endcsname\undefined
+  \fi
+  \axp@newtheorem{#1}{#2}{#3}{#4}%
+  \ifcsname c@axp@#1\endcsname
+    \ifx\relax#2\relax
+      \expandafter\expandafter\expandafter\let\expandafter\expandafter
+        \csname c@#1\endcsname\csname c@axp@#1\endcsname
+    \else
+    \fi
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{\axp@newtheorem}
 % \changes{v1.0.6}{2018/05/10}{Introduce intermediary command for theorem
 % macro}
@@ -641,6 +669,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % definition depending on the document class. This command uses two
 % intermediary commands, |\@axp@newtheorem| and |\@@axp@newtheorem|, for
 % the non-starred and starred versions.
+%    \begin{macrocode}
 \def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
 \def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
@@ -652,6 +681,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \def\@@axp@newtheorem#1#2{%
   \newtheorem*{#1}{#2}%
 }
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -812,9 +842,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \ifthenelse{\equal{\axp@appendix}{inline}}{
 %    \end{macrocode}
 % \begin{macro}{\axp@newtheoremrep}
-% In inline mode, |\axp@newtheoremrep| undefines the existing
-% theorem environment if it has already been defined (e.g., by the
-% document class), invokes |\newtheorem| and creates a repeated theorem
+% In inline mode, |\axp@newtheoremrep| uses
+% |\axp@newtheoremrep@definetheorem| to define the regular theorem
+% environment and creates a repeated theorem
 % environment that behaves exactly as the regular theorem environment,
 % while calling |\axp@redefinelabels| to make sure that |-axp| variants
 % of equation counters are defined.
@@ -822,9 +852,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % notes in some document classes in inline mode}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \axp@newtheorem{#1}{#2}{#3}{#4}%
+    \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \ifx\relax##1\relax
         \begin{#1}\axp@redefinelabels\BODY\end{#1}%
@@ -982,17 +1010,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}
 % \end{macro}
 % \begin{macro}{axp@newtheoremrep}
-% When called with first argument |foobar|, we first undefine the existing
-% |foobar| environment (and its counter) if it has already been defined (e.g., by the
-% document class), then invoke |\newtheorem| for the regular version
-% of the theorem |foobar| (patching the |\begin{foobar}| so as not to
-% expect a proof in the appendix) and |\newtheorem*| for an internal version |axp@foobarrp| that
+% With first argument |foobar|, we use
+% |\axp@newtheoremrep@definetheorem| to define the regular version of the
+% theorem |foobar|. We then patch |\begin{foobar}| so as not to
+% expect a proof in the appendix and define an internal theorem |axp@foobarrp| that
 % will be used in the appendix to restate the existing theorem.
 %    \begin{macrocode}  
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \axp@newtheorem{#1}{#2}{#3}{#4}%
+    \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \axp@newtheorem*{axp@#1rp}{#3}%
     \axp@forward@setup{#1}{#2}{#3}{#4}%

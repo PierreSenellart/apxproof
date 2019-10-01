@@ -81,6 +81,22 @@
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
   package apxproof}
 }}
+\def\axp@newtheoremrep@definetheorem#1#2#3#4{%
+  \expandafter\let\csname #1\endcsname\undefined
+  \ifcsname c@#1\endcsname
+    \expandafter\expandafter\expandafter\let\expandafter\expandafter
+      \csname c@axp@#1\endcsname\csname c@#1\endcsname
+    \expandafter\let\csname c@#1\endcsname\undefined
+  \fi
+  \axp@newtheorem{#1}{#2}{#3}{#4}%
+  \ifcsname c@axp@#1\endcsname
+    \ifx\relax#2\relax
+      \expandafter\expandafter\expandafter\let\expandafter\expandafter
+        \csname c@#1\endcsname\csname c@axp@#1\endcsname
+    \else
+    \fi
+  \fi
+}
 \def\axp@newtheorem{\@ifstar\@@axp@newtheorem\@axp@newtheorem}
 \def\@axp@newtheorem#1#2#3#4{%
   \ifx\relax#4\relax
@@ -152,9 +168,7 @@
   \fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \axp@newtheorem{#1}{#2}{#3}{#4}%
+    \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \ifx\relax##1\relax
         \begin{#1}\axp@redefinelabels\BODY\end{#1}%
@@ -214,9 +228,7 @@
   \newcounter{axp@equation}
   \newcounter{axp@equationx}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
-    \expandafter\let\csname #1\endcsname\undefined
-    \expandafter\let\csname c@#1\endcsname\undefined
-    \axp@newtheorem{#1}{#2}{#3}{#4}%
+    \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \axp@newtheorem*{axp@#1rp}{#3}%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
