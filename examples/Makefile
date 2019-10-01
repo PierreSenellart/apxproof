@@ -17,7 +17,7 @@ clean:
 
 %/test.test: %/reference.html %/test.html
 	@echo -n "Testing $(dir $@)... " 
-	@diff $^ > $@ || (echo ko; cat $@; rm $@; false)
+	@diff $^ | (! grep '^[<>]' | grep -v '^. <meta' > $@) || (echo ko; cat $@; rm $@; false)
 	@echo ok
 
 %.fmt: %.tex
