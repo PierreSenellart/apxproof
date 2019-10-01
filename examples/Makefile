@@ -1,16 +1,24 @@
-TARGET = $(patsubst %.tex,%.pdf,$(wildcard */test.tex))
+TARGET = $(patsubst %.tex,%.test,$(wildcard */test.tex))
 
 all: $(TARGET)
 
 clean:
 	rm -f */*.aux */*.blg */*.bbl */*.axp 
 	rm -f */*.fls */*.fdb* */*.log */*.out */*.fmt
-	rm -f */test.pdf
+	rm -f */test.pdf */test.test
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	@echo ''
 	cd $(dir $@) && latexmk -c
 	cd $(dir $@) && latexmk -pdf test || (rm -fv test.pdf; false)
+
+%.html: %.pdf
+	pdftotext -bbox $^
+
+%/test.test: %/reference.html %/test.html
+	@echo -n "Testing $(dir $@)... " 
+	@diff $^ > $@ || (echo ko; cat $@; rm $@; false)
+	@echo ok
 
 %.fmt: %.tex
 	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
