@@ -1,0 +1,23 @@
+% See https://github.com/PierreSenellart/apxproof/issues/33
+\documentclass[autoref]{lipics-v2019}
+\hideLIPIcs
+
+\usepackage{../../apxproof}
+
+\title{Test title}
+\author{Test Author}{Test Affiliation}{}{}{}
+
+\newtheoremrep{theorem}{Theorem}
+
+\begin{document}
+
+\maketitle
+
+\begin{lemma}\label{lem:first-lemma}
+  This is the statement of \autoref{lem:first-lemma}.
+\end{lemma}
+\begin{lemma}\label{lem:second-lemma}
+  This is the statement of \autoref{lem:second-lemma}.
+\end{lemma}
+
+\end{document}
