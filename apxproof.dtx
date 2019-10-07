@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{774}
+% \CheckSum{787}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -710,20 +710,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
 %    \end{macrocode}
 % \end{environment}  
-% \begin{macro}{\thmhead}  
-% \changes{v1.0.2}{2016/12/13}{Fix display of repeated theorem counter in
-% some document classes}
-% We redefine AMS-\LaTeX{}'s |\thmhead| to use a format where the
-% repeated version of a theorem, using a theorem note, can look exactly
-% like the original version of the theorem and its theorem counter.
-%    \begin{macrocode}
-\AtBeginDocument{%
-  \def\thmhead#1#2#3{%
-    \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-    \thmnote{ #3}}%
-}
-%    \end{macrocode}
-% \end{macro}  
 % \begin{macro}{\mainbodyrepeatedtheorem}
 % \changes{v1.1.1-dev}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
@@ -793,7 +779,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 % \subsubsection{Class-Specific Behavior}    
-% Finally, some class-specific behavior common to all compilation modes  
+% Finally, some class-specific behavior common to all compilation modes.
 % \paragraph{\textsf{llncs} and other Springer document classes}
 % \changes{v1.0.6}{2018/05/10}{Better support of Springer document
 % classes}
@@ -1060,16 +1046,23 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % repeated version of the theorem using the |axp@foobarrp| environment
 % and a reference to the previously defined label.
 % We use |\axp@redefinelabels| in this environment to avoid multiply
-% defined labels. We have to deal in a special way with Springer document
-% classes, as by default theorem notes add parentheses; we use the
-% provided |\theopargself| macro to disable this, and add the parentheses
-% manually.
+% defined labels. We have to deal in a careful way with theorem notes: we
+% want to use a theorem note to display the number of the repeated
+% theorem, but theorem notes are usually typeset in a much
+% different way (different font, parentheses) than theorem
+% headings. In the case of the Springer document
+% classes, we use the  |\theopargself| macro to disable parentheses. For 
+% other document classes, we need to manually patch the |\thmhead|
+% command at the right time. We also specially cover the case of
+% the ACM document class where |\@acmplainnotefont| is used instead
+% of |\thm@notefont|.
 % \changes{v1.0.2}{2016/12/13}{Fix missing space between repeated theorem
 % counter and theorem note}
+% \changes{v1.0.2}{2016/12/13}{Fix display of repeated theorem counter in
+% some document classes}
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
-% \changes{v1.1.1-dev}{2019/06/06}{Better support of Springer document
-% classes}
+% \changes{v1.1.1-dev}{2019/10/07}{Fix display of theorem notes}
 %    \begin{macrocode}  
       \axp@writesection%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -1081,14 +1074,30 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
+        \else
+          \noexpand\pretocmd{\noexpand\@begintheorem}{%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
+          }{}{}
         \fi
         \noexpand\begin{axp@#1rp}
-          [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \ifdefined\theopargself
-             \@ifnotempty{##1}{ (\unexpanded{##1})}%
-           \else
-             \@ifnotempty{##1}{ \unexpanded{##1}}%
-           \fi
+          [%
+            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \@ifnotempty{##1}{%
+              \ifdefined\theopargself
+              \else
+                \ifdefined\@acmplainnotefont
+                  \noexpand\@acmplainnotefont
+                \else
+                  \noexpand\ifdefined\noexpand\thm@notefont
+                    \noexpand\the\noexpand\thm@notefont
+                  \noexpand\fi
+                \fi
+              \fi  
+              {} (\unexpanded{##1})%
+            }%
           ]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\axp@redefinelabels
@@ -1512,30 +1521,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
-% \paragraph{ACM Document Classes (new version)}
 % \changes{v1.0.6}{2018/05/10}{Support of new ACM document class
 % (\texttt{acmart.cls})}
-% Again, we adjust the styling of theorems for the needs of \textsf{apxproof}.
-%    \begin{macrocode}
-  \@ifclassloaded{acmart}{  
-%    \end{macrocode}
-%    \begin{macrocode}  
-  \newtheoremstyle{mystyle}
-    {.5\baselineskip\@plus.2\baselineskip
-      \@minus.2\baselineskip}
-    {.5\baselineskip\@plus.2\baselineskip
-      \@minus.2\baselineskip}
-    {\@acmplainbodyfont}
-    {\@acmplainindent}
-    {\@acmplainheadfont}
-    {.}
-    {.5em}
-    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainheadfont #3}}}
-  \theoremstyle{mystyle}
-%    \end{macrocode}
-%    \begin{macrocode}
-  }{} 
-%    \end{macrocode}
 % \paragraph{\textsf{lipcs}}
 %    \begin{macrocode}
    \ifdefined\lipics@opterrshort

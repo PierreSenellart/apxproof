@@ -20,7 +20,7 @@ clean:
 	@diff $^ | (! grep '^[<>]' | grep -v '^. <meta' > $@) || (echo ko; cat $@; rm $@; false)
 	@echo ok
 
-%.fmt: %.tex
+%.fmt: %.tex ../apxproof.sty 
 	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
 
 preamble/test.pdf: preamble/test_preamble.fmt

@@ -115,11 +115,6 @@
   \@oparg{\axp@newtheoremrep{#1}[#2]{#3}}[]%
 }
   \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
-\AtBeginDocument{%
-  \def\thmhead#1#2#3{%
-    \thmname{#1}\thmnumber{\@ifnotempty{#1}{ }\@upn{#2}}%
-    \thmnote{ #3}}%
-}
 \newcommand{\mainbodyrepeatedtheorem}{}
 \newcommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
@@ -258,14 +253,30 @@
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
+        \else
+          \noexpand\pretocmd{\noexpand\@begintheorem}{%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
+          }{}{}
         \fi
         \noexpand\begin{axp@#1rp}
-          [\noexpand\ref{axp@r\roman{axp@rpcounter}}%
-           \ifdefined\theopargself
-             \@ifnotempty{##1}{ (\unexpanded{##1})}%
-           \else
-             \@ifnotempty{##1}{ \unexpanded{##1}}%
-           \fi
+          [%
+            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \@ifnotempty{##1}{%
+              \ifdefined\theopargself
+              \else
+                \ifdefined\@acmplainnotefont
+                  \noexpand\@acmplainnotefont
+                \else
+                  \noexpand\ifdefined\noexpand\thm@notefont
+                    \noexpand\the\noexpand\thm@notefont
+                  \noexpand\fi
+                \fi
+              \fi
+              {} (\unexpanded{##1})%
+            }%
           ]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
           \noexpand\axp@redefinelabels
@@ -455,20 +466,6 @@
     \newcommand{\refname}{REFERENCES}
     \renewcommand{\appendixrefname}{REFERENCES FOR THE APPENDIX}
   \fi
-  \@ifclassloaded{acmart}{
-  \newtheoremstyle{mystyle}
-    {.5\baselineskip\@plus.2\baselineskip
-      \@minus.2\baselineskip}
-    {.5\baselineskip\@plus.2\baselineskip
-      \@minus.2\baselineskip}
-    {\@acmplainbodyfont}
-    {\@acmplainindent}
-    {\@acmplainheadfont}
-    {.}
-    {.5em}
-    {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainheadfont #3}}}
-  \theoremstyle{mystyle}
-  }{}
    \ifdefined\lipics@opterrshort
     \renewcommand{\appendixbibliographyprelim}{%
       \global\let\@oldbiblabel\@biblabel
