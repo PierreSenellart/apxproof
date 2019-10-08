@@ -20,12 +20,12 @@ In addition to a working installation of LaTeX2e, `apxproof` relies on a
 few other packages, which should be provided by all reasonable LaTeX
 distributions:
  - `amsthm`
- - `bibunits`
  - `environ`
  - `etoolbox`
  - `fancyvrb`
  - `ifthen`
  - `kvoptions`
+ - `bibunits` (optional, only if the `bibliography` option is set to `separate`)
 
 ## Manual installation
 
