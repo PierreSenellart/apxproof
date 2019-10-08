@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2019/01/28 v1.1.1-dev Automatic proofs in appendix]
+%<package>  [2019/10/08 v1.2.0 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -609,7 +609,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % The external \textsf{bibunits} package 
 % is used to add a second bibliography for the appendix material.
-% \changes{v1.1.1-dev}{2019/04/17}{Do not load \textsf{binunits} if
+% \changes{v1.2.0}{2019/04/17}{Do not load \textsf{binunits} if
 % \texttt{bibliography} is set to \texttt{common}}
 %    \begin{macrocode}
   \RequirePackage{bibunits}
@@ -631,7 +631,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
-% \changes{v1.1.1-dev}{2019/10/01}{Restore predefined theorem counters}
+% \changes{v1.2.0}{2019/10/01}{Restore predefined theorem counters}
 % Common to all compilation modes, we define
 % |\axp@newtheoremrep@definetheorem|.
 % When called with first argument |foobar|, we first undefine the existing
@@ -711,7 +711,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{environment}  
 % \begin{macro}{\mainbodyrepeatedtheorem}
-% \changes{v1.1.1-dev}{2019/09/21}{Configurable repeated theorem command}
+% \changes{v1.2.0}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
@@ -752,7 +752,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.1.0}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
 % used instead (K. D. Bauer)}
-% \changes{v1.1.1-dev}{2019/02/15}{Fix extra spacing erroneously
+% \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
 %    \begin{macrocode}  
@@ -809,7 +809,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}    
 % \end{macro}    
 % \begin{macro}{proofsketch}
-% \changes{v1.1.1-dev}{2019/02/15}{Fix proof sketches in inline
+% \changes{v1.2.0}{2019/02/15}{Fix proof sketches in inline
 % compilation mode for Springer document classes}
 % We redefine the |proofsketch| environment, which is used
 % differently in the base class.    
@@ -834,7 +834,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % environment that behaves exactly as the regular theorem environment,
 % while calling |\axp@redefinelabels| to make sure that |-axp| variants
 % of equation counters are defined.
-% \changes{v1.1.1-dev}{2019/02/15}{Fix formatting of theorems without
+% \changes{v1.2.0}{2019/02/15}{Fix formatting of theorems without
 % notes in some document classes in inline mode}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
@@ -920,7 +920,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{macro}  
 % \end{environment}  
 % \begin{macro}{\axp@unactivateeightbit}
-% \changes{v1.1.0-dev}{2019/01/28}{Fix compilation of non-ASCII
+% \changes{v1.1.0}{2019/01/28}{Fix compilation of non-ASCII
 % characters with \texttt{\textbackslash usepackage[utf8]\{inputenc\}}}
 % We need an auxiliary macro to disable active characters that have the
 % high bit set when writing to the |.axp| file. See
@@ -938,7 +938,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{environment}{axp@VerbatimOut}
 % \begin{macro}{\FVB@axp@VerbatimOut}
 % \begin{macro}{\FVE@axp@VerbatimOut}
-% \changes{v1.1.0-dev}{2018/10/02}{Make \textsf{apxproof} compatible with 
+% \changes{v1.1.0}{2018/10/02}{Make \textsf{apxproof} compatible with 
 % independent use of \textsf{fancyvrb}}
 % Using the functionalities of the \textsf{fancyvrb} package, we define a
 % custom verbatim environment |axp@VerbatimOut| that writes every line
@@ -1062,7 +1062,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % some document classes}
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
-% \changes{v1.1.1-dev}{2019/10/07}{Fix display of theorem notes}
+% \changes{v1.2.0}{2019/10/07}{Fix display of theorem notes}
 %    \begin{macrocode}  
       \axp@writesection%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
