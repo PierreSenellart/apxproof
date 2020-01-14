@@ -943,7 +943,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Using the functionalities of the \textsf{fancyvrb} package, we define a
 % custom verbatim environment |axp@VerbatimOut| that writes every line
 % to the |\axp@proofsfile|. We also use the previous macro to disable active
-% characters with the eighth bit set.
+% characters with the eighth bit set, and we make sure the catcode of |@|
+% is reset for every verbatim environment, in case it is used by the user (e.g.,
+% as in the \textsf{xypic} package).
+% \changes{v1.2.0-dev}{2020/01/01}{Fix compatibility with
+% \textsf{xypic} package}
 %    \begin{macrocode}
   \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
   \def\FVB@axp@VerbatimOut{%
@@ -956,7 +960,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
-      \immediate\write\axp@proofsfile{\noexpand\makeatother}
+      \immediate\write\axp@proofsfile{\noexpand\makeatother}%
       \FV@Scan}
   \def\FVE@axp@VerbatimOut{%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
