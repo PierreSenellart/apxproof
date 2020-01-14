@@ -6,13 +6,13 @@ typesetsuppfiles = {"*.bib"}
 bibfiles = {"support/*.bib"}
 textfiles = {"*.md", "LICENSE"}
 
-function typeset(file)
-  local errorlevel = tex(file)
+function typeset(file, dir)
+  local errorlevel = tex(file, dir)
   if errorlevel ~= 0 then
     return errorlevel
   else
     local name = jobname(file)
-    errorlevel = bibtex(name, dir) + bibtex("bu1")
+    errorlevel = bibtex(name, dir) + bibtex("bu1", dir)
     if errorlevel == 0 then
       local function cycle(name, dir)
         return(
