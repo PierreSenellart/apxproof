@@ -213,8 +213,11 @@
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
+      \immediate\write\axp@proofsfile{\noexpand\makeatother}
       \FV@Scan}
-  \def\FVE@axp@VerbatimOut{\endgroup\@esphack}
+  \def\FVE@axp@VerbatimOut{%
+      \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
+      \endgroup\@esphack}
   \newenvironment{toappendix}
     {\axp@writesection\axp@VerbatimOut}
     {\endaxp@VerbatimOut}

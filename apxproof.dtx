@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{787}
+% \CheckSum{797}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -956,8 +956,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
+      \immediate\write\axp@proofsfile{\noexpand\makeatother}
       \FV@Scan}
-  \def\FVE@axp@VerbatimOut{\endgroup\@esphack}
+  \def\FVE@axp@VerbatimOut{%
+      \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
+      \endgroup\@esphack}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}  
