@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{797}
+% \CheckSum{811}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1452,11 +1452,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % ensure an empty bibliography environment is not produced.
 % The name of the bibliography is changed to |\appendixrefname|; in most
 % document classes, it is called |\refname| but it is occasionally
-% (|scrartcl|, |scrreprt|) called |\bibname|.
+% (|scrartcl|, |scrreprt|) called |\bibname|. An ad-hoc test is added
+% to fix a conflict with the \textsf{natbib} package which redefines
+% |bibcite| at the end of the document.
 % \changes{v1.0.6}{2018/05/10}{Deal with document classes where the
 % bibliography is called \texttt{\textbackslash bibname}}
+% \changes{v1.2.0-dev}{2020/02/27}{Ad hoc fix for \textsf{natbib}
+% package conflict}
 %    \begin{macrocode}
     \AtEndDocument{
+      \ifdefined\NAT@testdef
+        \renewcommand\bibcite[2]{%
+          \global\@namedef{b@#1\@extra@binfo}{#2}%
+        }
+      \fi
       \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
@@ -1476,6 +1485,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}
+      \ifdefined\NAT@testdef
+        \let\bibcite\NAT@testdef
+      \fi
       }{}
     }
 %    \end{macrocode}  

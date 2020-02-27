@@ -1,0 +1,16 @@
+\documentclass{article}
+
+\usepackage[numbers]{natbib}
+\usepackage{apxproof}
+
+\begin{document}
+  Here is a reference that is not in appendix \cite{thomas1998update}.
+
+  \begin{toappendix}
+    This reference has already been used \cite{thomas1998update}.
+    The following is a new reference \cite{robertson1986graph}.
+  \end{toappendix}
+
+  \bibliographystyle{plainnat}
+  \bibliography{refs}
+\end{document}

@@ -213,7 +213,7 @@
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
-      \immediate\write\axp@proofsfile{\noexpand\makeatother}
+      \immediate\write\axp@proofsfile{\noexpand\makeatother}%
       \FV@Scan}
   \def\FVE@axp@VerbatimOut{%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
@@ -430,6 +430,11 @@
       }
     }{}
     \AtEndDocument{
+      \ifdefined\NAT@testdef
+        \renewcommand\bibcite[2]{%
+          \global\@namedef{b@#1\@extra@binfo}{#2}%
+        }
+      \fi
       \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
@@ -449,6 +454,9 @@
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}
+      \ifdefined\NAT@testdef
+        \let\bibcite\NAT@testdef
+      \fi
       }{}
     }
   }{}
