@@ -373,7 +373,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % (\meta{title})''.
 % \item[\textbackslash|appendixrefname|]\DescribeMacro{\appendixrefname} contains the heading that is displayed before
 % the bibliography. By default, this is ``References for the
-% Appendix''.
+% Appendix''. (Note that this command is also defined and used by the
+% |memoir| document class.)
 % \item[\textbackslash|appendixbibliographystyle|]\DescribeMacro{\appendixbibliographystyle} contains the |.bst| bibliography
 % style that is used in the bibliography in appendix. By default, this is
 % |alpha|.
@@ -430,6 +431,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \item \LaTeX{} standard document classes (e.g., |article.cls|)
 % \item \href{https://www.ctan.org/pkg/koma-script}{KOMA-Script}
 % (e.g., |scrartcl.cls|, |scrbook.cls|)
+% \item \href{https://ctan.org/pkg/memoir}{|memoir.cls|}
 % \item \href{https://www.acm.org/publications/proceedings-template}{ACM
 % SIG Proceedings} (e.g., |sig-alternate.cls|, |acmart.cls|)
 % \item \href{https://www.springer.com/computer/lncs/lncs+authors}{
@@ -713,6 +715,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\mainbodyrepeatedtheorem}
 % \changes{v1.2.0}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
+% \changes{v1.2.0-dev}{2020/10/09}{Fix compatibility with
+% \texttt{memoir} document class}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
 % \begin{macro}{\appendixprelim}
@@ -725,7 +729,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % all modes so that a |\renewcommand| works in all cases.
 %    \begin{macrocode}
 \newcommand{\mainbodyrepeatedtheorem}{}
-\newcommand{\appendixrefname}{References for the Appendix}
+\providecommand{\appendixrefname}{References for the Appendix}
 \newcommand{\appendixbibliographystyle}{alpha}
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
