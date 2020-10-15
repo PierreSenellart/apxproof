@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2016-2019 by Pierre Senellart
+% Copyright (C) 2016-2020 by Pierre Senellart
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2019/10/08 v1.2.0-dev Automatic proofs in appendix]
+%<package>  [2020/10/15 v1.2.1 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -468,7 +468,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Issues not listed here should be reported to the author.
 %
 % \section{License}
-% Copyright \textcopyright{} 2016--2019 by Pierre Senellart.
+% Copyright \textcopyright{} 2016--2020 by Pierre Senellart.
 % 
 % This work may be distributed and/or modified under the conditions of the
 % \LaTeX{} Project Public License, either version 1.3 of this license or (at
@@ -611,7 +611,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % The external \textsf{bibunits} package 
 % is used to add a second bibliography for the appendix material.
-% \changes{v1.2.0}{2019/04/17}{Do not load \textsf{binunits} if
+% \changes{v1.2.0}{2019/04/17}{Do not load \textsf{bibunits} if
 % \texttt{bibliography} is set to \texttt{common}}
 %    \begin{macrocode}
   \RequirePackage{bibunits}
@@ -715,7 +715,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \begin{macro}{\mainbodyrepeatedtheorem}
 % \changes{v1.2.0}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
-% \changes{v1.2.0-dev}{2020/10/09}{Fix compatibility with
+% \changes{v1.2.1}{2020/10/09}{Fix compatibility with
 % \texttt{memoir} document class}
 % \begin{macro}{\appendixbibliographystyle}
 % \begin{macro}{\appendixbibliographyprelim}
@@ -952,11 +952,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % as in the \textsf{xypic} package). Finally, as an additional
 % precaution, we reset |\FV@CatCodesHook| that is for example set by the
 % |commandchars| or |commentchar| option of |\fvset|.
-% \changes{v1.2.0-dev}{2020/01/01}{Fix compatibility with
+% \changes{v1.2.1}{2020/01/01}{Fix compatibility with
 % \textsf{xypic} package}
-% \changes{v1.2.0-dev}{2020/10/15}{Fix compatibility with
-% other uses of \textsf{fancyvrb} that set
-% \texttt\textbackslash|FV@CatCodesHook|}
+% \changes{v1.2.1}{2020/10/15}{Fix compatibility with other uses of \textsf{fancyvrb} that set
+% \texttt{\textbackslash FV@CatCodesHook}}
 %    \begin{macrocode}
   \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
   \def\FVB@axp@VerbatimOut{%
@@ -1467,7 +1466,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |bibcite| at the end of the document.
 % \changes{v1.0.6}{2018/05/10}{Deal with document classes where the
 % bibliography is called \texttt{\textbackslash bibname}}
-% \changes{v1.2.0-dev}{2020/02/27}{Ad hoc fix for \textsf{natbib}
+% \changes{v1.2.1}{2020/02/27}{Ad hoc fix for \textsf{natbib}
 % package conflict}
 %    \begin{macrocode}
     \AtEndDocument{
