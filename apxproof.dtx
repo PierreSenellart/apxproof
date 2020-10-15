@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{811}
+% \CheckSum{813}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -949,9 +949,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % to the |\axp@proofsfile|. We also use the previous macro to disable active
 % characters with the eighth bit set, and we make sure the catcode of |@|
 % is reset for every verbatim environment, in case it is used by the user (e.g.,
-% as in the \textsf{xypic} package).
+% as in the \textsf{xypic} package). Finally, as an additional
+% precaution, we reset |\FV@CatCodesHook| that is for example set by the
+% |commandchars| or |commentchar| option of |\fvset|.
 % \changes{v1.2.0-dev}{2020/01/01}{Fix compatibility with
 % \textsf{xypic} package}
+% \changes{v1.2.0-dev}{2020/10/15}{Fix compatibility with
+% other uses of \textsf{fancyvrb} that set
+% \texttt\textbackslash|FV@CatCodesHook|}
 %    \begin{macrocode}
   \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
   \def\FVB@axp@VerbatimOut{%
@@ -965,6 +970,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
       \immediate\write\axp@proofsfile{\noexpand\makeatother}%
+      \def\FV@CatCodesHook{}%
       \FV@Scan}
   \def\FVE@axp@VerbatimOut{%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
