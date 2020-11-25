@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2020/10/15 v1.2.1 Automatic proofs in appendix]
+  [2020/10/15 v1.2.1-dev Automatic proofs in appendix]
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
 \RequirePackage{fancyvrb}
@@ -239,7 +239,7 @@
       \ifx\relax##1\relax
         \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
       \else
-        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}%
+        \axp@with@forward{#1}{\begin{#1}[{##1}]}\label{axp@r\roman{axp@rpcounter}}%
       \fi
       \mainbodyrepeatedtheorem
       \BODY\end{#1}%
@@ -279,7 +279,7 @@
                   \noexpand\fi
                 \fi
               \fi
-              {} (\unexpanded{##1})%
+              {} (\unexpanded{{##1}})%
             }%
           ]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%

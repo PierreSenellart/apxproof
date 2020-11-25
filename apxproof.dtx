@@ -1035,6 +1035,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % We save the equation counter
 % before typesetting the theorem environment, to reset it to the same
 % value in the repeated environment when |repeqn| is set to |same|.
+% \changes{v1.2.1-dev}{2020/11/25}{Fix handling of optional arguments of
+% repeated theorems containing optional arguments}
 %    \begin{macrocode}
     \NewEnviron{#1rep}[1][]{%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -1044,7 +1046,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \ifx\relax##1\relax
         \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
       \else
-        \axp@with@forward{#1}{\begin{#1}[##1]}\label{axp@r\roman{axp@rpcounter}}%
+        \axp@with@forward{#1}{\begin{#1}[{##1}]}\label{axp@r\roman{axp@rpcounter}}%
       \fi
       \mainbodyrepeatedtheorem
       \BODY\end{#1}%
@@ -1112,7 +1114,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
                   \noexpand\fi
                 \fi
               \fi  
-              {} (\unexpanded{##1})%
+              {} (\unexpanded{{##1}})%
             }%
           ]%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
