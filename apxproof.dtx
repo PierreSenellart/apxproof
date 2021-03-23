@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2016-2020 by Pierre Senellart
+% Copyright (C) 2016-2021 by Pierre Senellart
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2020/10/15 v1.2.1-dev Automatic proofs in appendix]
+%<package>  [2021/03/23 v1.2.1-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{813}
+% \CheckSum{814}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -468,7 +468,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % Issues not listed here should be reported to the author.
 %
 % \section{License}
-% Copyright \textcopyright{} 2016--2020 by Pierre Senellart.
+% Copyright \textcopyright{} 2016--2021 by Pierre Senellart.
 % 
 % This work may be distributed and/or modified under the conditions of the
 % \LaTeX{} Project Public License, either version 1.3 of this license or (at
@@ -1459,7 +1459,14 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |\appendixprelim| is issued)
 % within a |bibunit| environment so as to typeset
 % a separate bibliography for the appendix (unless the |bibliography|
-% option is set to |common|). There is an extra test to
+% option is set to |common|). This is done using |\pretocmd| on
+% |\@enddocumenthook| instead of |\AtEndDocument| because we want the
+% code to be run before any code in the |\@enddocumenthook| that has
+% been set in the document class, as in the \textsf{amsart} document
+% class.
+% \changes{v1.2.1-dev}{Compatibility with AMS document classes: do not
+% use \texttt{\textbackslash AtEndDocument}}
+% There is an extra test to
 % ensure an empty bibliography environment is not produced.
 % The name of the bibliography is changed to |\appendixrefname|; in most
 % document classes, it is called |\refname| but it is occasionally
@@ -1471,7 +1478,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.2.1}{2020/02/27}{Ad hoc fix for \textsf{natbib}
 % package conflict}
 %    \begin{macrocode}
-    \AtEndDocument{
+    \pretocmd{\@enddocumenthook}{%
       \ifdefined\NAT@testdef
         \renewcommand\bibcite[2]{%
           \global\@namedef{b@#1\@extra@binfo}{#2}%
@@ -1500,7 +1507,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \let\bibcite\NAT@testdef
       \fi
       }{}
-    }
+    }{}{}
 %    \end{macrocode}  
 %    \begin{macrocode}  
   }{}
