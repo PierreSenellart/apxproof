@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2021/03/23 v1.2.1-dev Automatic proofs in appendix]
+%<package>  [2021/06/23 v1.2.1-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{814}
+% \CheckSum{828}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -526,6 +526,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
 \RequirePackage{kvoptions}
 %    \end{macrocode}
+% \item \textsf{catchfile} to be able to check the content of files
+% |\input| within appendix content.
+%    \begin{macrocode}
+\RequirePackage{catchfile}
+%    \end{macrocode}
 % \item \textsf{amsthm} for its |\newteorem| macro.
 % Some document classes (e.g., \textsf{lipics})
 % preload \textsf{amsthm}: this is fine, |\RequirePackage{amsthm}|
@@ -968,7 +973,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
-      \immediate\write\axp@proofsfile{\noexpand\makeatother}%
       \def\FV@CatCodesHook{}%
       \FV@Scan}
   \def\FVE@axp@VerbatimOut{%
@@ -1083,6 +1087,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \changes{v1.2.0}{2019/10/07}{Fix display of theorem notes}
 %    \begin{macrocode}  
       \axp@writesection%
+      \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
         \immediate\write\axp@proofsfile{%
           \noexpand\setcounter{axp@equationx}{\value{equation}}%
@@ -1258,7 +1263,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
     {%
       \axp@writesection
       \immediate\write\axp@proofsfile{%
-        \noexpand\begin{axp@oldproof}%
+        \noexpand\makeatletter\noexpand\begin{axp@oldproof}\noexpand\makeatother%
       }%
       \axp@VerbatimOut
     }
@@ -1318,21 +1323,28 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 % \begin{macro}{\axp@section}  
-% \begin{macro}{\axp@@ssection}  
-% \begin{macro}{\axp@@section}  
-% This command behaves similarly to |\axp@oldsection|, except that it first
-% tests whether a |\section| follows, and if so, does not produce
-% anything. This is useful to avoid producing empty sections in the
-% appendix. As usual, we have to process starred and unstarred version
-% separately.
+% \changes{v1.2.1-dev}{2021/06/23}{Detect a section within an included
+% file to avoid produced useless sections}
+% \begin{macro}{\axp@@sectiontestinput}
+% \begin{macro}{\axp@@sectiontestsection}
+% This command |\axp@section| behaves similarly to |\axp@oldsection|,
+% except that it first tests whether a |\section| follows, and if so,
+% does not produce anything. This is useful to avoid producing empty
+% sections in the appendix. Using the \textsf{catchfile} package, we
+% also check whether a |\section| is within an |\input| that immediately
+% follows.  
 %    \begin{macrocode}  
-  \def\axp@section{\@ifstar\axp@@ssection\axp@@section}
-  \def\axp@@ssection#1{%
-    \@ifnextchar\section{}{\axp@oldsection*{#1}}%
+  \def\axp@section#1{%
+    \@ifnextchar\input
+      {\axp@@sectiontestinput{#1}}%
+      {\axp@@sectiontestsection{#1}}%
   }
-  \def\axp@@section#1{%
-    \@ifnextchar\section{}{\axp@oldsection{#1}}%
+  \def\axp@@sectiontestinput#1\input#2{%
+    \CatchFileDef{\axp@tmp}{#2}{}%
+    \def\axp@tmptmp{\axp@@sectiontestsection{#1}}%
+    \expandafter\axp@tmptmp\axp@tmp%
   }
+  \def\axp@@sectiontestsection#1{\@ifnextchar\section{\makeatother}{\axp@oldsection{#1}\makeatother}}
 %    \end{macrocode}  
 % \end{macro}  
 % \end{macro}  
@@ -1464,7 +1476,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % code to be run before any code in the |\@enddocumenthook| that has
 % been set in the document class, as in the \textsf{amsart} document
 % class.
-% \changes{v1.2.1-dev}{Compatibility with AMS document classes: do not
+% \changes{v1.2.1-dev}{2021/03/23}{Compatibility with AMS document classes: do not
 % use \texttt{\textbackslash AtEndDocument}}
 % There is an extra test to
 % ensure an empty bibliography environment is not produced.
