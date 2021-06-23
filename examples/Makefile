@@ -8,22 +8,21 @@ clean:
 	rm -f */test.pdf */test.test
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
-	@echo ''
-	cd $(dir $@) && latexmk -c
-	cd $(dir $@) && latexmk -pdf test || (rm -fv test.pdf; false)
+	@cd $(dir $@) && latexmk -silent -c >/dev/null 2>/dev/null
+	@cd $(dir $@) && latexmk -interaction=nonstopmode -silent -pdf test >/dev/null 2>/dev/null || (rm -fv test.pdf; false)
 
 %.html: %.pdf
-	pdftotext -bbox $^
+	@pdftotext -bbox $^ 2>/dev/null
 
 %/test.test: %/reference.html %/test.html
 	@echo -n "Testing $(dir $@)... " 
-	@diff $^ | (! grep '^[<>]' | grep -v '^. <meta' > $@) || (echo ko; cat $@; rm $@; false)
+	@diff $^ | (! grep '^[<>]' | LC_ALL=C grep 'word.*>.*[A-Za-z0-9].*</word' > $@) || (echo ko; cat $@; rm $@; false)
 	@echo ok
 
 %.fmt: %.tex ../apxproof.sty 
-	cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump'
+	@cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump' >/dev/null 2>/dev/null
 
 preamble/test.pdf: preamble/test_preamble.fmt
 
 ../apxproof.sty: ../apxproof.ins ../apxproof.dtx
-	make -C ..
+	make -C .. apxproof.sty
