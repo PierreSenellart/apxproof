@@ -8,7 +8,7 @@ ctan:
 	l3build ctan
 
 test:
-	make -C examples
+	make -s -C examples
 	@echo All tests passed!
 
 %.pdf: %.dtx
