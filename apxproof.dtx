@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2021/06/23 v1.2.1-dev Automatic proofs in appendix]
+%<package>  [2021/06/23 v1.2.2 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -1039,7 +1039,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % We save the equation counter
 % before typesetting the theorem environment, to reset it to the same
 % value in the repeated environment when |repeqn| is set to |same|.
-% \changes{v1.2.1-dev}{2020/11/25}{Fix handling of optional arguments of
+% \changes{v1.2.2}{2020/11/25}{Fix handling of optional arguments of
 % repeated theorems containing optional arguments}
 %    \begin{macrocode}
     \NewEnviron{#1rep}[1][]{%
@@ -1323,7 +1323,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}  
 % \end{macro}  
 % \begin{macro}{\axp@section}  
-% \changes{v1.2.1-dev}{2021/06/23}{Detect a section within an included
+% \changes{v1.2.2}{2021/06/23}{Detect a section within an included
 % file to avoid produced useless sections}
 % \begin{macro}{\axp@@sectiontestinput}
 % \begin{macro}{\axp@@sectiontestsection}
@@ -1476,7 +1476,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % code to be run before any code in the |\@enddocumenthook| that has
 % been set in the document class, as in the \textsf{amsart} document
 % class.
-% \changes{v1.2.1-dev}{2021/03/23}{Compatibility with AMS document classes: do not
+% \changes{v1.2.2}{2021/03/23}{Compatibility with AMS document classes: do not
 % use \texttt{\textbackslash AtEndDocument}}
 % There is an extra test to
 % ensure an empty bibliography environment is not produced.
