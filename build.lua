@@ -2,6 +2,8 @@
 
 module = "apxproof"
 
+typesetexe = "pdflatex"
+typesetopts = " --interaction=nonstopmode"
 typesetsuppfiles = {"*.bib"}
 bibfiles = {"support/*.bib"}
 textfiles = {"*.md", "LICENSE"}
