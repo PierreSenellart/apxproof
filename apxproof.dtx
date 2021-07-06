@@ -421,6 +421,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % for which a section in the appendix should not be created. This should
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
+% \item[\textbackslash|noforwardlinking|]\DescribeMacro{\noforwardlinking}
+% is to be used inside a section that \emph{does} is to be used to suppress forward
+% linking for the whole document. Usually, when hyperref is loaded, |foobarrep|
+% environments in the main text have their number link to their repetition in the
+% appendix. This commands suppresses this behaviour and |foobarrep| environments are
+% treated as if hyperref was not loaded.
 % \end{description}
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,

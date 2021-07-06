@@ -268,7 +268,11 @@
         \fi
         \noexpand\begin{axp@#1rp}
           [%
-            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \ifbool{axp@forward@suppress}{%
+              \noexpand\ref*{axp@r\roman{axp@rpcounter}}%
+            }{%
+              \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            }%
             \@ifnotempty{##1}{%
               \ifdefined\theopargself
               \else
@@ -316,7 +320,7 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifbool{axp@forward}{%
+    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
       \ifcsdef{hyperlink}{%
         \hyperlink{#1}{#2}%
       }{%
@@ -402,6 +406,10 @@
   }
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
+  }
+  \newbool{axp@forward@suppress}
+  \newcommand{\noforwardlinking}{
+    \global\booltrue{axp@forward@suppress}%
   }
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
