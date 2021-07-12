@@ -83,9 +83,11 @@
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
   package apxproof}
 }}
+\newbool{axp@forward@suppress}
 \ifthenelse{\equal{\axp@forwardlinking}{yes}}{
 }{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
   \message{apxproof: Disable forward linking}
+  \global\booltrue{axp@forward@suppress}%
 }{
   \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
@@ -263,11 +265,11 @@
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
-      \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
-        \global\def\axp@refstar{\ref}%
+      \ifbool{axp@forward@suppress}{%
+        \global\def\axp@refstar{\ref*}
       }{%
-        \global\def\axp@refstar{\ref*}%
-      }%
+        \global\def\axp@refstar{\ref}
+      }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
@@ -329,13 +331,9 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
-      \ifbool{axp@forward}{%
-        \ifcsdef{hyperlink}{%
-          \hyperlink{#1}{#2}%
-        }{%
-          #2%
-        }%
+    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
+      \ifcsdef{hyperlink}{%
+        \hyperlink{#1}{#2}%
       }{%
         #2%
       }%

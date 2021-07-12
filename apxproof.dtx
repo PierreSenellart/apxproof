@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{853}
+% \CheckSum{851}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -651,14 +651,20 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
   package apxproof}
 }}
+%    \end{macrocode}
+% \begin{macro}{\axp@forward@suppress}
+%    \begin{macrocode}
+\newbool{axp@forward@suppress}
 \ifthenelse{\equal{\axp@forwardlinking}{yes}}{
 }{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
   \message{apxproof: Disable forward linking}
+  \global\booltrue{axp@forward@suppress}%
 }{
   \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
 %    \end{macrocode}
+% \end{macro}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
 % \changes{v1.2.0}{2019/10/01}{Restore predefined theorem counters}
@@ -1117,10 +1123,10 @@ This is a citation in the appendix~\cite{proofsAreHard}.
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
-      \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
-        \global\let\axp@refstar\ref
+      \ifbool{axp@forward@suppress}{%
+        \global\def\axp@refstar{\ref*}
       }{%
-        \global\let\axp@refstar{\ref*}
+        \global\def\axp@refstar{\ref}
       }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
@@ -1231,13 +1237,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
-      \ifbool{axp@forward}{%
-        \ifcsdef{hyperlink}{%
-          \hyperlink{#1}{#2}%
-        }{%
-          #2%
-        }%
+    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
+      \ifcsdef{hyperlink}{%
+        \hyperlink{#1}{#2}%
       }{%
         #2%
       }%
