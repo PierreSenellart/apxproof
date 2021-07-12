@@ -54,6 +54,7 @@
 \DeclareStringOption[append]{appendix}
 \DeclareStringOption[separate]{bibliography}
 \DeclareStringOption[same]{repeqn}
+\DeclareStringOption[yes]{forwardlinking}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
@@ -80,6 +81,15 @@
   \message{apxproof: Repeated equations are independently numbered}
 }{
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
+  package apxproof}
+}}
+\newbool{axp@forward@suppress}
+\ifthenelse{\equal{\axp@forwardlinking}{yes}}{
+}{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
+  \message{apxproof: Disable forward linking}
+  \global\booltrue{axp@forward@suppress}%
+}{
+  \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
 \def\axp@newtheoremrep@definetheorem#1#2#3#4{%
@@ -255,6 +265,11 @@
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
+      \ifbool{axp@forward@suppress}{%
+        \global\def\axp@refstar{\ref*}
+      }{%
+        \global\def\axp@refstar{\ref}
+      }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
@@ -268,7 +283,7 @@
         \fi
         \noexpand\begin{axp@#1rp}
           [%
-            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
             \@ifnotempty{##1}{%
               \ifdefined\theopargself
               \else
@@ -316,7 +331,7 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifbool{axp@forward}{%
+    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
       \ifcsdef{hyperlink}{%
         \hyperlink{#1}{#2}%
       }{%

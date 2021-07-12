@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{828}
+% \CheckSum{851}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -400,6 +400,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |\ref{|\meta{counter}|-apx}| references the counter in the appendix
 % (except in |inline| mode, where both have the same effect).
 %
+% \DescribeOption{forwardlinking}
+% Another customization option concerns hyperlinking.
+% Usually, when \textsf{hyperref} is loaded, |foobarrep|
+% environments in the main text have their number link to their repetition in the
+% appendix. To suppress this behavior and have |foobarrep| environments
+% treated as if \textsf{hyperref} were not loaded, one can specify the
+% value |no| to the |forwardlinking| option when loading the package. (By
+% default this option is set to |yes|.)
+%
 % \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, the usage of
 % which is limited to special cases:
@@ -489,7 +498,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \section{Acknowledgments}
 % Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
 % Bauer for the implementation of the forward-linking mechanism, and
-% for various bugfixes.
+% for various bugfixes. Thanks to  Leonid Kostrykin for an initial
+% implementation of the |forwardlinking| option.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -596,6 +606,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \DeclareStringOption[same]{repeqn}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\axp@forwardlinking}
+% \changes{v1.2.2-dev}{2021/07/12}{\texttt{forwardlinking} option}
+%    \begin{macrocode}
+\DeclareStringOption[yes]{forwardlinking}
+%    \end{macrocode}
+% \end{macro}
 %    \begin{macrocode}
 \ProcessLocalKeyvalOptions*
 %    \end{macrocode}
@@ -636,6 +652,19 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   package apxproof}
 }}
 %    \end{macrocode}
+% \begin{macro}{\axp@forward@suppress}
+%    \begin{macrocode}
+\newbool{axp@forward@suppress}
+\ifthenelse{\equal{\axp@forwardlinking}{yes}}{
+}{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
+  \message{apxproof: Disable forward linking}
+  \global\booltrue{axp@forward@suppress}%
+}{
+  \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
+  package apxproof}
+}}
+%    \end{macrocode}
+% \end{macro}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
 % \changes{v1.2.0}{2019/10/01}{Restore predefined theorem counters}
@@ -1094,6 +1123,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
+      \ifbool{axp@forward@suppress}{%
+        \global\def\axp@refstar{\ref*}
+      }{%
+        \global\def\axp@refstar{\ref}
+      }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
@@ -1107,7 +1141,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \fi
         \noexpand\begin{axp@#1rp}
           [%
-            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
             \@ifnotempty{##1}{%
               \ifdefined\theopargself
               \else
@@ -1203,7 +1237,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifbool{axp@forward}{%
+    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
       \ifcsdef{hyperlink}{%
         \hyperlink{#1}{#2}%
       }{%
