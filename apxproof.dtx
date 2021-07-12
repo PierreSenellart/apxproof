@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{828}
+% \CheckSum{853}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -400,6 +400,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % |\ref{|\meta{counter}|-apx}| references the counter in the appendix
 % (except in |inline| mode, where both have the same effect).
 %
+% \DescribeOption{forwardlinking}
+% Another customization option concerns hyperlinking.
+% Usually, when \textsf{hyperref} is loaded, |foobarrep|
+% environments in the main text have their number link to their repetition in the
+% appendix. To suppress this behavior and have |foobarrep| environments
+% treated as if \textsf{hyperref} were not loaded, one can specify the
+% value |no| to the |forwardlinking| option when loading the package. (By
+% default this option is set to |yes|.)
+%
 % \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, the usage of
 % which is limited to special cases:
@@ -421,12 +430,6 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % for which a section in the appendix should not be created. This should
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
-% \item[\textbackslash|noforwardlinking|]\DescribeMacro{\noforwardlinking}
-% is to be used inside a section that \emph{does} is to be used to suppress forward
-% linking for the whole document. Usually, when hyperref is loaded, |foobarrep|
-% environments in the main text have their number link to their repetition in the
-% appendix. This commands suppresses this behaviour and |foobarrep| environments are
-% treated as if hyperref was not loaded.
 % \end{description}
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
@@ -495,7 +498,8 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \section{Acknowledgments}
 % Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
 % Bauer for the implementation of the forward-linking mechanism, and
-% for various bugfixes.
+% for various bugfixes. Thanks to  Leonid Kostrykin for an initial
+% implementation of the |forwardlinking| option.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -602,6 +606,12 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 \DeclareStringOption[same]{repeqn}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\axp@forwardlinking}
+% \changes{v1.2.2-dev}{2021/07/12}{\texttt{forwardlinking} option}
+%    \begin{macrocode}
+\DeclareStringOption[yes]{forwardlinking}
+%    \end{macrocode}
+% \end{macro}
 %    \begin{macrocode}
 \ProcessLocalKeyvalOptions*
 %    \end{macrocode}
@@ -639,6 +649,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
   \message{apxproof: Repeated equations are independently numbered}
 }{
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@forwardlinking}{yes}}{
+}{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
+  \message{apxproof: Disable forward linking}
+}{
+  \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
 %    \end{macrocode}
@@ -1100,6 +1117,11 @@ This is a citation in the appendix~\cite{proofsAreHard}.
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
+      \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
+        \global\let\axp@refstar\ref
+      }{%
+        \global\let\axp@refstar{\ref*}
+      }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
@@ -1113,7 +1135,7 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \fi
         \noexpand\begin{axp@#1rp}
           [%
-            \noexpand\ref{axp@r\roman{axp@rpcounter}}%
+            \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
             \@ifnotempty{##1}{%
               \ifdefined\theopargself
               \else
@@ -1209,9 +1231,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifbool{axp@forward}{%
-      \ifcsdef{hyperlink}{%
-        \hyperlink{#1}{#2}%
+    \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
+      \ifbool{axp@forward}{%
+        \ifcsdef{hyperlink}{%
+          \hyperlink{#1}{#2}%
+        }{%
+          #2%
+        }%
       }{%
         #2%
       }%

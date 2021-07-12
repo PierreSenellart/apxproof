@@ -54,6 +54,7 @@
 \DeclareStringOption[append]{appendix}
 \DeclareStringOption[separate]{bibliography}
 \DeclareStringOption[same]{repeqn}
+\DeclareStringOption[yes]{forwardlinking}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
@@ -80,6 +81,13 @@
   \message{apxproof: Repeated equations are independently numbered}
 }{
   \errmessage{Error: unsupported option repeqn=\axp@repeqn\ for
+  package apxproof}
+}}
+\ifthenelse{\equal{\axp@forwardlinking}{yes}}{
+}{\ifthenelse{\equal{\axp@forwardlinking}{no}}{
+  \message{apxproof: Disable forward linking}
+}{
+  \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
 \def\axp@newtheoremrep@definetheorem#1#2#3#4{%
@@ -255,6 +263,11 @@
           \noexpand\setcounter{equation}{\theaxp@equation}%
         }%
       }{}%
+      \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
+        \global\let\axp@refstar\ref
+      }{%
+        \global\let\axp@refstar{\ref*}
+      }
       \immediate\write\axp@proofsfile{{%
         \ifdefined\theopargself
           \noexpand\theopargself
@@ -268,11 +281,7 @@
         \fi
         \noexpand\begin{axp@#1rp}
           [%
-            \ifbool{axp@forward@suppress}{%
-              \noexpand\ref*{axp@r\roman{axp@rpcounter}}%
-            }{%
-              \noexpand\ref{axp@r\roman{axp@rpcounter}}%
-            }%
+            \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
             \@ifnotempty{##1}{%
               \ifdefined\theopargself
               \else
@@ -320,9 +329,13 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
-      \ifcsdef{hyperlink}{%
-        \hyperlink{#1}{#2}%
+    \ifthenelse{\equal{\axp@forwardlinking}{yes}}{%
+      \ifbool{axp@forward}{%
+        \ifcsdef{hyperlink}{%
+          \hyperlink{#1}{#2}%
+        }{%
+          #2%
+        }%
       }{%
         #2%
       }%
@@ -406,10 +419,6 @@
   }
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
-  }
-  \newbool{axp@forward@suppress}
-  \newcommand{\noforwardlinking}{
-    \global\booltrue{axp@forward@suppress}%
   }
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
