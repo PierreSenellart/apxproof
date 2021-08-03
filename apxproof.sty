@@ -470,8 +470,17 @@
           \renewcommand{\bibname}{\appendixrefname}
         \fi\fi
         \let\axp@oldthebibliography\thebibliography
-        \renewcommand\thebibliography[1]{%
-          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
+        \let\endaxp@oldthebibliography\endthebibliography
+        \renewenvironment{thebibliography}[1]{%
+          \def\axp@tmp{#1}%
+          \ifx\axp@tmp\empty
+            \gdef\axp@noappendixbibliography1\relax
+          \else
+            \begin{axp@oldthebibliography}{#1}%
+          \fi
+        }{%
+          \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
+        \fi}
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}

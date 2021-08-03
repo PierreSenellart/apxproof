@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{851}
+% \CheckSum{864}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1523,6 +1523,9 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % bibliography is called \texttt{\textbackslash bibname}}
 % \changes{v1.2.1}{2020/02/27}{Ad hoc fix for \textsf{natbib}
 % package conflict}
+% \changes{v1.2.2-dev}{2021/08/03}{More robust redefinition of
+% \texttt{thebibliography} environment, for compatibility with
+% \textsf{tocbibind}}
 %    \begin{macrocode}
     \pretocmd{\@enddocumenthook}{%
       \ifdefined\NAT@testdef
@@ -1544,8 +1547,17 @@ This is a citation in the appendix~\cite{proofsAreHard}.
           \renewcommand{\bibname}{\appendixrefname}
         \fi\fi
         \let\axp@oldthebibliography\thebibliography
-        \renewcommand\thebibliography[1]{%
-          \ifx\relax#1\relax\else\axp@oldthebibliography{#1}\fi}
+        \let\endaxp@oldthebibliography\endthebibliography
+        \renewenvironment{thebibliography}[1]{%
+          \def\axp@tmp{#1}%
+          \ifx\axp@tmp\empty
+            \gdef\axp@noappendixbibliography1\relax
+          \else
+            \begin{axp@oldthebibliography}{#1}%
+          \fi
+        }{%
+          \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
+        \fi}
         \appendixbibliographyprelim
         \putbib
       \end{bibunit}

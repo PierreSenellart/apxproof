@@ -1,0 +1,23 @@
+\documentclass{article}
+
+\usepackage{tocbibind}
+\usepackage{../../apxproof}
+\usepackage{hyperref}
+
+\begin{document}
+
+\tableofcontents
+\clearpage
+
+\section{Main text}
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{../common}
+
+\clearpage
+
+\begin{toappendix}
+  Appendix content.
+\end{toappendix}
+
+\end{document}
