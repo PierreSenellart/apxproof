@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{864}
+% \CheckSum{913}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -149,9 +149,7 @@
 % \end{toappendix}
 % \end{verbatim}
 % \begin{toappendix}
-%<*driver>
-This content is in the appendix.
-%</driver>
+% This content is in the appendix.
 % \end{toappendix}
 % \end{example}
 % \changes{v1.0.3}{2017/01/10}{Note on entire sections in appendix}
@@ -177,9 +175,7 @@ This content is in the appendix.
 % \end{appendixproof}
 % \end{verbatim}
 % \begin{appendixproof}
-%<*driver>
-This proof is in the appendix.
-%</driver>
+% This proof is in the appendix.
 % \end{appendixproof}
 % \end{example}
 %
@@ -266,9 +262,7 @@ This proof is in the appendix.
 % This foobar is repeated in the appendix.
 % \end{foobarrep}
 % \begin{proof}
-%<*driver>
-This is the proof of the repeated foobar.
-%</driver>
+% This is the proof of the repeated foobar.
 % \end{proof}
 % Note that, since |hyperref| is loaded, there are hyperlinks
 % created between the statements of the theorems in the main text and in
@@ -325,9 +319,7 @@ This is the proof of the repeated foobar.
 % \end{verbatim}
 % This is a citation in the main text~\cite{lamport86}.
 % \begin{toappendix}
-%<*driver>
-This is a citation in the appendix~\cite{proofsAreHard}.
-%</driver>
+% This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{toappendix}
 % \end{example}
 % The bibliography in the appendix can use
@@ -1290,10 +1282,16 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 %    \end{macrocode}
 % \end{macro}
 % \begin{environment}{appendixproof}
+% \changes{v1.2.3-dev}{2021/11/03}{Support optional arguments in proofs}
 % We dump the content of this in appendix, within an original |proof|
 % environment, possibly after creating a new appendix section.
+% We support
+% optional arguments in proofs, but we need to be careful not to gobble
+% any newline character, that would make it impossible to process the
+% first line with \textsf{fancyvrb}.
 %    \begin{macrocode}  
-  \newenvironment{appendixproof}
+  \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof}{\catcode`\^^M=5\@appendixproof}}
+  \def\@appendixproof
     {%
       \axp@writesection
       \immediate\write\axp@proofsfile{%
@@ -1301,6 +1299,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
       }%
       \axp@VerbatimOut
     }
+  \def\@@appendixproof[#1]%
+    {%
+      \axp@writesection
+      \immediate\write\axp@proofsfile{%
+        \noexpand\makeatletter\noexpand\begin{axp@oldproof}[\unexpanded{#1}]\noexpand\makeatother%
+      }%
+      \axp@VerbatimOut
+    }
+  \def\endappendixproof
     {%
       \endaxp@VerbatimOut
       \immediate\write\axp@proofsfile{%
@@ -1312,9 +1319,13 @@ This is a citation in the appendix~\cite{proofsAreHard}.
 % \end{environment}
 % \begin{environment}{proof}
 % This environment either puts the proof in appendix, if we are after a repeated
-% theorem without its proof, or inlines it otherwise.    
+% theorem without its proof, or inlines it otherwise. We support
+% optional arguments in proofs, but we need to be careful not to gobble
+% any newline character, that would make it impossible to process the
+% first line with \textsf{fancyvrb}.
 %    \begin{macrocode}  
-  \renewenvironment{proof}
+  \def\proof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@proof}{\catcode`\^^M=5\axp@proof}}
+  \def\axp@proof
     {%
       \iftoggle{axp@seenreptheorem}{%
         \appendixproof
@@ -1322,6 +1333,15 @@ This is a citation in the appendix~\cite{proofsAreHard}.
         \axp@oldproof
       }%
     }
+  \def\axp@@proof[#1]%
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof[#1]
+      }{%
+        \axp@oldproof[#1]
+      }%
+    }
+  \def\endproof
     {%
       \iftoggle{axp@seenreptheorem}{%
         \endappendixproof

@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{../../apxproof}
+\usepackage{amsthm}
+
+\newtheoremrep{theorem}{Theorem}
+
+\begin{document}
+\begin{theorem}
+  Non-repeated theorem.
+\end{theorem}
+
+\begin{proof}[Argument]
+  Proof of non-repeated theorem.
+\end{proof}
+
+\begin{theoremrep}
+  Repeated theorem.
+\end{theoremrep}
+
+\begin{proof}[Argument]
+  Proof of repeated theorem.
+\end{proof}
+
+\begin{appendixproof}[Argument]
+  Proof explicitly put in appendix.
+\end{appendixproof}
+
+\begin{theoremrep}
+  Second repeated theorem.
+\end{theoremrep}
+
+\begin{proof}
+Proof with non-modified proof name.
+\end{proof}
+
+\begin{appendixproof}
+Proof explicitly put in appendix with non-modified proof name.
+\end{appendixproof}
+\end{document}

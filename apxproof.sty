@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2021/09/03 v1.2.3 Automatic proofs in appendix]
+  [2021/09/03 v1.2.3-dev Automatic proofs in appendix]
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
 \RequirePackage{fancyvrb}
@@ -354,7 +354,8 @@
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }
-  \newenvironment{appendixproof}
+  \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof}{\catcode`\^^M=5\@appendixproof}}
+  \def\@appendixproof
     {%
       \axp@writesection
       \immediate\write\axp@proofsfile{%
@@ -362,6 +363,15 @@
       }%
       \axp@VerbatimOut
     }
+  \def\@@appendixproof[#1]%
+    {%
+      \axp@writesection
+      \immediate\write\axp@proofsfile{%
+        \noexpand\makeatletter\noexpand\begin{axp@oldproof}[\unexpanded{#1}]\noexpand\makeatother%
+      }%
+      \axp@VerbatimOut
+    }
+  \def\endappendixproof
     {%
       \endaxp@VerbatimOut
       \immediate\write\axp@proofsfile{%
@@ -369,7 +379,8 @@
       }%
       \noproofinappendix
     }
-  \renewenvironment{proof}
+  \def\proof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@proof}{\catcode`\^^M=5\axp@proof}}
+  \def\axp@proof
     {%
       \iftoggle{axp@seenreptheorem}{%
         \appendixproof
@@ -377,6 +388,15 @@
         \axp@oldproof
       }%
     }
+  \def\axp@@proof[#1]%
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof[#1]
+      }{%
+        \axp@oldproof[#1]
+      }%
+    }
+  \def\endproof
     {%
       \iftoggle{axp@seenreptheorem}{%
         \endappendixproof
