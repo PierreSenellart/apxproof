@@ -134,6 +134,8 @@
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
+  \let\axp@oldclaimproof\claimproof
+  \let\endaxp@oldclaimproof\endclaimproof
   \newcommand{\axp@redefinelabels}{%
     \providecommand\label@in@display{}%
     \ifthenelse{\equal{\axp@appendix}{inline}}{%
@@ -203,6 +205,8 @@
       \noexpand\makeatletter
       \noexpand\let\noexpand\proof\noexpand\axp@oldproof
       \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
+      \noexpand\let\noexpand\claimproof\noexpand\axp@oldclaimproof
+      \noexpand\let\noexpand\endclaimproof\noexpand\endaxp@oldclaimproof
       \noexpand\let\noexpand\section\noexpand\axp@oldsection
     }
   }
@@ -404,6 +408,39 @@
         \endaxp@oldproof
       }%
     }
+  \ifdefined\claimproof
+  \def\claimproof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@claimproof}{\catcode`\^^M=5\axp@claimproof}}
+  \def\axp@claimproof
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof
+      }{%
+        \axp@oldclaimproof
+      }%
+    }
+  \def\axp@@claimproof[#1]%
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \appendixproof[#1]
+      }{%
+        \axp@oldclaimproof[#1]
+      }%
+    }
+  \def\endclaimproof
+    {%
+      \iftoggle{axp@seenreptheorem}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\makeatletter
+          \noexpand\let\noexpand\endaxp@oldproof\noexpand\endaxp@oldclaimproof
+          \noexpand\makeatother
+        }%
+        \endappendixproof
+      }{%
+        \endaxp@oldclaimproof
+      }%
+    }
+  \fi
+
   \let\inlineproof\axp@oldproof
   \let\endinlineproof\endaxp@oldproof
   \let\nestedproof\axp@oldproof
