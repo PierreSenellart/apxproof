@@ -32,7 +32,7 @@ def diff_pdf(a_filename, b_filename, sum_diff_threshold):
     # they launch a shell with a variable provided by the user -- first
     # check the a_filename and b_filename are harmless and look like
     # simple relative paths
-    pattern = re.compile('^([A-Za-z0-9-]+/)*[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)?$')
+    pattern = re.compile('^([A-Za-z0-9-_]+/)*[A-Za-z0-9-_]+(\\.[A-Za-z0-9]+)?$')
     if not pattern.match(a_filename) or not pattern.match(b_filename):
         raise Exception("Filenames contain unexpected characters")
 
