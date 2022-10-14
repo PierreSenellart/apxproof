@@ -17,3 +17,5 @@ test:
 %.sty: %.ins %.dtx
 	l3build unpack
 	cp build/unpacked/$@ .
+
+.PHONY: all clean ctan test
