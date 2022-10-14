@@ -11,7 +11,7 @@
 % version 2005/12/01 or later.
 %
 % This work has the LPPL maintenance status `maintained'.
-% 
+%
 % The Current Maintainer of this work is Pierre Senellart
 % <pierre@senellart.com> and a version control system for this work
 % is available at http://github.com/PierreSenellart/apxproof
@@ -20,7 +20,7 @@
 % and the derived file apxproof.sty.
 %
 % \fi
-% 
+%
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
@@ -87,7 +87,7 @@
 % \changes{v1.0.0}{2016/10/31}{Initial released version}
 % \changes{v1.0.1}{2016/11/07}{Prevent empty bibliography environment;
 % fix typos}
-% 
+%
 % \GetFileInfo{apxproof.sty}
 %
 % \makeatletter\c@IndexColumns=2\makeatother
@@ -102,13 +102,13 @@
 % }
 %
 % \title{The \textsf{apxproof} package}
-% 
+%
 % \author{Pierre Senellart \\ \texttt{pierre@senellart.com} \\
 % \url{http://github.com/PierreSenellart/apxproof}}
 % \date{\filedate \quad \fileversion}
 %
 % \maketitle
-% 
+%
 % \begin{abstract}
 % This package makes it easier to write articles where proofs and other material
 % are deferred to the appendix. The appendix material is written in the \LaTeX{}
@@ -166,7 +166,7 @@
 % \hspace*{1em}\dots\\
 % |\end{appendixproof}|
 % \end{quote}
-% This behaves like the |toappendix| environment, except that 
+% This behaves like the |toappendix| environment, except that
 % a proof environment is generated.
 % \begin{example}We now send a proof to the appendix:
 % \begin{verbatim}
@@ -191,7 +191,7 @@
 % |\newtheoremrep|\marg{name}\oarg{counter}\marg{title}\oarg{countersec}\DescribeMacro{\newtheoremrep}
 % \end{quote}
 % Usage is exactly the same as that of AMS \LaTeX{}'s |\newtheorem|
-% macro: 
+% macro:
 % \begin{itemize}
 % \item \meta{name} (e.g., |theorem|) is the name of an environment that is created for this kind of
 % theorem;
@@ -303,7 +303,7 @@
 % This is an inline proof.
 % \end{inlineproof}
 % \end{example}
-% 
+%
 % \subsection{Bibliography}
 % By default, \textsf{apxproof} automatically adds a bibliography in the appendix
 % with only the references cited in the appendix material. This allows for a
@@ -470,17 +470,17 @@
 %
 % \section{License}
 % Copyright \textcopyright{} 2016--2021 by Pierre Senellart.
-% 
+%
 % This work may be distributed and/or modified under the conditions of the
 % \LaTeX{} Project Public License, either version 1.3 of this license or (at
 % your option) any later version. The latest version of this license is in
 % \url{http://www.latex-project.org/lppl.txt} and version 1.3 or later is part of
 % all distributions of \LaTeX{} version 2005/12/01 or later.
-% 
+%
 % \section{Contact}
 % \begin{itemize}
 % \item \url{https://github.com/PierreSenellart/apxproof}
-% \item 
+% \item
 % Pierre Senellart
 % \href{mailto:pierre@senellart.com}{<pierre@senellart.com>}
 % \end{itemize}
@@ -497,7 +497,7 @@
 %   \PrintChanges
 %   \PrintIndex
 % }
-% 
+%
 % \section{Implementation}
 % We now describe the entire code of the package, in a literate programming
 % fashion. Throughout the package, we use the |axp@| prefix to identify
@@ -622,7 +622,7 @@
 }}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
 %    \end{macrocode}
-% The external \textsf{bibunits} package 
+% The external \textsf{bibunits} package
 % is used to add a second bibliography for the appendix material.
 % \changes{v1.2.0}{2019/04/17}{Do not load \textsf{bibunits} if
 % \texttt{bibliography} is set to \texttt{common}}
@@ -718,7 +718,7 @@
 % We define the high-level |\newtheoremrep| to have the same syntax as
 % \textsf{amsthm}'s |\newtheorem|. For this purpose, we need a little
 % trick to deal with the second and fourth optional arguments, which is what
-% |\@oparg| and |\axp@newtheoremreptmp| are 
+% |\@oparg| and |\axp@newtheoremreptmp| are
 % used for. |\axp@newtheoremrep| is defined differently
 % depending on the compilation mode.
 %    \begin{macrocode}
@@ -737,7 +737,7 @@
 %    \begin{macrocode}
   \newenvironment{proofsketch}{\begin{axp@oldproof}[Proof sketch]}{\end{axp@oldproof}}
 %    \end{macrocode}
-% \end{environment}  
+% \end{environment}
 % \begin{macro}{\mainbodyrepeatedtheorem}
 % \changes{v1.2.0}{2019/09/21}{Configurable repeated theorem command}
 % \begin{macro}{\appendixrefname}
@@ -771,12 +771,12 @@
 %   We save the definition of the existing |proof| environment (and of
 %   the |claimproof| environment that the \textsf{lipics} document class
 %   defines).
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
   \let\axp@oldclaimproof\claimproof
   \let\endaxp@oldclaimproof\endclaimproof
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
 % We define a utility macro that will be used to properly set the
 % |\label| command (and its \textsf{amsmath} counterpart,
@@ -789,7 +789,7 @@
 % \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcommand{\axp@redefinelabels}{%
     \providecommand\label@in@display{}%
     \ifthenelse{\equal{\axp@appendix}{inline}}{%
@@ -810,9 +810,9 @@
       \renewcommand\label@in@display[1]{\axp@oldlabel@in@display{##1-apx}}%
     }%
   }
-%    \end{macrocode}  
-% \end{macro}  
-% \subsubsection{Class-Specific Behavior}    
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{Class-Specific Behavior}
 % Finally, some class-specific behavior common to all compilation modes.
 % \paragraph{\textsf{llncs} and other Springer document classes}
 % \changes{v1.0.6}{2018/05/10}{Better support of Springer document
@@ -840,13 +840,13 @@
   \spnewtheorem*{#1}{#2}{\upshape\bfseries}{\itshape}%
 }
 %    \end{macrocode}
-% \end{macro}    
-% \end{macro}    
+% \end{macro}
+% \end{macro}
 % \begin{macro}{proofsketch}
 % \changes{v1.2.0}{2019/02/15}{Fix proof sketches in inline
 % compilation mode for Springer document classes}
 % We redefine the |proofsketch| environment, which is used
-% differently in the base class.    
+% differently in the base class.
 %    \begin{macrocode}
 \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 %    \end{macrocode}
@@ -882,7 +882,7 @@
     }
   }
 %    \end{macrocode}
-% \end{macro}  
+% \end{macro}
 % \begin{environment}{inlineproof}
 % \begin{environment}{nestedproof}
 % \begin{environment}{appendixproof}
@@ -896,23 +896,23 @@
   \let\appendixproof\proof
   \let\endappendixproof\endproof
 %    \end{macrocode}
-% \end{environment}  
-% \end{environment}  
-% \end{environment}  
+% \end{environment}
+% \end{environment}
+% \end{environment}
 % \begin{environment}{toappendix}
 % \begin{macro}{\noproofinappendix}
 % \begin{macro}{\nosectionappendix}
-% In inline mode, this environment and these macros are no-ops.  
+% In inline mode, this environment and these macros are no-ops.
 %    \begin{macrocode}
   \newenvironment{toappendix}{}{}
   \let\noproofinappendix\relax
   \let\nosectionappendix\relax
 %    \end{macrocode}
 % \end{macro}
-% \end{macro}  
-% \end{environment}  
+% \end{macro}
+% \end{environment}
 %    \begin{macrocode}
-} 
+}
 %    \end{macrocode}
 % \subsection{Append or Strip Compilation Modes}
 %    \begin{macrocode}
@@ -922,26 +922,26 @@
 % useful: either append the appendix material to the document, or strip
 % it entirely.
 % \bigskip
-%    \subsubsection{Auxiliary File for the Appendix}  
-% \begin{macro}{\axp@proofsfile}  
+%    \subsubsection{Auxiliary File for the Appendix}
+% \begin{macro}{\axp@proofsfile}
 % We open a new auxiliary file, with extension |.axp|, where the appendix
-% material will be dumped.  
+% material will be dumped.
 % \changes{v1.1.0}{2018/07/11}{Initialization deferred to \cs{AtBeginDocument}
 % for compatibility with \cs{dump}ed precompiled preambles (K. D.
 % Bauer)}
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \AtBeginDocument{
     \newwrite\axp@proofsfile
     \immediate\openout\axp@proofsfile=\jobname.axp
   }
-%    \end{macrocode}  
-% \end{macro}  
+%    \end{macrocode}
+% \end{macro}
 % \begin{environment}{proof}
 % \begin{macro}{\section}
 % At the beginning of this file, we make |@| a regular character (since
 % it will be used in several places for internal names) and reestablish the original definition of
 % the |proof| environment and the |\section| macro.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \AtBeginDocument{
     \immediate\write\axp@proofsfile{%
       \noexpand\makeatletter
@@ -952,9 +952,9 @@
       \noexpand\let\noexpand\section\noexpand\axp@oldsection
     }
   }
-%    \end{macrocode}  
-% \end{macro}  
-% \end{environment}  
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
 % \begin{macro}{\axp@unactivateeightbit}
 % \changes{v1.1.0}{2019/01/28}{Fix compilation of non-ASCII
 % characters with \texttt{\textbackslash usepackage[utf8]\{inputenc\}}}
@@ -974,7 +974,7 @@
 % \begin{environment}{axp@VerbatimOut}
 % \begin{macro}{\FVB@axp@VerbatimOut}
 % \begin{macro}{\FVE@axp@VerbatimOut}
-% \changes{v1.1.0}{2018/10/02}{Make \textsf{apxproof} compatible with 
+% \changes{v1.1.0}{2018/10/02}{Make \textsf{apxproof} compatible with
 % independent use of \textsf{fancyvrb}}
 % Using the functionalities of the \textsf{fancyvrb} package, we define a
 % custom verbatim environment |axp@VerbatimOut| that writes every line
@@ -1007,39 +1007,39 @@
       \endgroup\@esphack}
 %    \end{macrocode}
 % \end{macro}
-% \end{macro}  
-% \end{environment}  
+% \end{macro}
+% \end{environment}
 % \begin{environment}{toappendix}
 % The entire content of this environment is put in appendix,
 % starting a new appendix section beforehand if needed.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newenvironment{toappendix}
     {\axp@writesection\axp@VerbatimOut}
     {\endaxp@VerbatimOut}
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
-%    \subsubsection{Definition of New Theorems}  
+%    \subsubsection{Definition of New Theorems}
 % \begin{macro}{axp@seenreptheorem}
 % Used to indicate whether a repeated theorem was just typeset, without
 % its proof.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newtoggle{axp@seenreptheorem}
-%    \end{macrocode}  
-% \end{macro}  
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{axp@rpcounter}
 % Sequentially incremented for every repeated theorem, used to create labels.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcounter{axp@rpcounter}
-%    \end{macrocode}  
-% \end{macro}  
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{axp@equation}
 % \begin{macro}{axp@equationx}
 % Used to save the value of the |equation| counter, when |repeqn| is set
 % to |same|.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcounter{axp@equation}
   \newcounter{axp@equationx}
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \begin{macro}{axp@newtheoremrep}
@@ -1048,13 +1048,13 @@
 % theorem |foobar|. We then patch |\begin{foobar}| so as not to
 % expect a proof in the appendix and define an internal theorem |axp@foobarrp| that
 % will be used in the appendix to restate the existing theorem.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
     \axp@newtheorem*{axp@#1rp}{#3}%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
-%    \end{macrocode}  
+%    \end{macrocode}
 % We then define a |foobarrep| environment that increments the
 % |axp@rpcounter| and typeset the regular |foobar| theorem with a label
 % derived from the counter, along with a possible custom command to
@@ -1081,16 +1081,16 @@
       \fi
       \mainbodyrepeatedtheorem
       \BODY\end{#1}%
-%    \end{macrocode}  
+%    \end{macrocode}
 % We set the |axp@seenreptheorem| toggle to indicate that we are looking
 % for the proof of the theorem, then store in a macro the content of the
 % theorem's body.
-%    \begin{macrocode}  
+%    \begin{macrocode}
       \global\toggletrue{axp@seenreptheorem}%
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname
       \BODY
-%    \end{macrocode}  
+%    \end{macrocode}
 % Possibly after starting a new appendix section if needed, we typeset a
 % repeated version of the theorem using the |axp@foobarrp| environment
 % and a reference to the previously defined label.
@@ -1100,7 +1100,7 @@
 % theorem, but theorem notes are usually typeset in a much
 % different way (different font, parentheses) than theorem
 % headings. In the case of the Springer document
-% classes, we use the  |\theopargself| macro to disable parentheses. For 
+% classes, we use the  |\theopargself| macro to disable parentheses. For
 % other document classes, we need to manually patch the |\thmhead|
 % command at the right time. We also specially cover the case of
 % the ACM document class where |\@acmplainnotefont| is used instead
@@ -1112,7 +1112,7 @@
 % \changes{v1.0.6}{2018/05/10}{Fix incorrect use of \texttt{\textbackslash noexpand}
 % in optional argument of macro environment}
 % \changes{v1.2.0}{2019/10/07}{Fix display of theorem notes}
-%    \begin{macrocode}  
+%    \begin{macrocode}
       \axp@writesection%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -1150,7 +1150,7 @@
                     \noexpand\the\noexpand\thm@notefont
                   \noexpand\fi
                 \fi
-              \fi  
+              \fi
               {} (\unexpanded{{##1}})%
             }%
           ]%
@@ -1168,18 +1168,18 @@
     }%
   }
 %    \end{macrocode}
-% \end{macro}  
-% 
+% \end{macro}
+%
 %    \subsubsection{Forward-Linking Mechanism}
 % \changes{v1.1.0}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
-% 
+%
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
 % repetition in the appendix.
-% 
-%   
+%
+%
 
-% 
+%
 % \begin{macro}{\axp@with@forward}
 % In order to make the number of the |foobarrep| theorem a link
 % to its repeated version, we temporarily redefine the
@@ -1189,7 +1189,7 @@
 % a |\hyperlink|, without adding extensive dependence
 % on internals of |amsthm|, the builtin |\newtheorem|
 % and possibly document-class specific definitions.
-% 
+%
 % In order to allow users to redefine |\thefoobar| without
 % breaking this feature, we redefine |\thefoobar| only
 % for the duration of the |\begin{foobar}| form,
@@ -1202,7 +1202,7 @@
 % We also redefine |\theHfoobar| which is used by |hyperref| but not
 % defined if |hyperref| was loaded after |\newtheoremrep| was used.
 % and |\protect| it to output it verbatim into the |.aux| file.
-% 
+%
 % These hyperlinks are of course disabled in the |strip| compilation
 % mode.
 %    \begin{macrocode}
@@ -1231,7 +1231,7 @@
 % Dummy macro, for handling the unwanted change of
 % the |\newlabel| entry in the |.aux| file caused by
 % changing the definition of |\thefoobar|.
-% 
+%
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
@@ -1248,7 +1248,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
-% 
+%
 % \begin{macro}{\axp@forward@target}
 % Provides the needed |\hypertarget|.
 % Intended to be written to the |.axp| file.
@@ -1262,7 +1262,7 @@
   }
 %    \end{macrocode}
 % \end{macro}
-% 
+%
 % \begin{macro}{\axp@forward@setup}
 % In order to support counter inheritance with the first
 % optional argument of |\newtheoremrep|,
@@ -1276,12 +1276,12 @@
   }
 %    \end{macrocode}
 % \end{macro}
-% 
-% 
-%    \subsubsection{Proof Environments}  
+%
+%
+%    \subsubsection{Proof Environments}
 % \begin{macro}{\noproofinappendix}
 %   Utility macro that toggles |axp@seenreptheorem| to false.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }
@@ -1295,7 +1295,7 @@
 % optional arguments in proofs, but we need to be careful not to gobble
 % any newline character, that would make it impossible to process the
 % first line with \textsf{fancyvrb}.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof}{\catcode`\^^M=5\@appendixproof}}
   \def\@appendixproof
     {%
@@ -1321,7 +1321,7 @@
       }%
       \noproofinappendix
     }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
 % \begin{environment}{proof}
 % This environment either puts the proof in appendix, if we are after a repeated
@@ -1329,7 +1329,7 @@
 % optional arguments in proofs, but we need to be careful not to gobble
 % any newline character, that would make it impossible to process the
 % first line with \textsf{fancyvrb}.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \def\proof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@proof}{\catcode`\^^M=5\axp@proof}}
   \def\axp@proof
     {%
@@ -1355,15 +1355,15 @@
         \endaxp@oldproof
       }%
     }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
 % \begin{environment}{claimproof}
 % \changes{v1.2.3-dev}{2021/11/03}{Support for \texttt{claimproof} environment
 % from \textsf{lipics}}
 % If the |claimproof| environment exists (\textsf{lipics} document
 % class), we also redefine it, in the same way.
-%    \begin{macrocode}  
-  \ifdefined\claimproof  
+%    \begin{macrocode}
+  \ifdefined\claimproof
   \def\claimproof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@claimproof}{\catcode`\^^M=5\axp@claimproof}}
   \def\axp@claimproof
     {%
@@ -1395,35 +1395,35 @@
       }%
     }
   \fi
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
 
 % \begin{environment}{inlineproof}
 % \begin{environment}{nestedproof}
 % These two environments are synonyms for the original |proof|
-% environment.    
-%    \begin{macrocode}  
+% environment.
+%    \begin{macrocode}
   \let\inlineproof\axp@oldproof
   \let\endinlineproof\endaxp@oldproof
   \let\nestedproof\axp@oldproof
   \let\endnestedproof\endaxp@oldproof
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{environment}
 % \end{environment}
-%    \subsubsection{Section Management}  
+%    \subsubsection{Section Management}
 % \begin{macro}{axp@seccounter}
 % Sequentially incremented for every section, used to create labels.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcounter{axp@seccounter}
-%    \end{macrocode}  
-% \end{macro}  
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{\axp@sectitle}
 % Saves the title of the last encountered section.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \def\axp@sectitle{}
-%    \end{macrocode}  
-% \end{macro}  
-% \begin{macro}{\axp@section}  
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@section}
 % \changes{v1.2.2}{2021/06/23}{Detect a section within an included
 % file to avoid produced useless sections}
 % \begin{macro}{\axp@@sectiontestinput}
@@ -1433,8 +1433,8 @@
 % does not produce anything. This is useful to avoid producing empty
 % sections in the appendix. Using the \textsf{catchfile} package, we
 % also check whether a |\section| is within an |\input| that immediately
-% follows.  
-%    \begin{macrocode}  
+% follows.
+%    \begin{macrocode}
   \def\axp@section#1{%
     \@ifnextchar\input
       {\axp@@sectiontestinput{#1}}%
@@ -1446,10 +1446,10 @@
     \expandafter\axp@tmptmp\axp@tmp%
   }
   \def\axp@@sectiontestsection#1{\@ifnextchar\section{\makeatother}{\axp@oldsection{#1}\makeatother}}
-%    \end{macrocode}  
-% \end{macro}  
-% \end{macro}  
-% \end{macro}  
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
 % \begin{macro}{\axp@oldsection}
 % \begin{macro}{\section}
 % \changes{v1.1.0}{2018/07/25}{Rewrote definition of \cs{section}
@@ -1478,7 +1478,7 @@
     \addtocounter{axp@seccounter}{1}%
     \label{axp@s\roman{axp@seccounter}}%
   }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -1486,30 +1486,30 @@
 % \begin{macro}{\nosectionappendix}
 % We remove the current section title, to indicate no section should be
 % created in the appendix.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
   }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@writesection}
 % If |\axp@sectitle| is not empty, we create
 % a new section in the appendix, referring to the main text section.
-% 
+%
 % Here, we wrap |\ref{axp@si}| into |\axp@protectref@i|, in order
 % to protect the label name from wrongly being converted to uppercase,
 % e.g., in \textsf{fancyhdr} with |\pagestyle{fancy}|.
-% 
+%
 % This macro is defined both in the |.aux| file (in order to ensure availability
 % when typesetting the |\tableofcontents|), and immediately before typesetting
 % the appendix section (to ensure availability in the |\section| command).
-% 
+%
 % \changes{v1.0.6}{2018/05/10}{Fix extraneous space after section number
 % in appendix titles}
 % \changes{v1.1.0}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust.
-% Resolves issues from use of section title in \textsf{fancyhdr}, 
+% Resolves issues from use of section title in \textsf{fancyhdr},
 % and in \cs{tableofcontents} (K. D. Bauer).}
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
@@ -1532,28 +1532,28 @@
       \nosectionappendix
     \fi
   }
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % Finally, in a somewhat ad hoc manner, we disable the whole section management
 % for \cs{tableofcontents}, which may be typeset using a section heading,
 % but for which automatic section management does not make sense.
-%   
+%
 % \begin{macro}{\axp@oldtableofcontents}
 % \begin{macro}{\tableofcontents}
 % \changes{v1.1.0}{2018/07/09}{Disable section management for table
 % of contents}
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \let\axp@oldtableofcontents\tableofcontents
   \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
-%    \end{macrocode}  
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
-%    \subsubsection{Append Compilation Mode}  
-%    \begin{macrocode}  
+%    \subsubsection{Append Compilation Mode}
+%    \begin{macrocode}
   \ifthenelse{\equal{\axp@appendix}{append}}{
-%    \end{macrocode}  
-% \begin{macro}{\axp@oldbibliography}    
-% \begin{macro}{\bibliography}    
+%    \end{macrocode}
+% \begin{macro}{\axp@oldbibliography}
+% \begin{macro}{\bibliography}
 % Unless the |bibliography| option is set to |common|, we need to set the
 % appendix bibliography source to be the same as that of the main
 % text, thanks to \textsf{bibunits}'s |\defaultbibliography| macro.
@@ -1568,7 +1568,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
-% After the end of the main text, we add the appendix (after the command 
+% After the end of the main text, we add the appendix (after the command
 % |\appendixprelim| is issued)
 % within a |bibunit| environment so as to typeset
 % a separate bibliography for the appendix (unless the |bibliography|
@@ -1633,11 +1633,11 @@
       \fi
       }{}
     }{}{}
-%    \end{macrocode}  
-%    \begin{macrocode}  
+%    \end{macrocode}
+%    \begin{macrocode}
   }{}
 %    \end{macrocode}
-% \subsubsection{Class-Specific Behavior}    
+% \subsubsection{Class-Specific Behavior}
 % We conclude with some class-specific behavior.
 % \paragraph{ACM Document Classes (old versions, till 2017)}
 % \changes{v1.0.4}{2017/03/08}{More faithful theorem style for ACM templates}
@@ -1646,12 +1646,12 @@
   \ifdefined\@acmtitlebox
 %    \end{macrocode}
 % We first redefine the |proofsketch| environment, which is used
-% differently in the base class.    
+% differently in the base class.
 %    \begin{macrocode}
   \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 %    \end{macrocode}
 % We adjust the styling of theorems for the needs of \textsf{apxproof}.
-%    \begin{macrocode}  
+%    \begin{macrocode}
   \newtheoremstyle{mystyle}
     {6pt}
     {6pt}
@@ -1669,7 +1669,7 @@
 % The section title of the bibliography is in uppercase in these document
 % classes. In addition, the |\thebibliography| macro hard-codes twice
 % the section title, so we un-hardcode it so that it can be modified
-% in the appendix.    
+% in the appendix.
 %    \begin{macrocode}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
     \patchcmd{\thebibliography}{References}{\protect\refname}{}{}
@@ -1679,7 +1679,7 @@
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% 
+%
 %    \begin{macrocode}
   \fi
 %    \end{macrocode}
@@ -1689,7 +1689,7 @@
 %    \begin{macrocode}
    \ifdefined\lipics@opterrshort
 %    \end{macrocode}
-% \begin{macro}{\appendixbibliographyprelim}  
+% \begin{macro}{\appendixbibliographyprelim}
 % \changes{v1.0.3}{2017/02/06}{Support for lipics-v2016}
 % The default bibliography in the \textsf{lipics} document class
 % formatting is not compatible with the
@@ -1698,9 +1698,9 @@
     \renewcommand{\appendixbibliographyprelim}{%
       \global\let\@oldbiblabel\@biblabel
       \def\@biblabel{\hspace*{-2em}\small\@oldbiblabel}%
-    }    
+    }
 %    \end{macrocode}
-% \end{macro}    
+% \end{macro}
 %    \begin{macrocode}
   \fi
 }
