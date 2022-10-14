@@ -12,9 +12,14 @@ clean:
 	@cd $(dir $@) && latexmk -silent -c >/dev/null 2>/dev/null
 	@cd $(dir $@) && latexmk -interaction=nonstopmode -silent -pdf test >/dev/null 2>/dev/null || (rm -fv test.pdf; false)
 
-%/test.test: %/reference.pdf %/test.pdf
+%.txt: %.pdf
+	@pdftotext $<
+
+%/test.test: %/reference.txt %/test.txt
 	@echo -n "Testing $(dir $@)... "
-	@./diffpdf.py $^ 0.02 || (echo ko; false)
+	@./diffpdf.py $(dir $@)reference.pdf $(dir $@)test.pdf 0.01 || (echo ko; false)
+	@diff -w $^ > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
+	@rm $(dir $@)test.diff
 	@echo ok | tee $@
 
 %.fmt: %.tex ../apxproof.sty
