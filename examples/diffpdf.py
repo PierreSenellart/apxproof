@@ -27,7 +27,7 @@ DIFF_DIR = 'pdfdiff'
 SHELL = sys.platform == 'win32'
 
 
-def diff_pdf(a_filename, b_filename, sum_diff_threshold):
+def diff_pdf(a_filename, b_filename, max_diff_threshold):
     # The following calls to check_output are potentially dangerous as
     # they launch a shell with a variable provided by the user -- first
     # check the a_filename and b_filename are harmless and look like
@@ -72,13 +72,14 @@ def diff_pdf(a_filename, b_filename, sum_diff_threshold):
     pool.close()  # no more tasks
     pool.join()   # wrap up current tasks
 
-    sum_diff = 0
+    max_diff = 0
     for page_number, page_diff in zip(page_numbers, pool_outputs):
-        sum_diff += page_diff
-        # if sum_diff > 0:
+        if page_diff > max_diff:
+            max_diff = page_diff
+        # if max_diff > 0:
         #     print('page {} ({})'.format(page_number, page_diff),
         #           file=sys.stderr)
-    return (sum_diff < sum_diff_threshold)
+    return (max_diff < max_diff_threshold)
 
 
 class CommandFailed(Exception):
@@ -132,8 +133,8 @@ def pdf_page_to_ppm(pdf_path, page_number, stdout, gray=False):
 
 
 if __name__ == '__main__':
-    _, a_filename, b_filename, sum_diff_threshold = sys.argv
-    if diff_pdf(a_filename, b_filename, float(sum_diff_threshold)):
+    _, a_filename, b_filename, max_diff_threshold = sys.argv
+    if diff_pdf(a_filename, b_filename, float(max_diff_threshold)):
         rc = 0
     else:
         rc = 1
