@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage{../../apxproof}
+
+\usepackage{amssymb}
+\usepackage{xcolor}
+
+\newtheoremrep{claim}{Claim}
+
+\newenvironment{claimproof}[1][\proofname]{
+  \pushQED{\qed}%
+  \normalfont
+  \trivlist
+  \item[\hskip\labelsep
+        \color{black}\sffamily
+    #1{.}]\ignorespaces
+}{%
+  \renewcommand\qedsymbol{\textcolor{black}{\ensuremath{\vartriangleleft}}}
+  \popQED\endtrivlist%\@endpefalse
+  \renewcommand\qedsymbol{\textcolor{black}{\ensuremath{\blacktriangleleft}}}
+}
+
+\begin{document}
+
+\section{Claims}
+
+\begin{claimrep}
+    ok claim in text
+\end{claimrep}
+\begin{claimproof}
+    the proof
+\end{claimproof}
+
+\begin{toappendix}
+
+\begin{claim}
+    claim in appendix
+\end{claim}
+\begin{claimproof}
+     Second claim, within toappendix
+\end{claimproof}
+
+\end{toappendix}
+
+\end{document}

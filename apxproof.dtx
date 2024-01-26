@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{974}
+% \CheckSum{984}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -768,14 +768,10 @@
 % \end{macro}
 % \end{macro}
 % \begin{environment}{axp@oldproof}
-%   We save the definition of the existing |proof| environment (and of
-%   the |claimproof| environment that the \textsf{lipics} document class
-%   defines).
+%   We save the definition of the existing |proof| environment.
 %    \begin{macrocode}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
-  \let\axp@oldclaimproof\claimproof
-  \let\endaxp@oldclaimproof\endclaimproof
 %    \end{macrocode}
 % \end{environment}
 % We define a utility macro that will be used to properly set the
@@ -1296,20 +1292,20 @@
 % any newline character, that would make it impossible to process the
 % first line with \textsf{fancyvrb}.
 %    \begin{macrocode}
-  \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof}{\catcode`\^^M=5\@appendixproof}}
-  \def\@appendixproof
+  \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
+  \def\@appendixproof[#1]%
     {%
       \axp@writesection
       \immediate\write\axp@proofsfile{%
-        \noexpand\makeatletter\noexpand\begin{axp@oldproof}\noexpand\makeatother%
+        \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
       }%
       \axp@VerbatimOut
     }
-  \def\@@appendixproof[#1]%
+  \def\@@appendixproof[#1][#2]%
     {%
       \axp@writesection
       \immediate\write\axp@proofsfile{%
-        \noexpand\makeatletter\noexpand\begin{axp@oldproof}[\unexpanded{#1}]\noexpand\makeatother%
+        \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
       }%
       \axp@VerbatimOut
     }
@@ -1360,41 +1356,50 @@
 % \begin{environment}{claimproof}
 % \changes{v1.2.4}{2021/11/03}{Support for \texttt{claimproof} environment
 % from \textsf{lipics}}
+% \changes{v1.2.4-dev}{2024/01/26}{Support for locally defined \texttt{claimproof} environment}
 % If the |claimproof| environment exists (\textsf{lipics} document
-% class), we also redefine it, in the same way.
+% class or user-defined), we also redefine it, in the same way.
 %    \begin{macrocode}
-  \ifdefined\claimproof
-  \def\claimproof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@claimproof}{\catcode`\^^M=5\axp@claimproof}}
-  \def\axp@claimproof
-    {%
-      \iftoggle{axp@seenreptheorem}{%
-        \appendixproof
-      }{%
-        \axp@oldclaimproof
-      }%
-    }
-  \def\axp@@claimproof[#1]%
-    {%
-      \iftoggle{axp@seenreptheorem}{%
-        \appendixproof[#1]
-      }{%
-        \axp@oldclaimproof[#1]
-      }%
-    }
-  \def\endclaimproof
-    {%
-      \iftoggle{axp@seenreptheorem}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\makeatletter
-          \noexpand\let\noexpand\endaxp@oldproof\noexpand\endaxp@oldclaimproof
-          \noexpand\makeatother
+  \AtBeginDocument{
+    \ifdefined\claimproof
+    \let\axp@oldclaimproof\claimproof
+    \let\endaxp@oldclaimproof\endclaimproof
+    \def\claimproof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@claimproof}{\catcode`\^^M=5\axp@claimproof}}
+    \def\appendixclaimproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldclaimproof]}{\catcode`\^^M=5\expandafter\@appendixproof[axp@oldclaimproof]}}
+    \def\axp@claimproof
+      {%
+        \iftoggle{axp@seenreptheorem}{%
+          \appendixclaimproof
+        }{%
+          \axp@oldclaimproof
         }%
-        \endappendixproof
-      }{%
-        \endaxp@oldclaimproof
+      }
+    \def\axp@@claimproof[#1]%
+      {%
+        \iftoggle{axp@seenreptheorem}{%
+          \appendixclaimproof[#1]%
+        }{%
+          \axp@oldclaimproof[#1]%
+        }%
+      }
+    \def\endclaimproof
+      {%
+        \iftoggle{axp@seenreptheorem}{%
+          \endappendixclaimproof
+        }{%
+          \endaxp@oldclaimproof
+        }%
+      }
+    \def\endappendixclaimproof
+    {%
+      \endaxp@VerbatimOut
+      \immediate\write\axp@proofsfile{%
+      \noexpand\end{axp@oldclaimproof}%
       }%
+      \noproofinappendix
     }
-  \fi
+    \fi
+  }
 %    \end{macrocode}
 % \end{environment}
 
