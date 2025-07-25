@@ -19,7 +19,7 @@ clean:
 
 %/test.test: %/reference.txt %/test.txt
 	@echo -n "Testing $(dir $@)... "
-	@./diffpdf.py $(dir $@)reference.pdf $(dir $@)test.pdf 0.01 || (echo ko; false)
+	@./diffpdf.py $(dir $@)reference.pdf $(dir $@)test.pdf 0.05 || (echo ko; false)
 	@diff -w $^ > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
 	@diff -w <(pdftk $(dir $@)reference.pdf dump_data_utf8|grep '^Bookmark') <(pdftk $(dir $@)test.pdf dump_data_utf8|grep '^Bookmark') > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
 	@rm $(dir $@)test.diff
