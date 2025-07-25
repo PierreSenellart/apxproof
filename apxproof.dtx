@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{984}
+% \CheckSum{991}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1181,7 +1181,7 @@
 % to its repeated version, we temporarily redefine the
 % |\thefoobar| command, or, if we inherited the counter
 % from a |bazbar| environment, the |\thebazbar| command.
-% This seems to be the only robust way, to make the number
+% This seems to be the only robust way to make the number
 % a |\hyperlink|, without adding extensive dependence
 % on internals of |amsthm|, the builtin |\newtheorem|
 % and possibly document-class specific definitions.
@@ -1196,7 +1196,7 @@
 % addition of the hyperlink, which is why we use an
 % intermediate |\axp@forward@link|\marg{target}\marg{text} macro,
 % We also redefine |\theHfoobar| which is used by |hyperref| but not
-% defined if |hyperref| was loaded after |\newtheoremrep| was used.
+% defined if |hyperref| was loaded after |\newtheoremrep| was used
 % and |\protect| it to output it verbatim into the |.aux| file.
 %
 % These hyperlinks are of course disabled in the |strip| compilation
@@ -1226,14 +1226,22 @@
 % \begin{macro}{axp@forward}
 % Dummy macro, for handling the unwanted change of
 % the |\newlabel| entry in the |.aux| file caused by
-% changing the definition of |\thefoobar|.
+% changing the definition of |\thefoobar|. We also use |\texorpdfstring|
+% to detect whether the reference appears within a PDF bookmark, in which
+% case we skip the test altogether.
+% \changes{v1.2.4-dev}{2025/07/25}{Remove forward linking command from PDF bookmarks}
 %
 %    \begin{macrocode}
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
-      \ifcsdef{hyperlink}{%
-        \hyperlink{#1}{#2}%
+    \ifdefined\texorpdfstring\else\newcommand\texorpdfstring[2]{#2}\fi
+    \texorpdfstring{%
+      \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
+        \ifcsdef{hyperlink}{%
+          \hyperlink{#1}{#2}%
+        }{%
+          #2%
+        }%
       }{%
         #2%
       }%

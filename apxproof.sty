@@ -333,9 +333,14 @@
      }}%
   \newbool{axp@forward}
   \newcommand{\axp@forward@link}[2]{%
-    \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
-      \ifcsdef{hyperlink}{%
-        \hyperlink{#1}{#2}%
+    \ifdefined\texorpdfstring\else\newcommand\texorpdfstring[2]{#2}\fi
+    \texorpdfstring{%
+      \ifboolexpr{ bool {axp@forward} and not bool {axp@forward@suppress} }{%
+        \ifcsdef{hyperlink}{%
+          \hyperlink{#1}{#2}%
+        }{%
+          #2%
+        }%
       }{%
         #2%
       }%
