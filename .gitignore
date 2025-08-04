@@ -1,5 +1,8 @@
-build/
-*~
 *.glo
 *.hd
 *.idx
+*.ilg
+*.ind
+*~
+build/
+examples/pdfdiff/
