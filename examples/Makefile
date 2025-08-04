@@ -22,6 +22,7 @@ clean:
 	@./diffpdf.py $(dir $@)reference.pdf $(dir $@)test.pdf 0.05 || (echo ko; false)
 	@diff -w $^ > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
 	@diff -w <(pdftk $(dir $@)reference.pdf dump_data_utf8|grep '^Bookmark') <(pdftk $(dir $@)test.pdf dump_data_utf8|grep '^Bookmark') > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
+	@diff -w <(qpdf --json $(dir $@)reference.pdf|grep '"/D".*axp') <(qpdf --json $(dir $@)test.pdf|grep '"/D".*axp') > $(dir $@)test.diff || (echo ko; cat $(dir $@)test.diff; rm $(dir $@)test.diff; false)
 	@rm $(dir $@)test.diff
 	@echo ok | tee $@
 

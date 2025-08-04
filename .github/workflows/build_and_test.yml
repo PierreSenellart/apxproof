@@ -10,5 +10,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update
-      - run: apt-get install -y poppler-utils imagemagick pdftk
+      - run: apt-get install -y poppler-utils imagemagick pdftk qpdf
       - run: make clean && make && make test
