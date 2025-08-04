@@ -1,0 +1,39 @@
+\documentclass{llncs}
+
+\usepackage{hyperref}
+\usepackage{../../apxproof}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep{claim}[theorem]{Claim}
+\newtheoremrep{lemma}[theorem]{Lemma}
+
+\begin{document}
+
+\begin{theoremrep}
+  A great result rep.
+\end{theoremrep}
+\begin{proof}
+  Proof of Theorem
+\end{proof}
+
+\begin{lemmarep}
+  Some Lemma
+\end{lemmarep}
+\begin{proof}
+  Proof of Lemma.
+\end{proof}
+
+\begin{theorem}
+  Another great result.
+\end{theorem}
+\begin{proof}
+  Proof of Theorem
+  \begin{claimrep}
+    claim !
+  \end{claimrep}
+  \begin{proof}
+    proof
+  \end{proof}
+\end{proof}
+
+\end{document}

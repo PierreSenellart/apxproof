@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{991}
+% \CheckSum{997}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -660,6 +660,8 @@
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
 % \changes{v1.2.0}{2019/10/01}{Restore predefined theorem counters}
+% \changes{v1.2.5-dev}{2025/08/04}{Undefine counter printing command to
+% avoid warning}
 % Common to all compilation modes, we define
 % |\axp@newtheoremrep@definetheorem|.
 % When called with first argument |foobar|, we first undefine the existing
@@ -670,6 +672,7 @@
 %    \begin{macrocode}
 \def\axp@newtheoremrep@definetheorem#1#2#3#4{%
   \expandafter\let\csname #1\endcsname\undefined
+  \expandafter\let\csname the#1\endcsname\undefined
   \ifcsname c@#1\endcsname
     \expandafter\expandafter\expandafter\let\expandafter\expandafter
       \csname c@axp@#1\endcsname\csname c@#1\endcsname
@@ -1268,15 +1271,19 @@
 % \end{macro}
 %
 % \begin{macro}{\axp@forward@setup}
+% \changes{v1.2.5-dev}{2025/08/04}{Support for \texttt{aliascnt} counters}
 % In order to support counter inheritance with the first
 % optional argument of |\newtheoremrep|,
 % we need access to the name of the counter.
 % For compliance with the behavior of |\@axp@newtheorem|,
 % the first optional argument (|#2|) is ignored
 % if the second optional argument (|#4|) is given.
+% We also check whether |aliascnt| was used to define this counter;
+% if so, we use the original name as the counter name to handle
+% the way such aliases work.
 %    \begin{macrocode}
   \newcommand{\axp@forward@setup}[4]{%
-    \csedef{axp@cn@#1}{\ifblank{#4}{\ifblank{#2}{#1}{#2}}{#1}}%
+    \csedef{axp@cn@#1}{\ifblank{#4}{\ifblank{#2}{#1}{\ifcsdef{AC@cnt@#1}{#1}{#2}}}{#1}}%
   }
 %    \end{macrocode}
 % \end{macro}
