@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{997}
+% \CheckSum{1003}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -855,6 +855,16 @@
 %    \begin{macrocode}
 \def\@thmcountersep{.}
   \fi
+%    \end{macrocode}
+% \paragraph{\textsf{acmart}}
+% \changes{v1.2.5-dev}{2025/09/29}{Fix compilation issues in recent versions of \textsf{acmart}}
+% Some versions of \textsf{acmart} define a |\ACM@origsection| macro and
+% verify that |\section| has the same content. We need to update
+% |\ACM@origsection| accordingly.
+%    \begin{macrocode}
+\ifdefined\ACM@origsection
+  \let\ACM@origsection\section
+\fi
 %    \end{macrocode}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}

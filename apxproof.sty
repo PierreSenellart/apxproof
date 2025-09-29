@@ -5,9 +5,9 @@
 %% The original source files were:
 %%
 %% apxproof.dtx  (with options: `package')
-%% 
+%%
 %% Copyright (C) 2016-2025 by Pierre Senellart
-%% 
+%%
 %% This work may be distributed and/or modified under the
 %% conditions of the LaTeX Project Public License, either version 1.3
 %% of this license or (at your option) any later version.
@@ -15,16 +15,16 @@
 %%   http://www.latex-project.org/lppl.txt
 %% and version 1.3 or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
-%% 
+%%
 %% This work has the LPPL maintenance status `maintained'.
-%% 
+%%
 %% The Current Maintainer of this work is Pierre Senellart
 %% <pierre@senellart.com> and a version control system for this work
 %% is available at http://github.com/PierreSenellart/apxproof
-%% 
+%%
 %% This work consists of the files apxproof.dtx and apxproof.ins
 %% and the derived file apxproof.sty.
-%% 
+%%
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
   [2025/07/29 v1.2.5-dev Automatic proofs in appendix]
@@ -173,6 +173,9 @@
 \renewenvironment{proofsketch}{\begin{axp@oldproof}[sketch]}{\end{axp@oldproof}}
 \def\@thmcountersep{.}
   \fi
+\ifdefined\ACM@origsection
+  \AtBeginDocument{\let\ACM@origsection\section}
+\fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
