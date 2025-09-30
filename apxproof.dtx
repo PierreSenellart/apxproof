@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2025/07/29 v1.2.5-dev Automatic proofs in appendix]
+%<package>  [2025/09/30 v1.2.6 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -660,7 +660,7 @@
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
 % \changes{v1.2.0}{2019/10/01}{Restore predefined theorem counters}
-% \changes{v1.2.5-dev}{2025/08/04}{Undefine counter printing command to
+% \changes{v1.2.6}{2025/08/04}{Undefine counter printing command to
 % avoid warning}
 % Common to all compilation modes, we define
 % |\axp@newtheoremrep@definetheorem|.
@@ -857,7 +857,7 @@
   \fi
 %    \end{macrocode}
 % \paragraph{\textsf{acmart}}
-% \changes{v1.2.5-dev}{2025/09/29}{Fix compilation issues in recent versions of \textsf{acmart}}
+% \changes{v1.2.6}{2025/09/29}{Fix compilation issues in recent versions of \textsf{acmart}}
 % Some versions of \textsf{acmart} define a |\ACM@origsection| macro and
 % verify that |\section| has the same content. We need to update
 % |\ACM@origsection| accordingly.
@@ -1281,7 +1281,7 @@
 % \end{macro}
 %
 % \begin{macro}{\axp@forward@setup}
-% \changes{v1.2.5-dev}{2025/08/04}{Support for \texttt{aliascnt} counters}
+% \changes{v1.2.6}{2025/08/04}{Support for \texttt{aliascnt} counters}
 % In order to support counter inheritance with the first
 % optional argument of |\newtheoremrep|,
 % we need access to the name of the counter.
