@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1003}
+% \CheckSum{1004}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -863,7 +863,7 @@
 % |\ACM@origsection| accordingly.
 %    \begin{macrocode}
 \ifdefined\ACM@origsection
-  \let\ACM@origsection\section
+  \AtBeginDocument{\let\ACM@origsection\section}
 \fi
 %    \end{macrocode}
 % \subsection{Inline Compilation Mode}

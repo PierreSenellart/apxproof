@@ -174,7 +174,7 @@
 \def\@thmcountersep{.}
   \fi
 \ifdefined\ACM@origsection
-  \let\ACM@origsection\section
+  \AtBeginDocument{\let\ACM@origsection\section}
 \fi
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
