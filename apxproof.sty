@@ -463,14 +463,34 @@
   \newcounter{axp@seccounter}
   \def\axp@sectitle{}
   \def\axp@section#1{%
-    \@ifnextchar\input
-      {\axp@@sectiontestinput{#1}}%
-      {\axp@@sectiontestsection{#1}}%
+    \@ifnextchar\par
+      {\axp@@sectionskippar{#1}}%
+      {\@ifnextchar\input
+        {\axp@@sectiontestinput{#1}}%
+        {\@ifnextchar\include
+          {\axp@@sectiontestinclude{#1}}%
+          {\axp@@sectiontestsection{#1}}}}%
   }
+  \def\axp@@sectionskippar#1\par{\axp@section{#1}}
   \def\axp@@sectiontestinput#1\input#2{%
     \CatchFileDef{\axp@tmp}{#2}{}%
     \def\axp@tmptmp{\axp@@sectiontestsection{#1}}%
     \expandafter\axp@tmptmp\axp@tmp%
+  }
+  \def\axp@@sectiontestinclude#1\include#2{%
+    \set@curr@file{#2}%
+    \edef\axp@tmp{\@strip@tex@ext\@curr@file.tex}%
+    \expandafter\CatchFileDef\expandafter\axp@tmp\expandafter{\axp@tmp}{}%
+    \def\axp@tmptmp{\axp@@sectionfinishinclude{#1}{#2}}%
+    \expandafter\axp@tmptmp\axp@tmp\@nil
+  }
+  \long\def\axp@@sectionfinishinclude#1#2#3#4\@nil{%
+    \ifx#3\section
+      \makeatother
+    \else
+      \axp@oldsection{#1}\makeatother
+    \fi
+    \include{#2}%
   }
   \def\axp@@sectiontestsection#1{\@ifnextchar\section{\makeatother}{\axp@oldsection{#1}\makeatother}}
   \let\axp@oldsection\section

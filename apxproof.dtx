@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1004}
+% \CheckSum{1047}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1456,27 +1456,58 @@
 % \begin{macro}{\axp@section}
 % \changes{v1.2.2}{2021/06/23}{Detect a section within an included
 % file to avoid produced useless sections}
+% \changes{v1.2.7}{2026/04/09}{Skip blank lines before detecting
+% a section command}
+% \changes{v1.2.7}{2026/04/09}{Detect a section within an
+% \cs{include}'d file}
+% \begin{macro}{\axp@@sectionskippar}
 % \begin{macro}{\axp@@sectiontestinput}
+% \begin{macro}{\axp@@sectiontestinclude}
+% \begin{macro}{\axp@@sectionfinishinclude}
 % \begin{macro}{\axp@@sectiontestsection}
 % This command |\axp@section| behaves similarly to |\axp@oldsection|,
 % except that it first tests whether a |\section| follows, and if so,
 % does not produce anything. This is useful to avoid producing empty
 % sections in the appendix. Using the \textsf{catchfile} package, we
-% also check whether a |\section| is within an |\input| that immediately
-% follows.
+% also check whether a |\section| is within an |\input| or |\include|
+% that immediately follows. We also skip any |\par| tokens (produced by
+% blank lines) before performing the check.
 %    \begin{macrocode}
   \def\axp@section#1{%
-    \@ifnextchar\input
-      {\axp@@sectiontestinput{#1}}%
-      {\axp@@sectiontestsection{#1}}%
+    \@ifnextchar\par
+      {\axp@@sectionskippar{#1}}%
+      {\@ifnextchar\input
+        {\axp@@sectiontestinput{#1}}%
+        {\@ifnextchar\include
+          {\axp@@sectiontestinclude{#1}}%
+          {\axp@@sectiontestsection{#1}}}}%
   }
+  \def\axp@@sectionskippar#1\par{\axp@section{#1}}
   \def\axp@@sectiontestinput#1\input#2{%
     \CatchFileDef{\axp@tmp}{#2}{}%
     \def\axp@tmptmp{\axp@@sectiontestsection{#1}}%
     \expandafter\axp@tmptmp\axp@tmp%
   }
+  \def\axp@@sectiontestinclude#1\include#2{%
+    \set@curr@file{#2}%
+    \edef\axp@tmp{\@strip@tex@ext\@curr@file.tex}%
+    \expandafter\CatchFileDef\expandafter\axp@tmp\expandafter{\axp@tmp}{}%
+    \def\axp@tmptmp{\axp@@sectionfinishinclude{#1}{#2}}%
+    \expandafter\axp@tmptmp\axp@tmp\@nil
+  }
+  \long\def\axp@@sectionfinishinclude#1#2#3#4\@nil{%
+    \ifx#3\section
+      \makeatother
+    \else
+      \axp@oldsection{#1}\makeatother
+    \fi
+    \include{#2}%
+  }
   \def\axp@@sectiontestsection#1{\@ifnextchar\section{\makeatother}{\axp@oldsection{#1}\makeatother}}
 %    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
