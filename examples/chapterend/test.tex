@@ -1,0 +1,68 @@
+\documentclass{book}
+\usepackage[appendix=chapterend,bibliography=common]{../../apxproof}
+\usepackage{hyperref}
+
+\theoremstyle{plain}
+\newtheoremrep{theorem}{Theorem}[section]
+\newtheoremrep{lemma}[theorem]{Lemma}
+
+\renewcommand{\appendixsectionformat}[2]{Material for #2 (Section~#1)}
+\renewcommand{\chapterappendixprelim}{\clearpage\noindent\rule{\linewidth}{0.4pt}\medskip}
+
+\title{Chapter end mode test}
+\author{Author}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\chapter{First Chapter}
+
+\section{Section with a Repeated Theorem}
+
+\begin{theoremrep}
+  \label{th:one}%
+  First great result.
+\end{theoremrep}
+
+\begin{proof}
+  Proof of Theorem~\ref{th:one}.
+\end{proof}
+
+\section{Section with Appendix Content}
+
+Some text.
+
+\begin{toappendix}
+  Extra material for the first chapter.
+\end{toappendix}
+
+\chapter{Second Chapter}
+
+\section{Another Section}
+
+Some text in chapter two.
+
+\begin{theoremrep}
+  \label{th:two}%
+  Second great result.
+\end{theoremrep}
+
+\begin{proof}
+  Proof of Theorem~\ref{th:two}.
+\end{proof}
+
+\section{Section without Appendix Content}
+
+Nothing deferred here.
+
+\chapter{Third Chapter}
+
+\section{Third Chapter Section}
+
+This chapter has no appendix content at all.
+
+Just some text.
+
+\end{document}

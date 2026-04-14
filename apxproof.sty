@@ -62,10 +62,12 @@
   \message{apxproof: Appendix material stripped}
 }{\ifthenelse{\equal{\axp@appendix}{inline}}{
   \message{apxproof: Appendix material inlined within the document}
+}{\ifthenelse{\equal{\axp@appendix}{chapterend}}{
+  \message{apxproof: Appendix material appended at the end of each chapter}
 }{
   \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
-}}}
+}}}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
   \RequirePackage{bibunits}
   \message{apxproof: Separate bibliography for appendix material}
@@ -75,6 +77,12 @@
   \errmessage{Error: unsupported option bibliography=\axp@bibliography\ for
   package apxproof}
 }}
+\ifthenelse{\equal{\axp@appendix}{chapterend}
+            \AND\equal{\axp@bibliography}{separate}}{
+  \PackageError{apxproof}{%
+    bibliography=separate is not supported with appendix=chapterend}{%
+    Use bibliography=common instead.}
+}{}
 \ifthenelse{\equal{\axp@repeqn}{same}}{
   \message{apxproof: Repeated equations keep the same numbering}
 }{\ifthenelse{\equal{\axp@repeqn}{independent}}{
@@ -200,9 +208,13 @@
 {
   \AtBeginDocument{
     \newwrite\axp@proofsfile
-    \immediate\openout\axp@proofsfile=\jobname.axp
+    \ifthenelse{\equal{\axp@appendix}{chapterend}}{%
+      \axp@openchapterfile
+    }{%
+      \immediate\openout\axp@proofsfile=\jobname.axp
+    }%
   }
-  \AtBeginDocument{
+  \newcommand{\axp@writeproofsfilepreamble}{%
     \immediate\write\axp@proofsfile{%
       \noexpand\makeatletter
       \noexpand\let\noexpand\proof\noexpand\axp@oldproof
@@ -210,7 +222,12 @@
       \noexpand\let\noexpand\claimproof\noexpand\axp@oldclaimproof
       \noexpand\let\noexpand\endclaimproof\noexpand\endaxp@oldclaimproof
       \noexpand\let\noexpand\section\noexpand\axp@oldsection
-    }
+    }%
+  }
+  \AtBeginDocument{
+    \ifthenelse{\equal{\axp@appendix}{chapterend}}{}{%
+      \axp@writeproofsfilepreamble
+    }%
   }
   \def\axp@unactivateeightbit{%
     \count@=128%
@@ -235,8 +252,9 @@
   \def\FVE@axp@VerbatimOut{%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
       \endgroup\@esphack}
+  \newcommand{\axp@markchapterhasappendix}{}
   \newenvironment{toappendix}
-    {\axp@writesection\axp@VerbatimOut}
+    {\axp@markchapterhasappendix\axp@writesection\axp@VerbatimOut}
     {\endaxp@VerbatimOut}
   \newtoggle{axp@seenreptheorem}
   \newcounter{axp@rpcounter}
@@ -263,6 +281,7 @@
       \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
                              \endcsname
       \BODY
+      \axp@markchapterhasappendix
       \axp@writesection%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -368,6 +387,7 @@
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
   \def\@appendixproof[#1]%
     {%
+      \axp@markchapterhasappendix
       \axp@writesection
       \immediate\write\axp@proofsfile{%
         \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
@@ -376,6 +396,7 @@
     }
   \def\@@appendixproof[#1][#2]%
     {%
+      \axp@markchapterhasappendix
       \axp@writesection
       \immediate\write\axp@proofsfile{%
         \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
@@ -580,6 +601,59 @@
         \let\bibcite\NAT@testdef
       \fi
       }{}
+    }{}{}
+  }{}
+  \ifthenelse{\equal{\axp@appendix}{chapterend}}{
+    \RequirePackage{appendix}
+    \newcommand{\chapterappendixprelim}{\clearpage}
+    \newcommand{\axp@beginchapterappendix}{%
+      \chapterappendixprelim
+      \begin{subappendices}%
+    }
+    \newcommand{\axp@endchapterappendix}{%
+      \end{subappendices}%
+    }
+    \newcounter{axp@chaptercounter}
+    \newbool{axp@chapterhasappendix}
+    \def\axp@currentaxpfile{}
+    \renewcommand{\axp@markchapterhasappendix}{%
+      \global\booltrue{axp@chapterhasappendix}%
+    }
+    \newcommand{\axp@openchapterfile}{%
+      \edef\axp@currentaxpfile{\jobname-\arabic{axp@chaptercounter}.axp}%
+      \immediate\openout\axp@proofsfile=\axp@currentaxpfile
+      \immediate\write\axp@proofsfile{\noexpand\begingroup}%
+      \axp@writeproofsfilepreamble
+      \global\boolfalse{axp@chapterhasappendix}%
+      \global\def\axp@sectitle{}%
+      \global\togglefalse{axp@seenreptheorem}%
+    }
+    \newcommand{\axp@flushchapterappendix}{%
+      \immediate\write\axp@proofsfile{\noexpand\endgroup}%
+      \immediate\closeout\axp@proofsfile
+      \ifbool{axp@chapterhasappendix}{%
+        \axp@beginchapterappendix
+        \input{\axp@currentaxpfile}%
+        \axp@endchapterappendix
+      }{}%
+    }
+    \AtBeginDocument{%
+      \ifdef{\chapter}{%
+        \pretocmd{\chapter}{%
+          \axp@flushchapterappendix
+          \stepcounter{axp@chaptercounter}%
+          \axp@openchapterfile
+        }{}{\PackageWarning{apxproof}{%
+          Could not hook into \string\chapter;^^J%
+          chapter appendices may not be emitted correctly}}%
+      }{%
+        \PackageWarning{apxproof}{%
+          appendix=chapterend used but \string\chapter\space
+          is not defined}%
+      }%
+    }
+    \pretocmd{\@enddocumenthook}{%
+      \axp@flushchapterappendix
     }{}{}
   }{}
   \ifdefined\@acmtitlebox

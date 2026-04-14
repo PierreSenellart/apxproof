@@ -27,6 +27,7 @@ distributions:
 - `ifthen`
 - `kvoptions`
 - `bibunits` (optional, only if the `bibliography` option is set to `separate`)
+- `appendix` (optional, only if the `appendix` option is set to `chapterend`)
 
 ## Manual installation
 

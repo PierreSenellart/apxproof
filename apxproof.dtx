@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1047}
+% \CheckSum{1152}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -337,7 +337,7 @@
 % \DescribeOption{appendix}
 % An optional \meta{mode} can be specified when loading the package:
 % \begin{quote}|\usepackage[appendix=|\meta{mode}|]{apxproof}|\end{quote}
-% \meta{mode} can take one of the following three values:
+% \meta{mode} can take one of the following four values:
 % \begin{description}
 % \item[|append|] This is the default.
 % Appendix material gathered by \textsf{apxproof} is appended to
@@ -347,6 +347,13 @@
 % \item[|strip|] This mode functions similarly to |append| except that
 % the appendix is not appended at the end of the document. All appendix
 % material is therefore removed.
+% \item[|chapterend|] In this mode, appendix material for each chapter
+% is gathered separately and emitted at the end of that chapter
+% (i.e., just before the next |\chapter| command, or at the end of
+% the document), using the |subappendices| environment from the
+% \textsf{appendix} package. Only |bibliography=common| is supported
+% in this mode. See Section~\ref{sec:customization} for the
+% |\chapterappendixprelim| customization macro.
 % \end{description}
 %
 % \subsection{Customization}
@@ -378,7 +385,14 @@
 % be used to configure the way it is displayed. By default, this command
 % contains |\clearpage\onecolumn| (the appendix is typeset on a new page
 % in single-column mode) but redefining this option allows changing this
-% behavior.
+% behavior. This macro has no effect in |chapterend| mode; use
+% |\chapterappendixprelim| instead.
+% \item[\textbackslash|chapterappendixprelim|]\DescribeMacro{\chapterappendixprelim}
+% (|chapterend| mode only) contains arbitrary code that is executed
+% just before each chapter's appendix block. By default, this command
+% contains |\clearpage| (each chapter appendix starts on a new page).
+% This macro has no effect in |append| or |strip| mode; use
+% |\appendixprelim| instead.
 % \end{description}
 % \DescribeOption{repeqn}
 % Another customization capability concerns \emph{numbered equations} that are present
@@ -616,10 +630,12 @@
   \message{apxproof: Appendix material stripped}
 }{\ifthenelse{\equal{\axp@appendix}{inline}}{
   \message{apxproof: Appendix material inlined within the document}
+}{\ifthenelse{\equal{\axp@appendix}{chapterend}}{
+  \message{apxproof: Appendix material appended at the end of each chapter}
 }{
   \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
-}}}
+}}}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
 %    \end{macrocode}
 % The external \textsf{bibunits} package
@@ -635,6 +651,12 @@
   \errmessage{Error: unsupported option bibliography=\axp@bibliography\ for
   package apxproof}
 }}
+\ifthenelse{\equal{\axp@appendix}{chapterend}
+            \AND\equal{\axp@bibliography}{separate}}{
+  \PackageError{apxproof}{%
+    bibliography=separate is not supported with appendix=chapterend}{%
+    Use bibliography=common instead.}
+}{}
 \ifthenelse{\equal{\axp@repeqn}{same}}{
   \message{apxproof: Repeated equations keep the same numbering}
 }{\ifthenelse{\equal{\axp@repeqn}{independent}}{
@@ -923,7 +945,7 @@
 %    \begin{macrocode}
 }
 %    \end{macrocode}
-% \subsection{Append or Strip Compilation Modes}
+% \subsection{Append, Strip, or Chapter End Compilation Modes}
 %    \begin{macrocode}
 {
 %    \end{macrocode}
@@ -941,7 +963,11 @@
 %    \begin{macrocode}
   \AtBeginDocument{
     \newwrite\axp@proofsfile
-    \immediate\openout\axp@proofsfile=\jobname.axp
+    \ifthenelse{\equal{\axp@appendix}{chapterend}}{%
+      \axp@openchapterfile
+    }{%
+      \immediate\openout\axp@proofsfile=\jobname.axp
+    }%
   }
 %    \end{macrocode}
 % \end{macro}
@@ -951,7 +977,7 @@
 % it will be used in several places for internal names) and reestablish the original definition of
 % the |proof| environment and the |\section| macro.
 %    \begin{macrocode}
-  \AtBeginDocument{
+  \newcommand{\axp@writeproofsfilepreamble}{%
     \immediate\write\axp@proofsfile{%
       \noexpand\makeatletter
       \noexpand\let\noexpand\proof\noexpand\axp@oldproof
@@ -959,7 +985,12 @@
       \noexpand\let\noexpand\claimproof\noexpand\axp@oldclaimproof
       \noexpand\let\noexpand\endclaimproof\noexpand\endaxp@oldclaimproof
       \noexpand\let\noexpand\section\noexpand\axp@oldsection
-    }
+    }%
+  }
+  \AtBeginDocument{
+    \ifthenelse{\equal{\axp@appendix}{chapterend}}{}{%
+      \axp@writeproofsfilepreamble
+    }%
   }
 %    \end{macrocode}
 % \end{macro}
@@ -1018,12 +1049,19 @@
 % \end{macro}
 % \end{macro}
 % \end{environment}
+% \begin{macro}{\axp@markchapterhasappendix}
+% No-op by default; overridden in |chapterend| mode to set a flag
+% indicating that the current chapter has appendix content.
+%    \begin{macrocode}
+  \newcommand{\axp@markchapterhasappendix}{}
+%    \end{macrocode}
+% \end{macro}
 % \begin{environment}{toappendix}
 % The entire content of this environment is put in appendix,
 % starting a new appendix section beforehand if needed.
 %    \begin{macrocode}
   \newenvironment{toappendix}
-    {\axp@writesection\axp@VerbatimOut}
+    {\axp@markchapterhasappendix\axp@writesection\axp@VerbatimOut}
     {\endaxp@VerbatimOut}
 %    \end{macrocode}
 % \end{environment}
@@ -1122,6 +1160,7 @@
 % in optional argument of macro environment}
 % \changes{v1.2.0}{2019/10/07}{Fix display of theorem notes}
 %    \begin{macrocode}
+      \axp@markchapterhasappendix
       \axp@writesection%
       \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -1320,6 +1359,7 @@
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
   \def\@appendixproof[#1]%
     {%
+      \axp@markchapterhasappendix
       \axp@writesection
       \immediate\write\axp@proofsfile{%
         \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
@@ -1328,6 +1368,7 @@
     }
   \def\@@appendixproof[#1][#2]%
     {%
+      \axp@markchapterhasappendix
       \axp@writesection
       \immediate\write\axp@proofsfile{%
         \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
@@ -1693,6 +1734,119 @@
         \let\bibcite\NAT@testdef
       \fi
       }{}
+    }{}{}
+%    \end{macrocode}
+%    \begin{macrocode}
+  }{}
+%    \end{macrocode}
+%    \subsubsection{Chapter End Compilation Mode}
+% \changes{v1.2.7}{2026/04/14}{Added \texttt{chapterend} appendix mode}
+% In |chapterend| mode, appendix material for each chapter is gathered
+% in a per-chapter auxiliary file and emitted immediately after that
+% chapter's content (and bibliography). This requires the
+% \textsf{appendix} package for its |subappendices| environment.
+%    \begin{macrocode}
+  \ifthenelse{\equal{\axp@appendix}{chapterend}}{
+%    \end{macrocode}
+%    \begin{macrocode}
+    \RequirePackage{appendix}
+%    \end{macrocode}
+% \begin{macro}{\chapterappendixprelim}
+% \begin{macro}{\axp@beginchapterappendix}
+% \begin{macro}{\axp@endchapterappendix}
+% User-customizable hooks surrounding each chapter's appendix block.
+% By default they open and close a |subappendices| environment.
+%    \begin{macrocode}
+    \newcommand{\chapterappendixprelim}{\clearpage}
+    \newcommand{\axp@beginchapterappendix}{%
+      \chapterappendixprelim
+      \begin{subappendices}%
+    }
+    \newcommand{\axp@endchapterappendix}{%
+      \end{subappendices}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{axp@chaptercounter}
+% \begin{macro}{axp@chapterhasappendix}
+% \begin{macro}{\axp@currentaxpfile}
+% Counter for unique per-chapter file names, a boolean tracking whether
+% the current chapter has any appendix content, and the current file name.
+%    \begin{macrocode}
+    \newcounter{axp@chaptercounter}
+    \newbool{axp@chapterhasappendix}
+    \def\axp@currentaxpfile{}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@markchapterhasappendix}
+% Override the no-op to set the boolean when content is written.
+%    \begin{macrocode}
+    \renewcommand{\axp@markchapterhasappendix}{%
+      \global\booltrue{axp@chapterhasappendix}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@openchapterfile}
+% Open a fresh auxiliary file for the current chapter.
+% We write |\begingroup| first so that all the preamble |\let|
+% assignments (and any catcode changes from |\makeatletter|) are
+% scoped to this chapter's appendix and do not leak into the rest of
+% the document when the file is |\input|'d. We also reset the
+% section-title tracker and the repeated-theorem toggle so that state
+% from the previous chapter cannot bleed into the new file.
+%    \begin{macrocode}
+    \newcommand{\axp@openchapterfile}{%
+      \edef\axp@currentaxpfile{\jobname-\arabic{axp@chaptercounter}.axp}%
+      \immediate\openout\axp@proofsfile=\axp@currentaxpfile
+      \immediate\write\axp@proofsfile{\noexpand\begingroup}%
+      \axp@writeproofsfilepreamble
+      \global\boolfalse{axp@chapterhasappendix}%
+      \global\def\axp@sectitle{}%
+      \global\togglefalse{axp@seenreptheorem}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@flushchapterappendix}
+% Close the current chapter's auxiliary file (appending |\endgroup|
+% to close the group opened in |\axp@openchapterfile|) and, if it
+% contains any content, emit it inside a |subappendices| block.
+%    \begin{macrocode}
+    \newcommand{\axp@flushchapterappendix}{%
+      \immediate\write\axp@proofsfile{\noexpand\endgroup}%
+      \immediate\closeout\axp@proofsfile
+      \ifbool{axp@chapterhasappendix}{%
+        \axp@beginchapterappendix
+        \input{\axp@currentaxpfile}%
+        \axp@endchapterappendix
+      }{}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% At the start of each |\chapter|, flush the previous chapter's
+% auxiliary file, increment the counter, and open the next one.
+% At |\end{document}|, flush the last chapter's file.
+%    \begin{macrocode}
+    \AtBeginDocument{%
+      \ifdef{\chapter}{%
+        \pretocmd{\chapter}{%
+          \axp@flushchapterappendix
+          \stepcounter{axp@chaptercounter}%
+          \axp@openchapterfile
+        }{}{\PackageWarning{apxproof}{%
+          Could not hook into \string\chapter;^^J%
+          chapter appendices may not be emitted correctly}}%
+      }{%
+        \PackageWarning{apxproof}{%
+          appendix=chapterend used but \string\chapter\space
+          is not defined}%
+      }%
+    }
+    \pretocmd{\@enddocumenthook}{%
+      \axp@flushchapterappendix
     }{}{}
 %    \end{macrocode}
 %    \begin{macrocode}
