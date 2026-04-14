@@ -6,7 +6,7 @@ typesetexe = "pdflatex"
 typesetopts = " --interaction=nonstopmode"
 typesetsuppfiles = {"*.bib"}
 bibfiles = {"support/*.bib"}
-textfiles = {"*.md", "LICENSE"}
+textfiles = {"README.md", "LICENSE"}
 
 function typeset(file, dir)
   local errorlevel = tex(file, dir)
