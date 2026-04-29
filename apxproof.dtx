@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2026/04/14 v1.3.0-dev Automatic proofs in appendix]
+%<package>  [2026/04/29 v1.3.0-dev Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1152}
+% \CheckSum{1163}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -349,11 +349,11 @@
 % material is therefore removed.
 % \item[|chapterend|] In this mode, appendix material for each chapter
 % is gathered separately and emitted at the end of that chapter
-% (i.e., just before the next |\chapter| command, or at the end of
-% the document), using the |subappendices| environment from the
-% \textsf{appendix} package. Only |bibliography=common| is supported
-% in this mode. See Section~\ref{sec:customization} for the
-% |\chapterappendixprelim| customization macro.
+% (i.e., just before the next |\chapter| or |\part| command, or at
+% the end of the document), using the |subappendices| environment
+% from the \textsf{appendix} package. Only |bibliography=common| is
+% supported in this mode. See Section~\ref{sec:customization} for
+% the |\chapterappendixprelim| customization macro.
 % \end{description}
 %
 % \subsection{Customization}
@@ -1741,6 +1741,9 @@
 %    \end{macrocode}
 %    \subsubsection{Chapter End Compilation Mode}
 % \changes{v1.3.0}{2026/04/14}{Added \texttt{chapterend} appendix mode}
+% \changes{v1.3.0-dev}{2026/04/29}{Flush \texttt{chapterend} appendices at \cs{part}
+%   boundaries so the last chapter of a part's appendix is not emitted under
+%   the next part}
 % In |chapterend| mode, appendix material for each chapter is gathered
 % in a per-chapter auxiliary file and emitted immediately after that
 % chapter's content (and bibliography). This requires the
@@ -1826,24 +1829,40 @@
     }
 %    \end{macrocode}
 % \end{macro}
-% At the start of each |\chapter|, flush the previous chapter's
-% auxiliary file, increment the counter, and open the next one.
+% \begin{macro}{\axp@chapterboundary}
+% Flush the previous chapter's auxiliary file, increment the counter,
+% and open the next one. Used as a hook for both |\chapter| and
+% |\part|, so that per-chapter appendices are emitted before any
+% part change (otherwise the appendix of the last chapter of a part
+% would end up under the next part).
+%    \begin{macrocode}
+    \newcommand{\axp@chapterboundary}{%
+      \axp@flushchapterappendix
+      \stepcounter{axp@chaptercounter}%
+      \axp@openchapterfile
+    }
+%    \end{macrocode}
+% \end{macro}
+% At the start of each |\chapter| or |\part|, run the boundary hook.
 % At |\end{document}|, flush the last chapter's file.
 %    \begin{macrocode}
     \AtBeginDocument{%
       \ifdef{\chapter}{%
-        \pretocmd{\chapter}{%
-          \axp@flushchapterappendix
-          \stepcounter{axp@chaptercounter}%
-          \axp@openchapterfile
-        }{}{\PackageWarning{apxproof}{%
-          Could not hook into \string\chapter;^^J%
-          chapter appendices may not be emitted correctly}}%
+        \pretocmd{\chapter}{\axp@chapterboundary}{}{%
+          \PackageWarning{apxproof}{%
+            Could not hook into \string\chapter;^^J%
+            chapter appendices may not be emitted correctly}}%
       }{%
         \PackageWarning{apxproof}{%
           appendix=chapterend used but \string\chapter\space
           is not defined}%
       }%
+      \ifdef{\part}{%
+        \pretocmd{\part}{\axp@chapterboundary}{}{%
+          \PackageWarning{apxproof}{%
+            Could not hook into \string\part;^^J%
+            chapter appendices may not be emitted correctly across parts}}%
+      }{}%
     }
     \pretocmd{\@enddocumenthook}{%
       \axp@flushchapterappendix
