@@ -642,23 +642,25 @@
       \stepcounter{axp@chaptercounter}%
       \axp@openchapterfile
     }
+    \let\flushchapterappendix\axp@chapterboundary
+    \newcommand{\axp@hookboundary}[1]{%
+      \pretocmd{#1}{\axp@chapterboundary}{}{%
+        \PackageWarning{apxproof}{%
+          Could not hook into \string#1;^^J%
+          chapter appendices may not be emitted correctly}}%
+    }
     \AtBeginDocument{%
       \ifdef{\chapter}{%
-        \pretocmd{\chapter}{\axp@chapterboundary}{}{%
-          \PackageWarning{apxproof}{%
-            Could not hook into \string\chapter;^^J%
-            chapter appendices may not be emitted correctly}}%
+        \axp@hookboundary{\chapter}%
       }{%
         \PackageWarning{apxproof}{%
           appendix=chapterend used but \string\chapter\space
           is not defined}%
       }%
-      \ifdef{\part}{%
-        \pretocmd{\part}{\axp@chapterboundary}{}{%
-          \PackageWarning{apxproof}{%
-            Could not hook into \string\part;^^J%
-            chapter appendices may not be emitted correctly across parts}}%
-      }{}%
+      \ifdef{\part}{\axp@hookboundary{\part}}{}%
+      \ifdef{\frontmatter}{\axp@hookboundary{\frontmatter}}{}%
+      \ifdef{\mainmatter}{\axp@hookboundary{\mainmatter}}{}%
+      \ifdef{\backmatter}{\axp@hookboundary{\backmatter}}{}%
     }
     \pretocmd{\@enddocumenthook}{%
       \axp@flushchapterappendix

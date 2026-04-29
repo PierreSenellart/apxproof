@@ -45,7 +45,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1163}
+% \CheckSum{1176}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -349,11 +349,13 @@
 % material is therefore removed.
 % \item[|chapterend|] In this mode, appendix material for each chapter
 % is gathered separately and emitted at the end of that chapter
-% (i.e., just before the next |\chapter| or |\part| command, or at
-% the end of the document), using the |subappendices| environment
-% from the \textsf{appendix} package. Only |bibliography=common| is
-% supported in this mode. See Section~\ref{sec:customization} for
-% the |\chapterappendixprelim| customization macro.
+% (i.e., just before the next |\chapter|, |\part|, |\frontmatter|,
+% |\mainmatter|, or |\backmatter| command, or at the end of the
+% document), using the |subappendices| environment from the
+% \textsf{appendix} package. Only |bibliography=common| is supported
+% in this mode. See Section~\ref{sec:customization} for the
+% |\chapterappendixprelim| and |\flushchapterappendix| customization
+% macros.
 % \end{description}
 %
 % \subsection{Customization}
@@ -393,6 +395,15 @@
 % contains |\clearpage| (each chapter appendix starts on a new page).
 % This macro has no effect in |append| or |strip| mode; use
 % |\appendixprelim| instead.
+% \item[\textbackslash|flushchapterappendix|]\DescribeMacro{\flushchapterappendix}
+% (|chapterend| mode only) manually emits the current chapter's
+% accumulated appendix material at the point of invocation, and starts
+% a fresh per-chapter buffer. The package automatically inserts an
+% equivalent flush before each |\chapter|, |\part|, |\frontmatter|,
+% |\mainmatter|, |\backmatter|, and at the end of the document, so
+% this macro is only useful in unusual document structures where an
+% appendix needs to be emitted at a location that is not a standard
+% structural boundary.
 % \end{description}
 % \DescribeOption{repeqn}
 % Another customization capability concerns \emph{numbered equations} that are present
@@ -1741,9 +1752,13 @@
 %    \end{macrocode}
 %    \subsubsection{Chapter End Compilation Mode}
 % \changes{v1.3.0}{2026/04/14}{Added \texttt{chapterend} appendix mode}
-% \changes{v1.3.0-dev}{2026/04/29}{Flush \texttt{chapterend} appendices at \cs{part}
-%   boundaries so the last chapter of a part's appendix is not emitted under
-%   the next part}
+% \changes{v1.3.0-dev}{2026/04/29}{Flush \texttt{chapterend} appendices at
+%   \cs{part}, \cs{frontmatter}, \cs{mainmatter}, and \cs{backmatter}
+%   boundaries so the last chapter of a part/matter is not emitted under
+%   the next one}
+% \changes{v1.3.0-dev}{2026/04/29}{Public \cs{flushchapterappendix} macro
+%   for manually emitting the current chapter's accumulated appendix in
+%   \texttt{chapterend} mode}
 % In |chapterend| mode, appendix material for each chapter is gathered
 % in a per-chapter auxiliary file and emitted immediately after that
 % chapter's content (and bibliography). This requires the
@@ -1830,39 +1845,57 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@chapterboundary}
-% Flush the previous chapter's auxiliary file, increment the counter,
-% and open the next one. Used as a hook for both |\chapter| and
-% |\part|, so that per-chapter appendices are emitted before any
-% part change (otherwise the appendix of the last chapter of a part
-% would end up under the next part).
+% \begin{macro}{\flushchapterappendix}
+% |\axp@chapterboundary| flushes the previous chapter's auxiliary file,
+% increments the counter, and opens the next one. It is used as a hook
+% for |\chapter|, |\part|, and the |book|-class matter-switching
+% commands |\frontmatter|, |\mainmatter|, |\backmatter|, so that
+% per-chapter appendices are emitted before any of these structural
+% transitions (otherwise the appendix of the last chapter of a
+% part/matter would end up under the next part/matter).
+% |\flushchapterappendix| is a public alias for the same operation,
+% which can be invoked manually wherever an appendix flush boundary is
+% needed (e.g., before a bibliography that does not produce its own
+% chapter heading).
 %    \begin{macrocode}
     \newcommand{\axp@chapterboundary}{%
       \axp@flushchapterappendix
       \stepcounter{axp@chaptercounter}%
       \axp@openchapterfile
     }
+    \let\flushchapterappendix\axp@chapterboundary
 %    \end{macrocode}
 % \end{macro}
-% At the start of each |\chapter| or |\part|, run the boundary hook.
-% At |\end{document}|, flush the last chapter's file.
+% \end{macro}
+% \begin{macro}{\axp@hookboundary}
+% Helper to install |\axp@chapterboundary| as a |\pretocmd| hook on a
+% structural command (|\chapter|, |\part|, |\frontmatter|, etc.),
+% issuing a package warning if the hook fails.
+%    \begin{macrocode}
+    \newcommand{\axp@hookboundary}[1]{%
+      \pretocmd{#1}{\axp@chapterboundary}{}{%
+        \PackageWarning{apxproof}{%
+          Could not hook into \string#1;^^J%
+          chapter appendices may not be emitted correctly}}%
+    }
+%    \end{macrocode}
+% \end{macro}
+% At the start of each |\chapter|, |\part|, or matter-switching
+% command, run the boundary hook. At |\end{document}|, flush the
+% last chapter's file.
 %    \begin{macrocode}
     \AtBeginDocument{%
       \ifdef{\chapter}{%
-        \pretocmd{\chapter}{\axp@chapterboundary}{}{%
-          \PackageWarning{apxproof}{%
-            Could not hook into \string\chapter;^^J%
-            chapter appendices may not be emitted correctly}}%
+        \axp@hookboundary{\chapter}%
       }{%
         \PackageWarning{apxproof}{%
           appendix=chapterend used but \string\chapter\space
           is not defined}%
       }%
-      \ifdef{\part}{%
-        \pretocmd{\part}{\axp@chapterboundary}{}{%
-          \PackageWarning{apxproof}{%
-            Could not hook into \string\part;^^J%
-            chapter appendices may not be emitted correctly across parts}}%
-      }{}%
+      \ifdef{\part}{\axp@hookboundary{\part}}{}%
+      \ifdef{\frontmatter}{\axp@hookboundary{\frontmatter}}{}%
+      \ifdef{\mainmatter}{\axp@hookboundary{\mainmatter}}{}%
+      \ifdef{\backmatter}{\axp@hookboundary{\backmatter}}{}%
     }
     \pretocmd{\@enddocumenthook}{%
       \axp@flushchapterappendix
