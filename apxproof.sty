@@ -27,7 +27,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2005/12/01]
 \ProvidesPackage{apxproof}
-  [2026/04/14 v1.3.0-dev Automatic proofs in appendix]
+  [2026/04/29 v1.3.0-dev Automatic proofs in appendix]
 \RequirePackage{environ}
 \RequirePackage{etoolbox}
 \RequirePackage{fancyvrb}
@@ -637,20 +637,30 @@
         \axp@endchapterappendix
       }{}%
     }
+    \newcommand{\axp@chapterboundary}{%
+      \axp@flushchapterappendix
+      \stepcounter{axp@chaptercounter}%
+      \axp@openchapterfile
+    }
+    \let\flushchapterappendix\axp@chapterboundary
+    \newcommand{\axp@hookboundary}[1]{%
+      \pretocmd{#1}{\axp@chapterboundary}{}{%
+        \PackageWarning{apxproof}{%
+          Could not hook into \string#1;^^J%
+          chapter appendices may not be emitted correctly}}%
+    }
     \AtBeginDocument{%
       \ifdef{\chapter}{%
-        \pretocmd{\chapter}{%
-          \axp@flushchapterappendix
-          \stepcounter{axp@chaptercounter}%
-          \axp@openchapterfile
-        }{}{\PackageWarning{apxproof}{%
-          Could not hook into \string\chapter;^^J%
-          chapter appendices may not be emitted correctly}}%
+        \axp@hookboundary{\chapter}%
       }{%
         \PackageWarning{apxproof}{%
           appendix=chapterend used but \string\chapter\space
           is not defined}%
       }%
+      \ifdef{\part}{\axp@hookboundary{\part}}{}%
+      \ifdef{\frontmatter}{\axp@hookboundary{\frontmatter}}{}%
+      \ifdef{\mainmatter}{\axp@hookboundary{\mainmatter}}{}%
+      \ifdef{\backmatter}{\axp@hookboundary{\backmatter}}{}%
     }
     \pretocmd{\@enddocumenthook}{%
       \axp@flushchapterappendix

@@ -1,0 +1,78 @@
+\documentclass{book}
+\usepackage[appendix=chapterend,bibliography=common]{../../apxproof}
+\usepackage{hyperref}
+
+\theoremstyle{plain}
+\newtheoremrep{theorem}{Theorem}[section]
+
+\renewcommand{\appendixsectionformat}[2]{Material for #2 (Section~#1)}
+\renewcommand{\chapterappendixprelim}{\clearpage\noindent\rule{\linewidth}{0.4pt}\medskip}
+
+\title{Chapter end matter test}
+\author{Author}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\frontmatter
+
+\chapter{Preface}
+
+A short preface.
+
+\begin{toappendix}
+  Notes for the preface (must remain in the front matter).
+\end{toappendix}
+
+\mainmatter
+
+\chapter{First Main Chapter}
+
+\section{A Section}
+
+\begin{theoremrep}
+  \label{th:one}%
+  Main result.
+\end{theoremrep}
+
+\begin{proof}
+  Proof of Theorem~\ref{th:one}.
+\end{proof}
+
+\begin{toappendix}
+  Extra material for the first main chapter.
+\end{toappendix}
+
+\flushchapterappendix
+
+After a manual flush, more deferred material is collected into a
+fresh per-chapter buffer.
+
+\begin{toappendix}
+  Material added after the manual flush, still inside the first
+  main chapter.
+\end{toappendix}
+
+\chapter{Second Main Chapter}
+
+\section{Another Section}
+
+Some text in the second main chapter.
+
+\begin{toappendix}
+  Material for the second main chapter (must remain in the main matter).
+\end{toappendix}
+
+\backmatter
+
+\chapter{Glossary}
+
+A short glossary entry.
+
+\begin{toappendix}
+  Notes for the glossary (must remain in the back matter).
+\end{toappendix}
+
+\end{document}
