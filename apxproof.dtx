@@ -535,6 +535,76 @@
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
 % \end{description}
+% \subsection{Grouping Appendix Material Under a Single Section}
+% \changes{v1.3.0-dev}{2026/05/14}{Documented workarounds for grouping
+%   per-section appendices under a single wrapping section. See \#56.}
+% \label{sec:appendix-grouping}
+% By default, \textsf{apxproof} produces one section in the appendix for
+% each section of the main text that contains appendix material (with
+% the format controlled by |\appendixsectionformat|). If you would
+% rather have a single section in the appendix (e.g., titled
+% ``Proofs'') with the per-section entries appearing as
+% \emph{subsections} of that single section, two recipes are available.
+%
+% The first is fully explicit: disable the automatic per-section
+% heading with |\nosectionappendix|, and write the desired structure
+% directly inside |toappendix| environments.
+% \begin{quote}
+% \begin{verbatim}
+% \begin{toappendix}
+%   \section{Proofs}
+% \end{toappendix}
+%
+% \section{First}\label{sec:first}
+% \nosectionappendix
+% \begin{toappendix}
+%   \subsection{Proofs of Section~\ref{sec:first}}
+% \end{toappendix}
+%
+% % ... theorems and proofs of section ``First'' ...
+%
+% \section{Second}\label{sec:second}
+% \nosectionappendix
+% \begin{toappendix}
+%   \subsection{Proofs of Section~\ref{sec:second}}
+% \end{toappendix}
+%
+% % ... theorems and proofs of section ``Second'' ...
+% \end{verbatim}
+% \end{quote}
+% The reader of the source can then see exactly what will be produced
+% in the appendix, at the cost of some verbosity.
+%
+% The second recipe is more concise. The section level used by
+% \textsf{apxproof} for the auto-generated appendix headings is swapped
+% from |\section| to |\subsection| for the duration of an explicit
+% |\begingroup|/|\endgroup| group:
+% \begin{quote}
+% \begin{verbatim}
+% \begin{toappendix}
+%   \section{Proofs}
+%   \begingroup\makeatletter
+%     \let\axp@oldsection\subsection
+%   \makeatother
+% \end{toappendix}
+%
+% \section{First}\label{sec:first}
+% % ... theorems and proofs of section ``First'' ...
+%
+% \section{Second}\label{sec:second}
+% % ... theorems and proofs of section ``Second'' ...
+%
+% \begin{toappendix}
+%   \endgroup
+% \end{toappendix}
+% \end{verbatim}
+% \end{quote}
+% The wrapping |\section{Proofs}| is written once, and every subsequent
+% auto-generated appendix section heading is demoted to a |\subsection|
+% for the scope of the group. The trade-off is that this recipe relies
+% on an internal macro (|\axp@oldsection|) and on a manually balanced
+% |\begingroup|/|\endgroup| pair across two separate |toappendix|
+% environments.
 % \section{Supported Document Classes}
 % Because \textsf{apxproof} modifies sectioning commands, bibliographies,
 % and proofs, it may not work straight away with arbitrary document classes.
