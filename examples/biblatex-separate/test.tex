@@ -1,0 +1,26 @@
+\documentclass{article}
+\date{}
+\usepackage[backend=biber,style=alphabetic]{biblatex}
+\addbibresource{refs.bib}
+\usepackage[bibliography=separate,bibengine=biblatex]{../../apxproof}
+\usepackage{amsthm}
+
+\newtheoremrep{theorem}{Theorem}
+
+\begin{document}
+\section{Main text}
+
+A citation in the main text~\cite{lamport86}.
+
+\begin{theoremrep}\label{thm:1}
+A repeated theorem.
+\end{theoremrep}
+\begin{proof}
+The proof of the theorem, which cites~\cite{proofsAreHard}. This
+citation should appear in the appendix bibliography, not the
+main-text bibliography.
+\end{proof}
+
+\printbibliography
+
+\end{document}

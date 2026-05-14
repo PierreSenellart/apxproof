@@ -46,7 +46,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1247}
+% \CheckSum{1275}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -400,6 +400,22 @@
 % In order to use a single appendix for the main text and the
 % bibliography, one can specify the
 % value |common| to the |bibliography| option when loading the package.
+%
+% \DescribeOption{bibengine}
+% By default, \textsf{apxproof} relies on the \textsf{bibunits} package
+% to typeset a separate bibliography for the appendix material; this is
+% the |bibengine=bibtex| mode (the default), suitable for documents
+% that use \textsf{bibtex} (with or without \textsf{natbib}) for
+% citations and references. Documents using \textsf{biblatex} can
+% instead set |bibengine=biblatex|, in which case \textsf{apxproof}
+% wraps the appendix material in a \textsf{biblatex} |refsection|
+% environment and emits the appendix bibliography with
+% |\printbibliography|. In this mode the user is responsible for
+% loading \textsf{biblatex} and declaring bibliography resources with
+% |\addbibresource| in the preamble; resources are shared between the
+% main document and the appendix |refsection|, but citations and the
+% printed bibliography are scoped independently. The |bibengine| option
+% only has an effect when |bibliography=separate|.
 % (By default this option is set to |separate|.)
 % \subsection{Mode}
 % \DescribeOption{appendix}
@@ -641,11 +657,14 @@
 % which source line has produced which box does not work for appendix
 % content managed by \textsf{apxproof} or repeated theorems. No obvious
 % fix is known, though this issue will be investigated in the long term.
-% \item Unless the |bibliography| option is set to |common|, the
-% \textsf{bibunits} package
-% is used to generate a second bibliography. This means any package, such
-% as \textsf{biblatex}, that is incompatible with \textsf{bibunits} will not be
-% compatible with \textsf{apxproof} unless |bibliography| is set to |common|.
+% \item By default, when |bibliography=separate|, \textsf{apxproof}
+% uses the \textsf{bibunits} package to generate a second bibliography.
+% Packages incompatible with \textsf{bibunits} (notably
+% \textsf{biblatex}) will therefore not work in that default
+% configuration. For \textsf{biblatex} users, set |bibengine=biblatex|
+% (in addition to |bibliography=separate|) to use \textsf{biblatex}'s
+% own |refsection| machinery instead. The |bibliography=common| mode
+% remains a third option that works with most bibliography packages.
 % \end{itemize}
 %
 % Issues not listed here should be reported to the author.
@@ -774,6 +793,14 @@
 \DeclareStringOption[separate]{bibliography}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\axp@bibengine}
+% \changes{v1.3.0-dev}{2026/05/14}{\texttt{bibengine} option to select
+%   the engine used for separate bibliographies: \textsf{bibunits}
+%   (default) or \textsf{biblatex}. See \#29.}
+%    \begin{macrocode}
+\DeclareStringOption[bibtex]{bibengine}
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{\axp@repeqn}
 % \changes{v1.1.0}{2018/07/20}{\texttt{repeqn} option}
 %    \begin{macrocode}
@@ -804,15 +831,29 @@
   \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
 }}}}
+\ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+}{\ifthenelse{\equal{\axp@bibengine}{biblatex}}{
+}{
+  \errmessage{Error: unsupported option bibengine=\axp@bibengine\ for
+  package apxproof}
+}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
 %    \end{macrocode}
-% The external \textsf{bibunits} package
-% is used to add a second bibliography for the appendix material.
+% In |bibengine=bibtex| mode (the default), the external
+% \textsf{bibunits} package is used to add a second bibliography for
+% the appendix material. In |bibengine=biblatex| mode, no extra
+% package is loaded here: \textsf{biblatex} is expected to have been
+% loaded by the user, and its |refsection| environment is used at
+% appendix typeset time to scope citations.
 % \changes{v1.2.0}{2019/04/17}{Do not load \textsf{bibunits} if
 % \texttt{bibliography} is set to \texttt{common}}
 %    \begin{macrocode}
-  \RequirePackage{bibunits}
-  \message{apxproof: Separate bibliography for appendix material}
+  \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+    \RequirePackage{bibunits}
+    \message{apxproof: Separate bibliography for appendix material (bibunits)}
+  }{
+    \message{apxproof: Separate bibliography for appendix material (biblatex)}
+  }
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
 }{
@@ -1909,11 +1950,17 @@
 %    \end{macrocode}
 % \begin{macro}{\axp@oldbibliography}
 % \begin{macro}{\bibliography}
-% Unless the |bibliography| option is set to |common|, we need to set the
-% appendix bibliography source to be the same as that of the main
-% text, thanks to \textsf{bibunits}'s |\defaultbibliography| macro.
+% In |bibengine=bibtex| mode, when the |bibliography| option is set to
+% |separate|, we need to set the appendix bibliography source to be
+% the same as that of the main text, thanks to \textsf{bibunits}'s
+% |\defaultbibliography| macro. In |bibengine=biblatex| mode, no such
+% rebinding is needed: \textsf{biblatex} resources declared with
+% |\addbibresource| are visible to all |refsection|s globally.
+% \changes{v1.3.0-dev}{2026/05/14}{Only rebind for bibunits engine.
+%   See \#29.}
 %    \begin{macrocode}
-    \ifthenelse{\equal{\axp@bibliography}{separate}}{
+    \ifthenelse{\equal{\axp@bibliography}{separate}
+                \AND\equal{\axp@bibengine}{bibtex}}{
       \let\axp@oldbibliography\bibliography
       \renewcommand\bibliography[1]{%
         \defaultbibliography{#1}%
@@ -1958,34 +2005,44 @@
       \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-      \begin{bibunit}[\appendixbibliographystyle]
+        \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+          \begin{bibunit}[\appendixbibliographystyle]
+        }{
+          \begin{refsection}
+        }
       }{}
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \ifdefined\refname
-          \renewcommand{\refname}{\appendixrefname}
-        \else\ifdefined\bibname
-          \renewcommand{\bibname}{\appendixrefname}
-        \fi\fi
-        \let\axp@oldthebibliography\thebibliography
-        \let\endaxp@oldthebibliography\endthebibliography
-        \renewenvironment{thebibliography}[1]{%
-          \def\axp@tmp{#1}%
-          \ifx\axp@tmp\empty
-            \gdef\axp@noappendixbibliography1\relax
-          \else
-            \begin{axp@oldthebibliography}{#1}%
-          \fi
-        }{%
-          \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
-        \fi}
-        \appendixbibliographyprelim
-        \putbib
-      \end{bibunit}
-      \ifdefined\NAT@testdef
-        \let\bibcite\NAT@testdef
-      \fi
+        \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+          \ifdefined\refname
+            \renewcommand{\refname}{\appendixrefname}
+          \else\ifdefined\bibname
+            \renewcommand{\bibname}{\appendixrefname}
+          \fi\fi
+          \let\axp@oldthebibliography\thebibliography
+          \let\endaxp@oldthebibliography\endthebibliography
+          \renewenvironment{thebibliography}[1]{%
+            \def\axp@tmp{#1}%
+            \ifx\axp@tmp\empty
+              \gdef\axp@noappendixbibliography1\relax
+            \else
+              \begin{axp@oldthebibliography}{#1}%
+            \fi
+          }{%
+            \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
+          \fi}
+          \appendixbibliographyprelim
+          \putbib
+          \end{bibunit}
+        }{
+          \appendixbibliographyprelim
+          \printbibliography[title=\appendixrefname]
+          \end{refsection}
+        }
+        \ifdefined\NAT@testdef
+          \let\bibcite\NAT@testdef
+        \fi
       }{}
     }{}{}
 %    \end{macrocode}

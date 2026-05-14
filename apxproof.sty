@@ -53,6 +53,7 @@
 }
 \DeclareStringOption[append]{appendix}
 \DeclareStringOption[separate]{bibliography}
+\DeclareStringOption[bibtex]{bibengine}
 \DeclareStringOption[same]{repeqn}
 \DeclareStringOption[yes]{forwardlinking}
 \ProcessLocalKeyvalOptions*
@@ -68,9 +69,19 @@
   \errmessage{Error: unsupported option appendix=\axp@appendix\ for
   package apxproof}
 }}}}
+\ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+}{\ifthenelse{\equal{\axp@bibengine}{biblatex}}{
+}{
+  \errmessage{Error: unsupported option bibengine=\axp@bibengine\ for
+  package apxproof}
+}}
 \ifthenelse{\equal{\axp@bibliography}{separate}}{
-  \RequirePackage{bibunits}
-  \message{apxproof: Separate bibliography for appendix material}
+  \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+    \RequirePackage{bibunits}
+    \message{apxproof: Separate bibliography for appendix material (bibunits)}
+  }{
+    \message{apxproof: Separate bibliography for appendix material (biblatex)}
+  }
 }{\ifthenelse{\equal{\axp@bibliography}{common}}{
   \message{apxproof: Common bibliography for appendix and main text}
 }{
@@ -598,7 +609,8 @@
   \let\axp@oldtableofcontents\tableofcontents
   \def\tableofcontents{{\let\section\axp@oldsection\axp@oldtableofcontents}}
   \ifthenelse{\equal{\axp@appendix}{append}}{
-    \ifthenelse{\equal{\axp@bibliography}{separate}}{
+    \ifthenelse{\equal{\axp@bibliography}{separate}
+                \AND\equal{\axp@bibengine}{bibtex}}{
       \let\axp@oldbibliography\bibliography
       \renewcommand\bibliography[1]{%
         \defaultbibliography{#1}%
@@ -614,34 +626,44 @@
       \appendixprelim
       \appendix
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-      \begin{bibunit}[\appendixbibliographystyle]
+        \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+          \begin{bibunit}[\appendixbibliographystyle]
+        }{
+          \begin{refsection}
+        }
       }{}
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
-        \ifdefined\refname
-          \renewcommand{\refname}{\appendixrefname}
-        \else\ifdefined\bibname
-          \renewcommand{\bibname}{\appendixrefname}
-        \fi\fi
-        \let\axp@oldthebibliography\thebibliography
-        \let\endaxp@oldthebibliography\endthebibliography
-        \renewenvironment{thebibliography}[1]{%
-          \def\axp@tmp{#1}%
-          \ifx\axp@tmp\empty
-            \gdef\axp@noappendixbibliography1\relax
-          \else
-            \begin{axp@oldthebibliography}{#1}%
-          \fi
-        }{%
-          \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
-        \fi}
-        \appendixbibliographyprelim
-        \putbib
-      \end{bibunit}
-      \ifdefined\NAT@testdef
-        \let\bibcite\NAT@testdef
-      \fi
+        \ifthenelse{\equal{\axp@bibengine}{bibtex}}{
+          \ifdefined\refname
+            \renewcommand{\refname}{\appendixrefname}
+          \else\ifdefined\bibname
+            \renewcommand{\bibname}{\appendixrefname}
+          \fi\fi
+          \let\axp@oldthebibliography\thebibliography
+          \let\endaxp@oldthebibliography\endthebibliography
+          \renewenvironment{thebibliography}[1]{%
+            \def\axp@tmp{#1}%
+            \ifx\axp@tmp\empty
+              \gdef\axp@noappendixbibliography1\relax
+            \else
+              \begin{axp@oldthebibliography}{#1}%
+            \fi
+          }{%
+            \ifdefined\axp@noappendixbibliography\relax\else\end{axp@oldthebibliography}%
+          \fi}
+          \appendixbibliographyprelim
+          \putbib
+          \end{bibunit}
+        }{
+          \appendixbibliographyprelim
+          \printbibliography[title=\appendixrefname]
+          \end{refsection}
+        }
+        \ifdefined\NAT@testdef
+          \let\bibcite\NAT@testdef
+        \fi
       }{}
     }{}{}
   }{}
