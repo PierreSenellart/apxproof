@@ -1,0 +1,62 @@
+\documentclass{article}
+\date{}
+\usepackage{hyperref}
+\usepackage{../../apxproof}
+\usepackage{amsthm}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep*{lemma}[theorem]{Lemma}
+
+\renewcommand{\appendixproofname}[2]{Proof of #1~#2}
+
+\begin{document}
+\section{Repeated and proof-deferred theorems}
+
+\begin{theoremrep}\label{thm:first}
+  Repeated theorem: this one is restated in the appendix.
+\end{theoremrep}
+\begin{proof}
+  Proof of Theorem~\ref{thm:first}; appears in the appendix below the
+  restated statement, titled by \texttt{\textbackslash appendixproofname}.
+\end{proof}
+
+\begin{lemmarep}\label{lem:second}
+  Proof-deferred lemma: this one is \emph{not} restated in the appendix,
+  but shares the theorem counter.
+\end{lemmarep}
+\begin{proof}
+  Proof of Lemma~\ref{lem:second}; appears in the appendix without
+  restating the lemma.
+\end{proof}
+
+\begin{theoremrep}\label{thm:third}
+  A third theorem, restated.
+\end{theoremrep}
+\begin{proof}[An explicit title]
+  Proof with an explicit optional title, which must override
+  \texttt{\textbackslash appendixproofname}.
+\end{proof}
+
+\begin{theorem}\label{thm:plain}
+  A plain (non-rep) theorem: stays in the main text only.
+\end{theorem}
+\begin{proof}
+  Proof in the main text, not deferred.
+\end{proof}
+
+\section{Theorem without a proof}
+
+\begin{lemmarep}\label{lem:noproof}
+  A proof-deferred lemma with no proof at all; \texttt{apxproof} should
+  not produce a proof for it in the appendix.
+\end{lemmarep}
+\noproofinappendix
+
+\begin{theorem}
+  Plain theorem after the orphan lemma.
+\end{theorem}
+\begin{proof}
+  Proof in the main text.
+\end{proof}
+
+\end{document}

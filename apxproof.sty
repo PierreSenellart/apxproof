@@ -128,7 +128,15 @@
 \def\@@axp@newtheorem#1#2{%
   \newtheorem*{#1}{#2}%
 }
-\newcommand\newtheoremrep[1]{%
+\newcommand\newtheoremrep{%
+  \@ifstar{\axp@newtheoremrep@star}{\axp@newtheoremrep@nostar}%
+}
+\newcommand\axp@newtheoremrep@star[1]{%
+  \global\csdef{axp@proofof@#1}{}%
+  \@oparg{\axp@newtheoremreptmp{#1}}[]%
+}
+\newcommand\axp@newtheoremrep@nostar[1]{%
+  \global\csundef{axp@proofof@#1}%
   \@oparg{\axp@newtheoremreptmp{#1}}[]%
 }
 \def\axp@newtheoremreptmp#1[#2]#3{%
@@ -141,6 +149,7 @@
 \newcommand{\appendixbibliographyprelim}{}
 \newcommand{\appendixprelim}{\clearpage\onecolumn}
 \newcommand{\appendixsectionformat}[2]{Proofs for Section~#1\ (#2)}
+\newcommand{\appendixproofname}[2]{}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
   \newcommand{\axp@redefinelabels}{%
@@ -263,7 +272,9 @@
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \axp@newtheorem*{axp@#1rp}{#3}%
+    \ifcsdef{axp@proofof@#1}{}{%
+      \axp@newtheorem*{axp@#1rp}{#3}%
+    }%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
     \NewEnviron{#1rep}[1][]{%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
@@ -295,40 +306,50 @@
       }{%
         \global\def\axp@refstar{\ref}
       }
-      \immediate\write\axp@proofsfile{{%
-        \ifdefined\theopargself
-          \noexpand\theopargself
-        \else
-          \noexpand\pretocmd{\noexpand\@begintheorem}{%
-            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
-            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
-            \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
-            \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
-          }{}{}
-        \fi
-        \noexpand\begin{axp@#1rp}
-          [%
-            \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
-            \@ifnotempty{##1}{%
-              \ifdefined\theopargself
-              \else
-                \ifdefined\@acmplainnotefont
-                  \noexpand\@acmplainnotefont
-                \else
-                  \noexpand\ifdefined\noexpand\thm@notefont
-                    \noexpand\the\noexpand\thm@notefont
-                  \noexpand\fi
-                \fi
-              \fi
-              {} (\unexpanded{{##1}})%
-            }%
-          ]%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\gdef\noexpand\axp@nextproofof@type{#3}%
+        \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+      }%
+      \ifcsdef{axp@proofof@#1}{%
+        \immediate\write\axp@proofsfile{%
           \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
-          \noexpand\axp@redefinelabels
-          \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
-                               \endcsname
-        \noexpand\end{axp@#1rp}
-      }}%
+        }%
+      }{%
+        \immediate\write\axp@proofsfile{{%
+          \ifdefined\theopargself
+            \noexpand\theopargself
+          \else
+            \noexpand\pretocmd{\noexpand\@begintheorem}{%
+              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
+              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
+              \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
+              \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
+            }{}{}
+          \fi
+          \noexpand\begin{axp@#1rp}
+            [%
+              \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
+              \@ifnotempty{##1}{%
+                \ifdefined\theopargself
+                \else
+                  \ifdefined\@acmplainnotefont
+                    \noexpand\@acmplainnotefont
+                  \else
+                    \noexpand\ifdefined\noexpand\thm@notefont
+                      \noexpand\the\noexpand\thm@notefont
+                    \noexpand\fi
+                  \fi
+                \fi
+                {} (\unexpanded{{##1}})%
+              }%
+            ]%
+            \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
+            \noexpand\axp@redefinelabels
+            \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
+                                 \endcsname
+          \noexpand\end{axp@#1rp}
+        }}%
+      }%
       \ifthenelse{\equal{\axp@repeqn}{same}}{%
         \immediate\write\axp@proofsfile{%
           \noexpand\setcounter{equation}{\value{axp@equationx}}%
@@ -384,13 +405,34 @@
   \newcommand\noproofinappendix{%
     \global\togglefalse{axp@seenreptheorem}%
   }
+  \gdef\axp@nextproofof@type{}
+  \gdef\axp@nextproofof@label{}
+  \def\axp@apxproofstart#1{%
+    \protected@xdef\axp@apxproofstart@title{%
+      \appendixproofname{\axp@nextproofof@type}%
+                        {\noexpand\ref{\axp@nextproofof@label}}%
+    }%
+    \ifx\axp@apxproofstart@title\@empty
+      \begin{#1}%
+    \else
+      \expandafter\axp@apxproofstart@withtitle
+        \expandafter{\axp@apxproofstart@title}{#1}%
+    \fi
+  }
+  \def\axp@apxproofstart@withtitle#1#2{\begin{#2}[#1]}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
   \def\@appendixproof[#1]%
     {%
       \axp@markchapterhasappendix
       \axp@writesection
-      \immediate\write\axp@proofsfile{%
-        \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+      \iftoggle{axp@seenreptheorem}{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\makeatletter\noexpand\axp@apxproofstart{#1}\noexpand\makeatother%
+        }%
+      }{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+        }%
       }%
       \axp@VerbatimOut
     }
