@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2026/04/29 v1.3.0-dev Automatic proofs in appendix]
+%<package>  [2026/05/14 v1.4.0 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -552,7 +552,7 @@
 % appended to the end of the previously created section.
 % \end{description}
 % \subsection{Grouping Appendix Material Under a Single Section}
-% \changes{v1.3.0-dev}{2026/05/14}{Documented workarounds for grouping
+% \changes{v1.4.0}{2026/05/14}{Documented workarounds for grouping
 %   per-section appendices under a single wrapping section. See \#56.}
 % \label{sec:appendix-grouping}
 % By default, \textsf{apxproof} produces one section in the appendix for
@@ -794,7 +794,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@bibengine}
-% \changes{v1.3.0-dev}{2026/05/14}{\texttt{bibengine} option to select
+% \changes{v1.4.0}{2026/05/14}{\texttt{bibengine} option to select
 %   the engine used for separate bibliographies: \textsf{bibunits}
 %   (default) or \textsf{biblatex}. See \#29.}
 %    \begin{macrocode}
@@ -957,7 +957,7 @@
 % |\@oparg| and |\axp@newtheoremreptmp| are
 % used for. |\axp@newtheoremrep| is defined differently
 % depending on the compilation mode.
-% \changes{v1.3.0-dev}{2026/05/14}{Added starred form of \cs{newtheoremrep}
+% \changes{v1.4.0}{2026/05/14}{Added starred form of \cs{newtheoremrep}
 % for proof-deferred theorems that are not restated in the appendix}
 %    \begin{macrocode}
 \newcommand\newtheoremrep{%
@@ -997,7 +997,7 @@
 % \changes{v1.1.0}{2018/07/17}{Fix missing space in default
 % \cs{appendixsectionformat}}
 % \begin{macro}{\appendixproofname}
-% \changes{v1.3.0-dev}{2026/05/14}{Added \cs{appendixproofname} hook for
+% \changes{v1.4.0}{2026/05/14}{Added \cs{appendixproofname} hook for
 % customizing the title of a proof deferred to the appendix}
 % We provide sensible defaults for these user-customizable macros.
 % Even though they are not all useful in all modes, we define them for
@@ -1410,7 +1410,7 @@
 % mode, we also emit a forward-link target into the appendix so that
 % hyperlinks from the inline theorem number always land somewhere
 % defined, even if the user does not provide a proof.
-% \changes{v1.3.0-dev}{2026/05/14}{Write auto-title state for
+% \changes{v1.4.0}{2026/05/14}{Write auto-title state for
 % \cs{appendixproofname} hook}
 %    \begin{macrocode}
       \immediate\write\axp@proofsfile{%
@@ -1602,7 +1602,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@apxproofstart}
-% \changes{v1.3.0-dev}{2026/05/14}{Helper that consults \cs{appendixproofname}
+% \changes{v1.4.0}{2026/05/14}{Helper that consults \cs{appendixproofname}
 % at appendix typeset time to auto-title deferred proofs}
 % Helper invoked from the |.axp| file at appendix typeset time to open
 % a deferred proof. Reads the |\axp@nextproofof@*| state (set by the
@@ -1634,7 +1634,7 @@
 % optional arguments in proofs, but we need to be careful not to gobble
 % any newline character, that would make it impossible to process the
 % first line with \textsf{fancyvrb}.
-% \changes{v1.3.0-dev}{2026/05/14}{Route deferred proofs through
+% \changes{v1.4.0}{2026/05/14}{Route deferred proofs through
 % \cs{axp@apxproofstart} to support \cs{appendixproofname}}
 % When the proof is auto-routed from a |theoremrep| (the toggle
 % |axp@seenreptheorem| is true at this point and no explicit optional
@@ -1956,7 +1956,7 @@
 % |\defaultbibliography| macro. In |bibengine=biblatex| mode, no such
 % rebinding is needed: \textsf{biblatex} resources declared with
 % |\addbibresource| are visible to all |refsection|s globally.
-% \changes{v1.3.0-dev}{2026/05/14}{Only rebind for bibunits engine.
+% \changes{v1.4.0}{2026/05/14}{Only rebind for bibunits engine.
 %   See \#29.}
 %    \begin{macrocode}
     \ifthenelse{\equal{\axp@bibliography}{separate}
@@ -2051,11 +2051,11 @@
 %    \end{macrocode}
 %    \subsubsection{Chapter End Compilation Mode}
 % \changes{v1.3.0}{2026/04/14}{Added \texttt{chapterend} appendix mode}
-% \changes{v1.3.0-dev}{2026/04/29}{Flush \texttt{chapterend} appendices at
+% \changes{v1.4.0}{2026/04/29}{Flush \texttt{chapterend} appendices at
 %   \cs{part}, \cs{frontmatter}, \cs{mainmatter}, and \cs{backmatter}
 %   boundaries so the last chapter of a part/matter is not emitted under
 %   the next one}
-% \changes{v1.3.0-dev}{2026/04/29}{Public \cs{flushchapterappendix} macro
+% \changes{v1.4.0}{2026/04/29}{Public \cs{flushchapterappendix} macro
 %   for manually emitting the current chapter's accumulated appendix in
 %   \texttt{chapterend} mode}
 % In |chapterend| mode, appendix material for each chapter is gathered
