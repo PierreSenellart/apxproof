@@ -237,7 +237,7 @@
   \newcommand{\axp@writeproofsfilepreamble}{%
     \immediate\write\axp@proofsfile{%
       \noexpand\makeatletter
-      \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+      \noexpand\let\noexpand\proof\noexpand\axp@replayproof
       \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
       \noexpand\let\noexpand\claimproof\noexpand\axp@oldclaimproof
       \noexpand\let\noexpand\endclaimproof\noexpand\endaxp@oldclaimproof
@@ -433,6 +433,28 @@
     \apxproofhook{\axp@nextproofof@label}%
   }
   \def\axp@apxproofstart@withtitle#1#2{\begin{#2}[#1]}
+  \newif\ifaxp@inlineproofof
+  \long\def\axp@inlineproofhook#1{%
+    \global\axp@inlineproofoffalse
+    \axp@tryrefcmd\ref{#1}%
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\cref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\Cref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\autoref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\vref{#1}\fi
+    \ifaxp@inlineproofof\apxproofhook{\axp@inlineproofof@label}\fi
+  }
+  \let\axp@refmark\relax
+  \long\def\axp@tryrefcmd#1#2{%
+    \in@{#1}{#2}%
+    \ifin@
+      \long\def\axp@grabref##1#1##2\axp@refstop{\axp@grabarg##2\axp@refstop}%
+      \axp@grabref#2\axp@refmark\axp@refstop
+    \fi
+  }
+  \long\def\axp@grabarg#1#2\axp@refstop{%
+    \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+  \def\axp@replayproof{\@ifnextchar[{\axp@replayproof@opt}{\axp@oldproof}}
+  \def\axp@replayproof@opt[#1]{\axp@oldproof[#1]\axp@inlineproofhook{#1}}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
   \def\@appendixproof[#1]%
     {%
@@ -480,7 +502,8 @@
       \iftoggle{axp@seenreptheorem}{%
         \appendixproof[#1]
       }{%
-        \axp@oldproof[#1]
+        \axp@oldproof[#1]%
+        \axp@inlineproofhook{#1}%
       }%
     }
   \def\endproof

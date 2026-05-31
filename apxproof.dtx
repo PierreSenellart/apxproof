@@ -46,7 +46,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1275}
+% \CheckSum{1348}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -1206,7 +1206,7 @@
   \newcommand{\axp@writeproofsfilepreamble}{%
     \immediate\write\axp@proofsfile{%
       \noexpand\makeatletter
-      \noexpand\let\noexpand\proof\noexpand\axp@oldproof
+      \noexpand\let\noexpand\proof\noexpand\axp@replayproof
       \noexpand\let\noexpand\endproof\noexpand\endaxp@oldproof
       \noexpand\let\noexpand\claimproof\noexpand\axp@oldclaimproof
       \noexpand\let\noexpand\endclaimproof\noexpand\endaxp@oldclaimproof
@@ -1616,10 +1616,13 @@
 % \changes{v1.4.0-dev}{2026/05/31}{Hook fired when a deferred proof is
 % typeset, used by the \textsf{proofgraph} package}
 % A hook fired, inside the proof environment, each time a deferred proof is
-% typeset in the appendix. Its argument is the label (|axp@r|\meta{n}) of
-% the theorem the proof establishes, so that a companion package (such as
-% \textsf{proofgraph}) can attribute, to the right result, the references
-% the proof makes (which are only executed here, at typeset time). It is a
+% typeset in the appendix (and also for an inline proof whose title names its
+% result through a |\ref|, see |\axp@inlineproofhook| below). Its argument is
+% the label of the theorem the proof establishes: the automatic |axp@r|\meta{n}
+% label of the preceding |theoremrep| for a deferred proof, or the target of
+% the title's |\ref| for a titled inline proof. A companion package (such as
+% \textsf{proofgraph}) can thereby attribute, to the right result, the
+% references the proof makes (which are only executed at typeset time). It is a
 % no-op by default.
 %    \begin{macrocode}
   \providecommand\apxproofhook[1]{}
@@ -1637,6 +1640,55 @@
     \apxproofhook{\axp@nextproofof@label}%
   }
   \def\axp@apxproofstart@withtitle#1#2{\begin{#2}[#1]}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@inlineproofhook}
+% \changes{v1.4.0-dev}{2026/05/31}{Fire \cs{apxproofhook} for an
+% \emph{inline} (non-deferred) proof whose optional title names its result
+% through a \cs{ref}}
+% A proof that is \emph{not} deferred (no preceding |theoremrep|, so it is
+% typeset inline) never goes through |\axp@apxproofstart|, hence never fires
+% |\apxproofhook|. When such a proof carries an explicit title that names
+% its result through a |\ref| (the idiom |\begin{proof}[of Theorem~\ref{thm:x}]|),
+% we fire the hook here, inside the proof, with that target, so a companion
+% package can attribute the proof to it. We only fire when a cross-reference is
+% found in the title (the result is then unambiguous). The title is scanned for
+% the first |\ref| (or |\cref|, |\Cref|, |\autoref|, |\vref|) by pure token
+% matching, never typesetting it: a title typically contains an active~|~| and
+% may carry other fragile material, which an auxiliary typeset pass would
+% perturb or, with |\protect| neutralised, send into an infinite loop.
+%    \begin{macrocode}
+  \newif\ifaxp@inlineproofof
+  \long\def\axp@inlineproofhook#1{%
+    \global\axp@inlineproofoffalse
+    \axp@tryrefcmd\ref{#1}%
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\cref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\Cref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\autoref{#1}\fi
+    \ifaxp@inlineproofof\else\axp@tryrefcmd\vref{#1}\fi
+    \ifaxp@inlineproofof\apxproofhook{\axp@inlineproofof@label}\fi
+  }
+  \let\axp@refmark\relax
+  \long\def\axp@tryrefcmd#1#2{%
+    \in@{#1}{#2}%
+    \ifin@
+      \long\def\axp@grabref##1#1##2\axp@refstop{\axp@grabarg##2\axp@refstop}%
+      \axp@grabref#2\axp@refmark\axp@refstop
+    \fi
+  }
+  \long\def\axp@grabarg#1#2\axp@refstop{%
+    \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+%    \end{macrocode}
+% Proofs placed by hand in a |toappendix| environment are written verbatim to
+% the |.axp| file and replayed there with |\proof| let to |\axp@oldproof| (see
+% |\axp@writeproofsfilepreamble|). Such proofs therefore never reach
+% |\axp@@proof|. So that a titled one still fires |\apxproofhook|, we let, at
+% replay time, |\proof| to |\axp@replayproof|, which reproduces the inline
+% behaviour: open the |amsthm| proof, then fire the hook for the title's |\ref|.
+%    \begin{macrocode}
+  \def\axp@replayproof{\@ifnextchar[{\axp@replayproof@opt}{\axp@oldproof}}
+  \def\axp@replayproof@opt[#1]{\axp@oldproof[#1]\axp@inlineproofhook{#1}}
 %    \end{macrocode}
 % \end{macro}
 % \begin{environment}{appendixproof}
@@ -1713,7 +1765,8 @@
       \iftoggle{axp@seenreptheorem}{%
         \appendixproof[#1]
       }{%
-        \axp@oldproof[#1]
+        \axp@oldproof[#1]%
+        \axp@inlineproofhook{#1}%
       }%
     }
   \def\endproof
