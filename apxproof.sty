@@ -418,6 +418,7 @@
   }
   \gdef\axp@nextproofof@type{}
   \gdef\axp@nextproofof@label{}
+  \providecommand\apxproofhook[1]{}
   \def\axp@apxproofstart#1{%
     \protected@xdef\axp@apxproofstart@title{%
       \appendixproofname{\axp@nextproofof@type}%
@@ -429,6 +430,7 @@
       \expandafter\axp@apxproofstart@withtitle
         \expandafter{\axp@apxproofstart@title}{#1}%
     \fi
+    \apxproofhook{\axp@nextproofof@label}%
   }
   \def\axp@apxproofstart@withtitle#1#2{\begin{#2}[#1]}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}

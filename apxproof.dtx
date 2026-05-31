@@ -1611,6 +1611,18 @@
 %    \begin{macrocode}
   \gdef\axp@nextproofof@type{}
   \gdef\axp@nextproofof@label{}
+%    \end{macrocode}
+% \begin{macro}{\apxproofhook}
+% \changes{v1.4.0-dev}{2026/05/31}{Hook fired when a deferred proof is
+% typeset, used by the \textsf{proofgraph} package}
+% A hook fired, inside the proof environment, each time a deferred proof is
+% typeset in the appendix. Its argument is the label (|axp@r|\meta{n}) of
+% the theorem the proof establishes, so that a companion package (such as
+% \textsf{proofgraph}) can attribute, to the right result, the references
+% the proof makes (which are only executed here, at typeset time). It is a
+% no-op by default.
+%    \begin{macrocode}
+  \providecommand\apxproofhook[1]{}
   \def\axp@apxproofstart#1{%
     \protected@xdef\axp@apxproofstart@title{%
       \appendixproofname{\axp@nextproofof@type}%
@@ -1622,6 +1634,7 @@
       \expandafter\axp@apxproofstart@withtitle
         \expandafter{\axp@apxproofstart@title}{#1}%
     \fi
+    \apxproofhook{\axp@nextproofof@label}%
   }
   \def\axp@apxproofstart@withtitle#1#2{\begin{#2}[#1]}
 %    \end{macrocode}
