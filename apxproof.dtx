@@ -24,7 +24,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2026/05/14 v1.4.0-dev Automatic proofs in appendix]
+%<package>  [2026/06/02 v1.4.1 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -1613,8 +1613,9 @@
   \gdef\axp@nextproofof@label{}
 %    \end{macrocode}
 % \begin{macro}{\apxproofhook}
-% \changes{v1.4.0-dev}{2026/05/31}{Hook fired when a deferred proof is
-% typeset, used by the \textsf{proofgraph} package}
+% \changes{v1.4.1}{2026/05/31}{Hook fired when a deferred proof is
+% typeset, or for an inline proof whose title names its result through a
+% \cs{ref}; used by the \textsf{proofgraph} package}
 % A hook fired, inside the proof environment, each time a deferred proof is
 % typeset in the appendix (and also for an inline proof whose title names its
 % result through a |\ref|, see |\axp@inlineproofhook| below). Its argument is
@@ -1644,9 +1645,6 @@
 % \end{macro}
 % \end{macro}
 % \begin{macro}{\axp@inlineproofhook}
-% \changes{v1.4.0-dev}{2026/05/31}{Fire \cs{apxproofhook} for an
-% \emph{inline} (non-deferred) proof whose optional title names its result
-% through a \cs{ref}}
 % A proof that is \emph{not} deferred (no preceding |theoremrep|, so it is
 % typeset inline) never goes through |\axp@apxproofstart|, hence never fires
 % |\apxproofhook|. When such a proof carries an explicit title that names
