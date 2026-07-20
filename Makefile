@@ -11,6 +11,10 @@ test:
 	make -s -C examples
 	@echo All tests passed!
 
+test-latexml:
+	make -s -C examples test-latexml
+	@echo All LaTeXML tests passed!
+
 %.pdf: %.dtx
 	l3build doc
 
@@ -18,4 +22,4 @@ test:
 	l3build unpack
 	cp build/unpacked/$@ .
 
-.PHONY: all clean ctan test
+.PHONY: all clean ctan test test-latexml

@@ -1,0 +1,205 @@
+# -*- CPERL -*-
+# LaTeXML binding for apxproof.sty
+#
+# Copyright (C) 2026 by Pierre Senellart
+#
+# This file may be distributed and/or modified under the conditions of
+# the LaTeX Project Public License, either version 1.3 of this license
+# or (at your option) any later version.
+#
+# Strategy: the real apxproof.sty is processed by LaTeXML (its TeX code is
+# largely digestible), after providing LaTeXML-compatible implementations of
+# the two support packages that lack workable bindings: environ and catchfile.
+# The .axp deferral file round-trips through LaTeXML's in-memory \openout /
+# \write / \input cache, so the appendix is reproduced faithfully.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Shim for environ.sty: \NewEnviron / \RenewEnviron / \BODY
+#======================================================================
+
+sub axp_end_env {
+  my ($name) = @_;
+  return Tokens(T_CS('\end'), T_BEGIN, ExplodeText($name), T_END); }
+
+# Read (balanced) tokens until \end{name}, consuming the \end{name}.
+# Modeled on readUntilMatch in beamer.cls.ltxml.
+sub axp_readBody {
+  my ($gullet, $name) = @_;
+  my ($head, @tail) = axp_end_env($name)->unlist;
+  my $tail = Tokens(@tail);
+  my @read = ();
+  while (1) {
+    my $chunk = $gullet->readUntil($head);
+    return unless defined $chunk;
+    push(@read, $chunk->unlist);
+    return Tokens(@read) if defined $gullet->readMatch($tail->clone);
+    push(@read, $head); } }
+
+sub axp_DefEnviron {
+  my ($name, $nargs, $default, $code) = @_;
+  $nargs = $nargs ? ToString($nargs) : 0;
+  $nargs =~ s/\D//g;
+  $nargs = int($nargs || 0);
+  my $codecs = T_CS('\environ@code@' . $name);
+  DefMacroI($codecs, convertLaTeXArgs($nargs, undef), $code);
+  DefMacroI(T_CS('\begin{' . $name . '}'), convertLaTeXArgs($nargs, $default), sub {
+      my ($gullet, @args) = @_;
+      my $body = axp_readBody($gullet, $name);
+      if (!defined $body) {
+        Error('expected', "\\end{$name}", $gullet,
+          "Runaway body of environment {$name}");
+        $body = Tokens(); }
+      DefMacroI('\BODY', undef, $body);
+      @args = map { defined $_ ? $_ : Tokens() } @args;
+      return Tokens(Invocation($codecs, @args)->unlist,
+        axp_end_env($name)->unlist)->unlist; });
+  DefMacroI(T_CS('\end{' . $name . '}'), undef, Tokens());
+  return; }
+
+DefPrimitive('\NewEnviron{}[][]{}', sub {
+    my ($stomach, $name, $nargs, $default, $code) = @_;
+    axp_DefEnviron(ToString(Expand($name)), $nargs, $default, $code);
+    return; });
+
+DefPrimitive('\RenewEnviron{}[][]{}', sub {
+    my ($stomach, $name, $nargs, $default, $code) = @_;
+    axp_DefEnviron(ToString(Expand($name)), $nargs, $default, $code);
+    return; });
+
+DefMacroI('\BODY', undef, Tokens());
+
+# Mark environ as loaded so that \RequirePackage{environ} in apxproof.sty
+# does not try to read the raw environ.sty.
+AssignValue('environ.sty_loaded' => 1, 'global');
+Let(T_CS('\ver@environ.sty'), T_CS('\fmtversion'), 'global');
+
+#======================================================================
+# Shim for catchfile.sty: \CatchFileDef / \CatchFileEdef
+#======================================================================
+
+sub axp_file_contents {
+  my ($file) = @_;
+  my $name     = ToString(Expand($file));
+  my $contents = LookupValue($name . '_contents');
+  if (!defined $contents) {
+    my $path = FindFile($name);
+    if ($path && !ref $path && open(my $fh, '<', $path)) {
+      local $/ = undef;
+      $contents = <$fh>;
+      close($fh); } }
+  return defined $contents ? $contents : ''; }
+
+DefPrimitive('\CatchFileDef DefToken {} {}', sub {
+    my ($stomach, $cs, $file, $setup) = @_;
+    DefMacroI($cs, undef, TokenizeInternal(axp_file_contents($file)));
+    return; });
+
+DefPrimitive('\CatchFileEdef DefToken {} {}', sub {
+    my ($stomach, $cs, $file, $setup) = @_;
+    DefMacroI($cs, undef, Tokens(Expand(TokenizeInternal(axp_file_contents($file)))));
+    return; });
+
+AssignValue('catchfile.sty_loaded' => 1, 'global');
+Let(T_CS('\ver@catchfile.sty'), T_CS('\fmtversion'), 'global');
+
+#======================================================================
+# Load the real apxproof.sty, forwarding the options given by the document
+#======================================================================
+
+my $axp_name = ToString(Expand(T_CS('\@currname')));
+my $axp_opts = LookupValue('opt@' . $axp_name . '.sty') || [];
+# Set up the package loading context by hand rather than through
+# InputDefinitions' handleoptions: the latter stores \@currext and the
+# option list with all-OTHER catcodes, which breaks the \ifx-based
+# comparisons in kvoptions (\ProcessLocalKeyvalOptions) and in apxproof's
+# own option validation (\equal of ifthen).
+my $axp_prevname = LookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
+my $axp_prevext  = LookupDefinition(T_CS('\@currext'))  && ToString(Expand(T_CS('\@currext')));
+DefMacroI('\@currname', undef, TokenizeInternal($axp_name));
+DefMacroI('\@currext',  undef, TokenizeInternal('sty'));
+DefMacroI(T_CS('\opt@' . $axp_name . '.sty'), undef,
+  TokenizeInternal(join(',', @$axp_opts)));
+InputDefinitions($axp_name, type => 'sty', noltxml => 1);
+Let(T_CS('\ver@apxproof.sty'), T_CS('\fmtversion'), 'global');
+DefMacroI('\@currname', undef, TokenizeInternal($axp_prevname)) if $axp_prevname;
+DefMacroI('\@currext',  undef, TokenizeInternal($axp_prevext))  if $axp_prevext;
+
+#======================================================================
+# LaTeXML-specific fixups
+#======================================================================
+
+# apxproof replays the deferred appendix material from \@enddocumenthook
+# (patched via \pretocmd), but LaTeXML's \end{document} never executes that
+# kernel hook; run it first among the end-of-document actions, as in LaTeX.
+UnshiftValue('@at@end@document', T_CS('\@enddocumenthook'));
+
+# LaTeXML's \write serializes \noexpand-protected expandable macros as
+# \special_relax, losing their names. Rebinding \noexpand to \string during
+# the expansion reproduces TeX's behavior of writing the token name verbatim.
+DefPrimitive('\write Number {}', sub {
+    my ($stomach, $port, $tokens) = @_;
+    $port = ToString($port);
+    $STATE->pushFrame;
+    Let(T_CS('\noexpand'), T_CS('\string'));
+    my $line = UnTeX(Expand($tokens), 1);
+    $STATE->popFrame;
+    if (my $filename = LookupValue('output_file:' . $port)) {
+      my $handle   = $filename . '_contents';
+      my $contents = LookupValue($handle);
+      AssignValue($handle => ($contents // '') . $line . "\n", 'global'); }
+    else {
+      Note($line); }
+    return; });
+
+# LaTeXML locks \section against redefinition from raw TeX, so apxproof's
+# section-tracking wrapper (which records titles for \appendixsectionformat)
+# was silently dropped; reinstate it at the binding level. \axp@oldsection
+# already holds the original sectioning command.
+if (LookupDefinition(T_CS('\axp@oldsection'))) {
+  DefMacroI('\section', undef, TokenizeInternal('\@ifstar\@section\@@section')); }
+
+# apxproof injects \noproofinappendix at the start of every rep-base theorem
+# environment via \pretocmd on \<env>, but LaTeXML implements theorem
+# environments as \begin{<env>} constructors, so that patch never fires.
+# Hook the constructor's beforeDigest daemons instead, and reformat the
+# appendix restatement head from "Theorem (1)." to "Theorem 1." (the effect
+# of the \thmhead patching that LaTeXML's amsthm does not go through).
+DefPrimitive('\axp@lxml@hookthm{}', sub {
+    my ($stomach, $name) = @_;
+    $name = ToString(Expand($name));
+    my $defn = LookupDefinition(T_CS('\begin{' . $name . '}'));
+    if ($defn) {
+      $$defn{beforeDigest} ||= [];
+      unshift(@{ $$defn{beforeDigest} }, sub {
+          Digest(T_CS('\noproofinappendix'));
+          return; }); }
+    my $rp = 'axp@' . $name . 'rp';
+    if (LookupDefinition(T_CS('\begin{' . $rp . '}'))) {
+      DefMacroI('\format@title@' . $rp, convertLaTeXArgs(1, 0),
+        TokenizeInternal('{\the\thm@headfont\lx@tag{\csname lx@name@' . $rp
+            . '\endcsname\space#1}\the\thm@headpunct}')); }
+    return; });
+RawTeX('\makeatletter\ifdefined\axp@forward@setup'
+    . '\let\axp@lxml@origfwsetup\axp@forward@setup'
+    . '\def\axp@forward@setup#1#2#3#4{'
+    . '\axp@lxml@origfwsetup{#1}{#2}{#3}{#4}\axp@lxml@hookthm{#1}}'
+    . '\fi\makeatother');
+
+# LaTeXML's hyperref binding emits \hyperlink's target name raw as idref,
+# while \hypertarget sanitizes its id through CleanID; the two never match
+# for names like axp@fw@ri, so forward links get dropped at cross-referencing.
+# Redefine \hyperlink with a CleanID'd idref; done at begin-document since
+# hyperref is commonly loaded after apxproof.
+DefPrimitive('\axp@lxml@fixhyperlink', sub {
+    if (LookupDefinition(T_CS('\hyperlink'))) {
+      DefConstructor('\hyperlink Semiverbatim {}',
+        "<ltx:ref idref='#target'>#2</ltx:ref>",
+        properties => sub { (target => CleanID($_[1])); }); }
+    return; });
+PushValue('@at@begin@document', T_CS('\axp@lxml@fixhyperlink'));
+
+1;

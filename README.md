@@ -34,6 +34,35 @@ distributions:
 Simply copy the file [apxproof.sty](apxproof.sty) in your LaTeX working
 directory, or in any other directory where LaTeX searches for packages.
 
+## HTML conversion with LaTeXML
+
+The repository provides a [LaTeXML](https://dlmf.nist.gov/LaTeXML/)
+binding, [apxproof.sty.ltxml](apxproof.sty.ltxml), which lets documents
+using `apxproof` be converted to HTML with `latexml`/`latexmlc` while
+reproducing the package's behavior: proofs deferred to the appendix,
+repeated theorem statements with their original numbering, automatic
+appendix sectioning, forward links from theorems to their proofs, and a
+separate appendix bibliography.
+
+To use it, copy `apxproof.sty.ltxml` next to your document, or keep it in
+any other directory and point LaTeXML at it with `--path`:
+
+```
+latexmlc --path=/path/to/apxproof --dest=paper.html paper.tex
+```
+
+(`apxproof.sty` itself must also be findable, which is normally the case
+through your TeX installation.) Do *not* pass `--includestyles`: the
+binding is self-contained, and that option makes LaTeXML process the raw
+`apxproof.sty` dependencies, which fails.
+
+`make test-latexml` runs the LaTeXML conversion over the example suite
+(requires LaTeXML to be installed). Documents based on KOMA-Script
+(`scrartcl`, `scrbook`) or `memoir`, and documents using `biblatex`,
+cannot currently be converted, but these are LaTeXML limitations
+unrelated to `apxproof`: they affect such documents whether or not they
+use this package.
+
 ## License
 
 Copyright © 2016-2026 by Pierre Senellart.

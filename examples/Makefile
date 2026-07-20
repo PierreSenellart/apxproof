@@ -2,13 +2,29 @@ SHELL := /bin/bash
 
 TARGET = $(patsubst %.tex,%.test,$(wildcard */test.tex))
 
+# Examples not expected to convert with LaTeXML:
+#  - preamble uses a precompiled format;
+#  - the others use KOMA-Script, memoir, biblatex or the LIPIcs classes,
+#    which LaTeXML cannot process. This is unrelated to apxproof: a bare
+#    document using any of them, without apxproof, fails in the same way.
+#    (arXiv converts LIPIcs documents through the separate ar5iv bindings.)
+LATEXML_SKIP = preamble biblatex-separate \
+  forwardlink-13 forwardlink-13-nohref latin1 memoir scrartcl scrbook utf8 \
+  inline lipics lipics-v2016-toc lipics-v2019-autoref lipics-v2021 \
+  repeatedtheorem strip
+LATEXML_TARGET = $(filter-out $(addsuffix /test.lxml,$(LATEXML_SKIP)),\
+  $(patsubst %.tex,%.lxml,$(wildcard */test.tex)))
+
 all: $(TARGET)
 test: $(TARGET)
+
+test-latexml: $(LATEXML_TARGET)
 
 clean:
 	rm -f */*.aux */*.blg */*.bbl */*.axp
 	rm -f */*.fls */*.fdb* */*.log */*.out */*.fmt
 	rm -f */test.pdf */test.test
+	rm -f */test.html */test.latexml.log */test.lxml */LaTeXML.css */ltx-*.css
 
 %.pdf: %.tex ../apxproof.sty common.tex common.bib
 	@cd $(dir $@) && latexmk -silent -c >/dev/null 2>/dev/null
@@ -26,6 +42,14 @@ clean:
 	@rm $(dir $@)test.diff
 	@echo ok | tee $@
 
+%.lxml: %.tex ../apxproof.sty ../apxproof.sty.ltxml common.tex common.bib
+	@echo -n "LaTeXML $(dir $@)... "
+	@cd $(dir $@) && rm -f test.html test.latexml.log && \
+	  { timeout 600 latexmlc --path=../.. --dest=test.html test.tex >/dev/null 2>&1 || true; }
+	@test -f $(dir $@)test.html || (echo ko; false)
+	@! grep -q '^Fatal:' $(dir $@)test.latexml.log || (echo ko; false)
+	@echo ok | tee $@
+
 %.fmt: %.tex ../apxproof.sty
 	@cd $(dir $@) && pdflatex -ini '&pdflatex' $(notdir $<) '\dump' >/dev/null 2>/dev/null
 
@@ -34,4 +58,4 @@ preamble/test.pdf: preamble/test_preamble.fmt
 ../apxproof.sty: ../apxproof.ins ../apxproof.dtx
 	make -C .. apxproof.sty
 
-.PHONY: all test clean
+.PHONY: all test test-latexml clean
