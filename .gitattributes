@@ -1,0 +1,4 @@
+# Keep GitHub's "Languages" bar representative of the package itself
+# (apxproof.dtx / apxproof.sty). examples/ is the test suite and bundles
+# third-party document classes (acmart.cls, IEEEtran, ...), not authored code.
+examples/** linguist-vendored
