@@ -5,7 +5,11 @@
 \newtheoremrep{theorem}{Theorem}
 \newtheoremrep{lemma}[theorem]{Lemma}
 
-\newtheoremrep{example}{Example}[section]
+% Deliberately not named "example": several classes (e.g. the legacy
+% lipics.cls) predefine "example" as an alias of the "theorem" counter, and
+% since LaTeX 2026-06-01 a counter reset can no longer be registered on an
+% alias counter, which would silently drop the [section] reset below.
+\newtheoremrep{apxexample}{Example}[section]
 
 \renewcommand{\appendixsectionformat}[2]{Material for #2 (Section~#1)}
 \renewcommand{\appendixrefname}{Appendix References}
@@ -45,9 +49,9 @@ appendix. \cite{brin1998anatomy}
 
 \section{Section with Some Appendix Content}
 
-\begin{example}
+\begin{apxexample}
   Examples are numbered within a section.
-\end{example}
+\end{apxexample}
 
 Not much in the main text.
 
