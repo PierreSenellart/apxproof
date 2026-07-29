@@ -1,5 +1,5 @@
 ---
-name: Build and Test apxproof
+name: CI
 
 on: [push, pull_request]
 

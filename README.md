@@ -1,5 +1,7 @@
 # `apxproof`: Proofs in Appendix
 
+[![CI](https://github.com/PierreSenellart/apxproof/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/PierreSenellart/apxproof/actions/workflows/build_and_test.yml)
+
 ## About
 
 The `apxproof` package makes it easier to write articles where proofs and
