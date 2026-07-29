@@ -2,3 +2,5 @@ test.pdf
 test.test
 test.html
 reference.html
+*.css
+*.lxml
