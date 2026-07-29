@@ -6,7 +6,13 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: texlive/texlive:latest
+    # Pinned by digest: texlive/texlive publishes no dated tag for the current
+    # TeX Live release, only a rolling :latest and TL<year>-historic snapshots
+    # of superseded years. Tracking :latest means a LaTeX kernel release can
+    # turn the build red with no commit behind it. Bump this deliberately, and
+    # regenerate examples/*/reference.pdf if the extracted text changes.
+    # 2026-07-26, TeX Live 2026, LaTeX2e <2026-06-01>
+    container: texlive/texlive@sha256:f69ee97de275fd4a2f0f84d7d432063e5a7f79b35512cf3e601b5b95224f3dec
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update
