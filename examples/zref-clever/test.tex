@@ -1,0 +1,77 @@
+\documentclass{article}
+
+\usepackage{../../apxproof}
+\usepackage{zref-clever}
+
+% Make the hook visible, so that its argument is part of what is compared.
+\renewcommand{\apxproofhook}[1]{[hook: \texttt{#1}]\ }
+
+\newtheoremrep{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\begin{document}
+
+\section{Labels set with the standard command}
+
+Here labels are set with \verb|\label|, which \textsf{zref-clever} picks up
+through the kernel's label hook.
+
+\begin{theoremrep}
+  \label{th:hook}%
+  A theorem, with an equation:
+  \begin{equation}
+    \label{eq:hook}
+    1=1
+  \end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  Deferred proof, referring to \zcref{eq:hook}.
+\end{proof}
+
+References: \zcref{th:hook}, \zcref{eq:hook}, and the appendix copy of the
+equation, \zcref{eq:hook-apx}.
+
+\section{Labels set with the zref command}
+
+\zcsetup{labelhook=false}
+
+\begin{theoremrep}
+  \zlabel{th:z}%
+  Another theorem, with an equation:
+  \begin{equation}
+    \zlabel{eq:z}
+    2=2
+  \end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  Deferred proof, referring to \zcref{eq:z}.
+\end{proof}
+
+References: \zcref{th:z}, \zcref{eq:z}, and the appendix copy of the
+equation, \zcref{eq:z-apx}.
+
+\section{Proof titles naming their result}
+
+\zcsetup{labelhook=true}
+
+\begin{lemma}
+  \label{lem:one}%
+  A lemma whose proof is not deferred.
+\end{lemma}
+
+\begin{lemma}
+  \label{lem:two}%
+  Another one.
+\end{lemma}
+
+\begin{proof}[Proof of \zcref{lem:one}]
+  Inline proof, whose title names its result.
+\end{proof}
+
+\begin{proof}[Proof of \zcref*{lem:two}]
+  Inline proof, whose title names its result in the starred form.
+\end{proof}
+
+\end{document}

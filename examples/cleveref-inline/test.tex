@@ -1,0 +1,33 @@
+\documentclass{article}
+
+\usepackage[appendix=inline]{../../apxproof}
+\usepackage{cleveref}
+
+\newtheoremrep{theorem}{Theorem}
+
+\begin{document}
+
+\section{Main text}
+
+\begin{theoremrep}
+  \label[theorem]{th:opt}%
+  A theorem labeled with an explicit counter type. It has an equation:
+  \begin{equation}
+    \label[equation]{eq:opt}
+    1=1
+  \end{equation}
+  and one labeled without an explicit type:
+  \begin{equation}
+    \label{eq:noopt}
+    2=2
+  \end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  Inlined proof, referring to \cref{eq:opt} and \cref{eq:noopt}.
+\end{proof}
+
+References: \cref{th:opt}, \cref{eq:opt}, \cref{eq:noopt}, and the
+\texttt{-apx} variants \cref{eq:opt-apx}, \cref{eq:noopt-apx}.
+
+\end{document}

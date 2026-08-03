@@ -1,0 +1,51 @@
+\documentclass{article}
+
+\usepackage{../../apxproof}
+\usepackage{cleveref}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep*{lemma}{Lemma}
+
+\begin{document}
+
+\section{Main text}
+
+\begin{theoremrep}
+  \label[theorem]{th:opt}%
+  A theorem labeled with an explicit counter type. It has an equation:
+  \begin{equation}
+    \label[equation]{eq:opt}
+    1=1
+  \end{equation}
+  and one labeled without an explicit type:
+  \begin{equation}
+    \label{eq:noopt}
+    2=2
+  \end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  Deferred proof, referring to \cref{eq:opt} and \cref{eq:noopt}.
+\end{proof}
+
+\begin{lemmarep}
+  \label[lemma]{lem:opt}%
+  A starred repeated theorem, also labeled with a counter type.
+\end{lemmarep}
+
+\begin{proof}
+  Deferred proof of \cref{lem:opt}.
+\end{proof}
+
+\begin{toappendix}
+  \label[section]{app:opt}%
+  Appendix material, labeled with a counter type.
+\end{toappendix}
+
+References to the main text: \cref{th:opt}, \cref{eq:opt}, \cref{eq:noopt},
+\cref{lem:opt}, \cref{app:opt}.
+
+References to the appendix copies of the equations: \cref{eq:opt-apx},
+\cref{eq:noopt-apx}.
+
+\end{document}

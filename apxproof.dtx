@@ -46,7 +46,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1348}
+% \CheckSum{1430}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -520,6 +520,12 @@
 % |\ref{|\meta{counter}|-apx}| references the counter in the appendix
 % (except in |inline| mode, where both have the same effect).
 %
+% Enhanced cross-referencing packages are supported: the optional argument
+% that \textsf{cleveref} adds to |\label| (as in
+% |\label[equation]{|\meta{counter}|}|) may be used within repeated material,
+% and so may the |\zlabel| command of \textsf{zref-clever}, both giving rise
+% to the same |-apx| variants as |\label| does.
+%
 % \DescribeOption{forwardlinking}
 % Another customization option concerns hyperlinking.
 % Usually, when \textsf{hyperref} is loaded, |foobarrep|
@@ -665,6 +671,24 @@
 % (in addition to |bibliography=separate|) to use \textsf{biblatex}'s
 % own |refsection| machinery instead. The |bibliography=common| mode
 % remains a third option that works with most bibliography packages.
+% \item With \textsf{cleveref}, the optional argument of |\label| is lost
+% within \textsf{amsmath} display environments (|equation|, |align|, etc.):
+% the label ends up named |[|\meta{type}|]{|\meta{counter}|}| and cannot be
+% referenced. This is unrelated to \textsf{apxproof}, and happens just as
+% well in a document that does not use it; it is a consequence of
+% \textsf{amsmath} now saving the meaning of |\label| in the
+% |begindocument/end| hook, thereby overwriting the redefinition of
+% |\ltx@label| on which \textsf{cleveref} relies. Plain |\label| is
+% unaffected, and so is \textsf{zref-clever}.
+% \item In the optional title of a proof, a cross-reference that itself
+% takes an optional argument (typically
+% |\zcref[|\meta{options}|]|\marg{labels}) must be surrounded by braces, as
+% in |\begin{proof}[Proof of {\zcref[noname]{thm:x}}]|, since the |]| would
+% otherwise be taken to end the title. This is a general \LaTeX{}
+% requirement about optional arguments within optional arguments, and
+% applies just as well without \textsf{apxproof}. Such a braced
+% cross-reference is however invisible to the token scan of the title, so
+% |\apxproofhook| does not fire for that proof.
 % \end{itemize}
 %
 % Issues not listed here should be reported to the author.
@@ -1029,6 +1053,42 @@
 % |\label| command (and its \textsf{amsmath} counterpart,
 % |\label@in@display|) for equations within repeated theorems, depending on the
 % compilation mode.
+%
+% Some packages, \textsf{cleveref} in particular, give |\label| (and
+% |\label@in@display|) an optional argument specifying the type of the
+% counter being labeled. Our replacements must therefore look for such an
+% optional argument and pass it on unchanged, or the opening bracket would
+% be taken as the label name and the rest of the argument typeset as text.
+% We do \emph{not} pass the optional argument on to the extra |-apx| label
+% of the repeated material: that label is set within an unnumbered copy of
+% the theorem, where overriding the counter type would apply to state that
+% \textsf{cleveref} did not set up, and the type of the counter (for
+% equations, the only case where the |-apx| label is really of use) is
+% correctly inferred from the context anyway.
+%
+% \textsf{zref-clever}, the maintained successor of \textsf{cleveref}, does
+% not touch |\label| at all: it sets its own labels through |\zlabel|, and,
+% with its |labelhook| option (set by default), also through the kernel's
+% |label| hook, so that a plain |\label| sets a \textsf{zref} label as well.
+% The latter needs nothing from us, since our replacement of |\label| calls
+% the original one. A |\zlabel| used directly, however, must be given the
+% same treatment as |\label|; it has no optional argument.
+% \begin{macro}{\axp@label}
+% \begin{macro}{\axp@label@in@display}
+% \changes{v1.4.1}{2026/08/03}{Support the optional argument that
+% \textsf{cleveref} adds to \cs{label} (R. Rowe)}
+% \changes{v1.4.1}{2026/08/03}{Support \cs{zlabel} of \textsf{zref-clever}}
+%    \begin{macrocode}
+  \def\axp@label{\@ifnextchar[\axp@label@opt\axp@label@noopt}%]
+  \def\axp@label@opt[#1]#2{\axp@label@do{[#1]}{#2}}
+  \def\axp@label@noopt#1{\axp@label@do{}{#1}}
+  \def\axp@label@in@display{%
+    \@ifnextchar[\axp@label@in@display@opt\axp@label@in@display@noopt}%]
+  \def\axp@label@in@display@opt[#1]#2{\axp@label@in@display@do{[#1]}{#2}}
+  \def\axp@label@in@display@noopt#1{\axp@label@in@display@do{}{#1}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
 % \begin{macro}{\axp@redefinelabels}
 % \changes{v1.1.0}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
@@ -1039,23 +1099,27 @@
 %    \begin{macrocode}
   \newcommand{\axp@redefinelabels}{%
     \providecommand\label@in@display{}%
+    \let\axp@oldlabel\label
+    \let\axp@oldlabel@in@display\label@in@display
+    \ifdefined\zlabel\let\axp@oldzlabel\zlabel\fi
     \ifthenelse{\equal{\axp@appendix}{inline}}{%
-      \let\axp@oldlabel\label
-      \let\axp@oldlabel@in@display\label@in@display
-      \renewcommand\label[1]{%
-        \axp@oldlabel{##1}%
-        \axp@oldlabel{##1-apx}%
+      \def\axp@label@do##1##2{%
+        \axp@oldlabel##1{##2}%
+        \axp@oldlabel{##2-apx}%
       }%
-      \renewcommand\label@in@display[1]{%
-        \axp@oldlabel@in@display{##1}%
-        \axp@oldlabel{##1-apx}%
+      \def\axp@label@in@display@do##1##2{%
+        \axp@oldlabel@in@display##1{##2}%
+        \axp@oldlabel{##2-apx}%
       }%
+      \def\axp@zlabel##1{\axp@oldzlabel{##1}\axp@oldzlabel{##1-apx}}%
     }{%
-      \let\axp@oldlabel\label
-      \let\axp@oldlabel@in@display\label@in@display
-      \renewcommand\label[1]{\axp@oldlabel{##1-apx}}%
-      \renewcommand\label@in@display[1]{\axp@oldlabel@in@display{##1-apx}}%
+      \def\axp@label@do##1##2{\axp@oldlabel{##2-apx}}%
+      \def\axp@label@in@display@do##1##2{\axp@oldlabel@in@display{##2-apx}}%
+      \def\axp@zlabel##1{\axp@oldzlabel{##1-apx}}%
     }%
+    \let\label\axp@label
+    \let\label@in@display\axp@label@in@display
+    \ifdefined\zlabel\let\zlabel\axp@zlabel\fi
   }
 %    \end{macrocode}
 % \end{macro}
@@ -1652,10 +1716,19 @@
 % we fire the hook here, inside the proof, with that target, so a companion
 % package can attribute the proof to it. We only fire when a cross-reference is
 % found in the title (the result is then unambiguous). The title is scanned for
-% the first |\ref| (or |\cref|, |\Cref|, |\autoref|, |\vref|) by pure token
-% matching, never typesetting it: a title typically contains an active~|~| and
-% may carry other fragile material, which an auxiliary typeset pass would
-% perturb or, with |\protect| neutralised, send into an infinite loop.
+% the first |\ref| (or |\cref|, |\Cref|, |\autoref|, |\vref|, |\zcref|) by pure
+% token matching, never typesetting it: a title typically contains an
+% active~|~| and may carry other fragile material, which an auxiliary typeset
+% pass would perturb or, with |\protect| neutralised, send into an infinite
+% loop.
+% \changes{v1.4.1}{2026/08/03}{Recognize \cs{zcref} of \textsf{zref-clever} in
+% the title of an inline proof}
+% \textsf{zref-clever}'s |\zcref| is the only one of these that is not simply
+% \meta{cs}\marg{label}: it is |\zcref*[|\meta{options}|]|\marg{labels}, whose
+% star and options are to be skipped and whose mandatory argument is a
+% comma-separated list, of which we keep the first label. Each grabber is
+% handed the whole remainder of the title and swallows it up to
+% |\axp@refstop|, so that nothing of it is left to be typeset.
 %    \begin{macrocode}
   \newif\ifaxp@inlineproofof
   \long\def\axp@inlineproofhook#1{%
@@ -1665,18 +1738,31 @@
     \ifaxp@inlineproofof\else\axp@tryrefcmd\Cref{#1}\fi
     \ifaxp@inlineproofof\else\axp@tryrefcmd\autoref{#1}\fi
     \ifaxp@inlineproofof\else\axp@tryrefcmd\vref{#1}\fi
+    \ifaxp@inlineproofof\else
+      \axp@tryrefcmd@\zcref\axp@grabzcarg{#1}%
+    \fi
     \ifaxp@inlineproofof\apxproofhook{\axp@inlineproofof@label}\fi
   }
   \let\axp@refmark\relax
-  \long\def\axp@tryrefcmd#1#2{%
-    \in@{#1}{#2}%
+  \long\def\axp@tryrefcmd#1#2{\axp@tryrefcmd@#1\axp@grabarg{#2}}
+  \long\def\axp@tryrefcmd@#1#2#3{%
+    \in@{#1}{#3}%
     \ifin@
-      \long\def\axp@grabref##1#1##2\axp@refstop{\axp@grabarg##2\axp@refstop}%
-      \axp@grabref#2\axp@refmark\axp@refstop
+      \long\def\axp@grabref##1#1##2\axp@refstop{#2##2\axp@refstop}%
+      \axp@grabref#3\axp@refmark\axp@refstop
     \fi
   }
   \long\def\axp@grabarg#1#2\axp@refstop{%
     \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+  \def\axp@grabzcarg{\@ifstar\axp@grabzcarg@i\axp@grabzcarg@i}
+  \def\axp@grabzcarg@i{\@ifnextchar[\axp@grabzcarg@opt\axp@grabzcarg@ii}%]
+  \def\axp@grabzcarg@opt[#1]{\axp@grabzcarg@ii}
+  \long\def\axp@grabzcarg@ii#1{%
+    \axp@grabzcarg@iii#1,\@nil
+    \axp@gobbletorefstop}
+  \long\def\axp@grabzcarg@iii#1,#2\@nil{%
+    \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+  \long\def\axp@gobbletorefstop#1\axp@refstop{}
 %    \end{macrocode}
 % Proofs placed by hand in a |toappendix| environment are written verbatim to
 % the |.axp| file and replayed there with |\proof| let to |\axp@oldproof| (see

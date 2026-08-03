@@ -163,25 +163,36 @@
 \newcommand{\appendixproofname}[2]{}
   \let\axp@oldproof\proof
   \let\endaxp@oldproof\endproof
+  \def\axp@label{\@ifnextchar[\axp@label@opt\axp@label@noopt}%]
+  \def\axp@label@opt[#1]#2{\axp@label@do{[#1]}{#2}}
+  \def\axp@label@noopt#1{\axp@label@do{}{#1}}
+  \def\axp@label@in@display{%
+    \@ifnextchar[\axp@label@in@display@opt\axp@label@in@display@noopt}%]
+  \def\axp@label@in@display@opt[#1]#2{\axp@label@in@display@do{[#1]}{#2}}
+  \def\axp@label@in@display@noopt#1{\axp@label@in@display@do{}{#1}}
   \newcommand{\axp@redefinelabels}{%
     \providecommand\label@in@display{}%
+    \let\axp@oldlabel\label
+    \let\axp@oldlabel@in@display\label@in@display
+    \ifdefined\zlabel\let\axp@oldzlabel\zlabel\fi
     \ifthenelse{\equal{\axp@appendix}{inline}}{%
-      \let\axp@oldlabel\label
-      \let\axp@oldlabel@in@display\label@in@display
-      \renewcommand\label[1]{%
-        \axp@oldlabel{##1}%
-        \axp@oldlabel{##1-apx}%
+      \def\axp@label@do##1##2{%
+        \axp@oldlabel##1{##2}%
+        \axp@oldlabel{##2-apx}%
       }%
-      \renewcommand\label@in@display[1]{%
-        \axp@oldlabel@in@display{##1}%
-        \axp@oldlabel{##1-apx}%
+      \def\axp@label@in@display@do##1##2{%
+        \axp@oldlabel@in@display##1{##2}%
+        \axp@oldlabel{##2-apx}%
       }%
+      \def\axp@zlabel##1{\axp@oldzlabel{##1}\axp@oldzlabel{##1-apx}}%
     }{%
-      \let\axp@oldlabel\label
-      \let\axp@oldlabel@in@display\label@in@display
-      \renewcommand\label[1]{\axp@oldlabel{##1-apx}}%
-      \renewcommand\label@in@display[1]{\axp@oldlabel@in@display{##1-apx}}%
+      \def\axp@label@do##1##2{\axp@oldlabel{##2-apx}}%
+      \def\axp@label@in@display@do##1##2{\axp@oldlabel@in@display{##2-apx}}%
+      \def\axp@zlabel##1{\axp@oldzlabel{##1-apx}}%
     }%
+    \let\label\axp@label
+    \let\label@in@display\axp@label@in@display
+    \ifdefined\zlabel\let\zlabel\axp@zlabel\fi
   }
    \ifdefined\spnewtheorem
 \def\@axp@newtheorem#1#2#3#4{%
@@ -441,18 +452,31 @@
     \ifaxp@inlineproofof\else\axp@tryrefcmd\Cref{#1}\fi
     \ifaxp@inlineproofof\else\axp@tryrefcmd\autoref{#1}\fi
     \ifaxp@inlineproofof\else\axp@tryrefcmd\vref{#1}\fi
+    \ifaxp@inlineproofof\else
+      \axp@tryrefcmd@\zcref\axp@grabzcarg{#1}%
+    \fi
     \ifaxp@inlineproofof\apxproofhook{\axp@inlineproofof@label}\fi
   }
   \let\axp@refmark\relax
-  \long\def\axp@tryrefcmd#1#2{%
-    \in@{#1}{#2}%
+  \long\def\axp@tryrefcmd#1#2{\axp@tryrefcmd@#1\axp@grabarg{#2}}
+  \long\def\axp@tryrefcmd@#1#2#3{%
+    \in@{#1}{#3}%
     \ifin@
-      \long\def\axp@grabref##1#1##2\axp@refstop{\axp@grabarg##2\axp@refstop}%
-      \axp@grabref#2\axp@refmark\axp@refstop
+      \long\def\axp@grabref##1#1##2\axp@refstop{#2##2\axp@refstop}%
+      \axp@grabref#3\axp@refmark\axp@refstop
     \fi
   }
   \long\def\axp@grabarg#1#2\axp@refstop{%
     \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+  \def\axp@grabzcarg{\@ifstar\axp@grabzcarg@i\axp@grabzcarg@i}
+  \def\axp@grabzcarg@i{\@ifnextchar[\axp@grabzcarg@opt\axp@grabzcarg@ii}%]
+  \def\axp@grabzcarg@opt[#1]{\axp@grabzcarg@ii}
+  \long\def\axp@grabzcarg@ii#1{%
+    \axp@grabzcarg@iii#1,\@nil
+    \axp@gobbletorefstop}
+  \long\def\axp@grabzcarg@iii#1,#2\@nil{%
+    \global\axp@inlineproofoftrue\xdef\axp@inlineproofof@label{#1}}
+  \long\def\axp@gobbletorefstop#1\axp@refstop{}
   \def\axp@replayproof{\@ifnextchar[{\axp@replayproof@opt}{\axp@oldproof}}
   \def\axp@replayproof@opt[#1]{\axp@oldproof[#1]\axp@inlineproofhook{#1}}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
