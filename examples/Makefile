@@ -10,7 +10,7 @@ TARGET = $(patsubst %.tex,%.test,$(wildcard */test.tex))
 #    (arXiv converts LIPIcs documents through the separate ar5iv bindings.)
 LATEXML_SKIP = preamble biblatex-separate \
   forwardlink-13 forwardlink-13-nohref latin1 memoir scrartcl scrbook utf8 \
-  inline lipics lipics-v2016-toc lipics-v2019-autoref lipics-v2021 \
+  inline lipics lipics-v2016 lipics-v2016-toc lipics-v2019-autoref lipics-v2021 \
   repeatedtheorem strip
 LATEXML_TARGET = $(filter-out $(addsuffix /test.lxml,$(LATEXML_SKIP)),\
   $(patsubst %.tex,%.lxml,$(wildcard */test.tex)))
