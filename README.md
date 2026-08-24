@@ -36,6 +36,19 @@ distributions:
 Simply copy the file [apxproof.sty](apxproof.sty) in your LaTeX working
 directory, or in any other directory where LaTeX searches for packages.
 
+## SyncTeX
+
+Since version 1.4.1-dev, apxproof supports SyncTeX (synchronization between
+the source and the PDF in editors and viewers) for appendix material and
+repeated theorems, by re-reading them from the source files when the
+appendix is typeset; this is enabled by default whenever the engine is run
+with `-synctex=1` (option `synctex=auto`), see the documentation. With
+pdfTeX and XeTeX, forward search (from the source to the PDF) into
+appendix material additionally requires running the
+[apxproof-synctex](apxproof-synctex) script (Python 3) after each
+compilation, e.g., with `$success_cmd = 'apxproof-synctex %R';` in a
+`latexmkrc` file; with LuaTeX this is not needed.
+
 ## HTML conversion with LaTeXML
 
 The repository provides a [LaTeXML](https://dlmf.nist.gov/LaTeXML/)

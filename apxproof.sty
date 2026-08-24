@@ -56,6 +56,7 @@
 \DeclareStringOption[bibtex]{bibengine}
 \DeclareStringOption[same]{repeqn}
 \DeclareStringOption[yes]{forwardlinking}
+\DeclareStringOption[auto]{synctex}
 \ProcessLocalKeyvalOptions*
 \ifthenelse{\equal{\axp@appendix}{append}}{
   \message{apxproof: Appendix material appended to the document}
@@ -111,6 +112,24 @@
   \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
+\newbool{axp@synctex}
+\ifthenelse{\equal{\axp@synctex}{no}}{
+}{\ifthenelse{\equal{\axp@synctex}{yes}}{
+  \booltrue{axp@synctex}
+}{\ifthenelse{\equal{\axp@synctex}{auto}}{
+  \ifdefined\synctex
+    \ifnum\synctex=\z@\else
+      \booltrue{axp@synctex}
+    \fi
+  \fi
+}{
+  \errmessage{Error: unsupported option synctex=\axp@synctex\ for
+  package apxproof}
+}}}
+\ifbool{axp@synctex}{
+  \message{apxproof: SyncTeX support enabled, appendix material re-read
+    from source files}
+}{}
 \def\axp@newtheoremrep@definetheorem#1#2#3#4{%
   \expandafter\let\csname #1\endcsname\undefined
   \expandafter\let\csname the#1\endcsname\undefined
@@ -215,16 +234,541 @@
 \ifdefined\ACM@origsection
   \AtBeginDocument{\let\ACM@origsection\section}
 \fi
+\def\axp@region@file{}
+\def\axp@region@line{}
+\def\axp@region@env{}
+\def\axp@region@tag{0}
+\def\axp@extract@line#1line #2\@nil#3\@nnil{#2}
+\def\axp@region@record{%
+  \ifdefined\CurrentFileUsed
+    \ifx\CurrentFileUsed\@empty
+      \edef\axp@region@file{\jobname.tex}%
+    \else
+      \ifx\CurrentFilePathUsed\@empty
+        \edef\axp@region@file{\CurrentFileUsed}%
+      \else
+        \edef\axp@region@file{\CurrentFilePathUsed/\CurrentFileUsed}%
+      \fi
+    \fi
+  \else
+    \edef\axp@region@file{\jobname.tex}%
+  \fi
+  \edef\axp@region@line{%
+    \expandafter\axp@extract@line\@currenvline\@nil line 0\@nil\@nnil}%
+  \edef\axp@region@env{\@currenvir}%
+  \ifdefined\directlua
+    \edef\axp@region@tag{\directlua{tex.sprint(tex.get_synctex_tag())}}%
+  \else
+    \def\axp@region@tag{0}%
+  \fi
+}
+\ifbool{axp@synctex}{
+  \ifdefined\CurrentFileUsed\else
+    \PackageWarning{apxproof}{%
+      This LaTeX kernel does not provide \string\CurrentFileUsed;
+      the synctex option assumes\MessageBreak
+      that all appendix material is in \jobname.tex}
+  \fi
+}{}
+\def\axp@region@write#1#2{%
+  \immediate\write\axp@proofsfile{%
+    \noexpand\axp@replaybody{\axp@region@file}{\axp@region@line}%
+      {\the\inputlineno}{\axp@region@env}{#1}{#2}{\axp@region@tag}\relax
+  }%
+}
+\newif\ifaxp@region@ok
+\newif\ifaxp@region@wrapped
+\def\axp@replaybody#1#2#3#4#5#6#7{%
+  \def\axp@replay@file{#1}%
+  \def\axp@replay@line{#2}%
+  \def\axp@replay@endline{#3}%
+  \def\axp@replay@env{#4}%
+  \def\axp@replay@begin{#5}%
+  \def\axp@replay@end{#6}%
+  \def\axp@replay@tag{#7}%
+  \axp@region@check
+  \ifaxp@region@ok
+    \axp@region@replay
+  \else
+    \axp@region@flushsection
+  \fi
+}
+\let\axp@region@pendingsection\relax
+\def\axp@region@section#1{\gdef\axp@region@pendingsection{#1}}
+\def\axp@region@flushsection{%
+  \ifx\axp@region@pendingsection\relax\else
+    \expandafter\axp@oldsection\expandafter
+      {\axp@region@pendingsection}%
+    \global\let\axp@region@pendingsection\relax
+  \fi
+}
+\newread\axp@readfile
+\newcount\axp@region@readcount
+\def\axp@region@openfile{}
+\def\axp@line{}
+\def\axp@region@readto#1{%
+  \loop
+    \ifnum\axp@region@readcount<#1\relax
+      \axp@region@readone{#1}%
+  \repeat
+}
+\def\axp@region@readone#1{%
+  \ifeof\axp@readfile
+    \def\axp@line{}%
+    \global\axp@region@readcount=#1\relax
+  \else
+    \global\advance\axp@region@readcount\@ne
+    \readline\axp@readfile to\axp@line
+  \fi
+}
+\def\axp@region@check{%
+  \axp@region@okfalse
+  \edef\axp@region@saveendlinechar{\the\endlinechar}%
+  \endlinechar\m@ne
+  \ifx\axp@region@openfile\axp@replay@file
+    \ifnum\axp@region@readcount<\axp@replay@line\relax
+    \else
+      \gdef\axp@region@openfile{}%
+    \fi
+  \else
+    \gdef\axp@region@openfile{}%
+  \fi
+  \ifx\axp@region@openfile\@empty
+    \closein\axp@readfile
+    \openin\axp@readfile=\axp@replay@file\relax
+    \global\axp@region@readcount=\z@
+    \global\let\axp@region@openfile\axp@replay@file
+  \fi
+  \ifeof\axp@readfile
+    \ifnum\axp@region@readcount=\z@
+      \PackageError{apxproof}{%
+        Cannot open `\axp@replay@file' to re-read the\MessageBreak
+        \axp@replay@env\space environment starting on line
+        \axp@replay@line}{%
+        The synctex option of apxproof requires the source files of the
+        document\MessageBreak
+        to be readable under the same names when the appendix is
+        typeset.\MessageBreak
+        This appendix material will be missing.}%
+      \gdef\axp@region@openfile{}%
+    \else
+      \axp@region@toofar
+    \fi
+  \else
+    \axp@region@readto{\axp@replay@line}%
+    \ifeof\axp@readfile
+      \axp@region@toofar
+    \else
+      \axp@region@analyze
+      \ifaxp@region@ok
+        \axp@region@readto{\axp@replay@endline}%
+        \axp@region@checkend
+      \fi
+    \fi
+  \fi
+  \endlinechar\axp@region@saveendlinechar\relax
+}
+\def\axp@region@toofar{%
+  \axp@region@okfalse
+  \PackageError{apxproof}{%
+    File `\axp@replay@file' has fewer than \axp@replay@line\space
+    lines, where\MessageBreak
+    the \axp@replay@env\space environment to re-read was expected}{%
+    The source file has probably changed since the main text was
+    processed,\MessageBreak
+    or the main file is not `\jobname.tex'.
+    This appendix material will be missing.}%
+}
+\begingroup
+  \lccode`\!=`\\ \lccode`\?=`\{ \lccode`\|=`\} \lccode`\"=`\^^M
+  \lccode`\+=`\b \lccode`\-=`\e \lccode`\*=`\g \lccode`\/=`\i
+  \lccode`\==`\n \lccode`\,=`\d
+  \catcode`\!=12 \catcode`\?=12 \catcode`\|=12 \catcode`\"=12
+  \catcode`\+=12 \catcode`\-=12 \catcode`\*=12 \catcode`\/=12
+  \catcode`\==12 \catcode`\,=12
+  \lowercase{\endgroup
+    \long\def\axp@region@scanline#1{%
+      \axp@region@scan#1!+-*/=?\axp@region@marker\@nil}
+    \long\def\axp@region@scan#1!+-*/=?#2\@nil{\axp@region@scan@i{#2}}
+    \long\def\axp@region@getname#1{\axp@region@getname@i#1|\@nil}
+    \long\def\axp@region@getname@i#1|#2\@nil{\def\axp@region@name{#1}}
+    \long\def\axp@region@scanendline#1{%
+      \axp@region@scanend#1!-=,?\axp@region@marker\@nil}
+    \long\def\axp@region@scanend#1!-=,?#2\@nil{%
+      \def\axp@region@rest{#2}}
+    \long\def\axp@gobbleline#1"{\axp@skiplines}
+    \long\def\axp@gobbletobegin#1!+-*/=?{\axp@region@nextbegin}
+  }
+\newcount\axp@region@begins
+\newcount\axp@skipcount
+\newif\ifaxp@region@found
+\def\axp@region@marker{\axp@region@marker}
+\def\axp@region@analyze{%
+  \axp@region@begins=\z@
+  \axp@region@foundfalse
+  \edef\axp@region@target{%
+    \expandafter\detokenize\expandafter{\axp@replay@env}}%
+  \expandafter\axp@region@scanline\expandafter{\axp@line}%
+  \ifaxp@region@found
+    \axp@region@oktrue
+  \else
+    \ifnum\axp@region@begins>\z@
+      \axp@region@begins=\z@
+      \axp@region@oktrue
+    \else
+      \PackageError{apxproof}{%
+        Cannot find \string\begin\@charlb\axp@replay@env\@charrb\space
+        on line \axp@replay@line\space of\MessageBreak
+        `\axp@replay@file' to re-read it}{%
+        The synctex option of apxproof requires
+        \string\begin\@charlb\axp@replay@env\@charrb\space
+        to appear\MessageBreak
+        literally in the source file, on the line where the environment
+        starts.\MessageBreak
+        This appendix material will be missing.}%
+    \fi
+  \fi
+}
+\long\def\axp@region@scan@i#1{%
+  \def\axp@region@rest{#1}%
+  \ifx\axp@region@rest\axp@region@marker
+  \else
+    \axp@region@getname{#1}%
+    \ifx\axp@region@name\axp@region@target
+      \axp@region@foundtrue
+    \else
+      \advance\axp@region@begins\@ne
+      \axp@region@scan#1\@nil
+    \fi
+  \fi
+}
+\def\axp@region@checkend{%
+  \expandafter\axp@region@scanendline\expandafter{\axp@line}%
+  \ifx\axp@region@rest\axp@region@marker
+    \axp@region@okfalse
+    \PackageError{apxproof}{%
+      Cannot find the \string\end\space of the \axp@replay@env\space
+      environment\MessageBreak
+      starting on line \axp@replay@line\space of `\axp@replay@file'
+      (expected on line \axp@replay@endline)}{%
+      The synctex option of apxproof requires the \string\end\space
+      of the environment\MessageBreak
+      to appear literally in the source file. This appendix material
+      will be missing.}%
+  \fi
+}
+\def\axp@region@catcodes#1{%
+  \catcode#1=\the\catcode#1\relax
+  \ifnum#1<255
+    \expandafter\axp@region@catcodes\expandafter
+      {\number\numexpr#1+1\expandafter}%
+  \fi}
+\def\axp@region@setcatcodes#1{%
+  \count@=\z@
+  \loop
+    \catcode\count@=#1\relax
+    \ifnum\count@<255
+    \advance\count@\@ne
+  \repeat}
+\def\axp@region@replay{%
+  \edef\axp@region@catcoderestore{\axp@region@catcodes{0}}%
+  \expandafter\let\expandafter\axp@region@savedbegin
+    \csname\axp@replay@env\endcsname
+  \expandafter\let\expandafter\axp@region@savedend
+    \csname end\axp@replay@env\endcsname
+  \expandafter\let\csname\axp@replay@env\endcsname\axp@replay@begin
+  \expandafter\let\csname end\axp@replay@env\endcsname\axp@replay@end
+  \let\axp@region@savedendcmd\end
+  \axp@region@wrappedfalse
+  \begingroup
+    \axp@region@setcatcodes{9}%
+    \catcode13=12\relax
+    \endlinechar=13\relax
+    \axp@skipcount=\axp@replay@line\relax
+    \advance\axp@skipcount\m@ne
+    \axp@region@input
+  \axp@region@cleanup
+}
+\def\axp@region@cleanup{%
+  \axp@region@input@done
+  \expandafter\let\csname\axp@replay@env\endcsname\axp@region@savedbegin
+  \expandafter\let\csname end\axp@replay@env\endcsname\axp@region@savedend
+  \let\end\axp@region@savedendcmd
+  \expandafter\let\csname axp@region@isregion@\axp@replay@env\endcsname
+    \undefined
+  \ifaxp@region@wrapped
+    \expandafter\let\csname end\axp@region@name\endcsname
+      \axp@region@savedwrappedend
+  \fi
+  \axp@region@catcoderestore
+}
+\ifdefined\directlua
+  \def\axp@region@input{%
+    \ifnum\axp@replay@tag>\z@
+      \directlua{apxproof.synctex_force(\axp@replay@tag)}%
+      \global\let\axp@region@forcedtag\axp@replay@tag
+    \fi
+    \expandafter\axp@skiplines\@@input\axp@replay@file\relax}
+  \def\axp@region@input@done{%
+    \ifnum\axp@replay@tag>\z@
+      \directlua{apxproof.synctex_unforce()}%
+      \global\let\axp@region@forcedtag\relax
+    \fi}
+  \let\axp@region@forcedtag\relax
+  \ifdefined\AddToHook
+    \AddToHook{file/before}{%
+      \ifx\axp@region@forcedtag\relax\else
+        \directlua{apxproof.synctex_unforce()}%
+      \fi}
+    \AddToHook{file/after}{%
+      \ifx\axp@region@forcedtag\relax\else
+        \directlua{apxproof.synctex_force(\axp@region@forcedtag)}%
+      \fi}
+  \fi
+  \directlua{
+    apxproof = apxproof or {}
+    apxproof.forced_tag = 0
+    local get, set = node.direct.get_synctex_fields,
+                     node.direct.set_synctex_fields
+    local traverse, todirect = node.direct.traverse, node.direct.todirect
+    function apxproof.synctex_force(tag)
+      apxproof.saved_tag, apxproof.saved_line =
+        tex.get_synctex_tag(), tex.get_synctex_line()
+      tex.set_synctex_no_files(1)
+      tex.set_synctex_mode(2)
+      tex.force_synctex_tag(tag)
+      tex.set_synctex_tag(tag)
+      tex.set_synctex_line(0)
+      apxproof.forced_tag = tag
+    end
+    function apxproof.synctex_unforce()
+      apxproof.forced_tag = 0
+      tex.force_synctex_tag(0)
+      tex.set_synctex_tag(apxproof.saved_tag or 0)
+      tex.set_synctex_line(apxproof.saved_line or 0)
+      tex.set_synctex_mode(0)
+      tex.set_synctex_no_files(0)
+    end
+    local getprev, tail = node.direct.getprev, node.direct.tail
+    function apxproof.synctex_fix(head)
+      local tag = apxproof.forced_tag
+      if tag == 0 then return true end
+      local last_l = 0
+      local pending = false
+      for n in traverse(todirect(head)) do
+        local t, l = get(n)
+        if t == 0 or (t == tag and l == 0) then
+          if last_l > 0 then
+            set(n, tag, last_l)
+          else
+            pending = true
+          end
+        elseif t == tag then
+          last_l = l
+        end
+      end
+      if pending then
+        local n = tail(todirect(head))
+        last_l = 0
+        while n do
+          local t, l = get(n)
+          if t == 0 or (t == tag and l == 0) then
+            if last_l > 0 then set(n, tag, last_l) end
+          elseif t == tag then
+            last_l = l
+          end
+          n = getprev(n)
+        end
+      end
+      return true
+    end
+    luatexbase.add_to_callback("pre_linebreak_filter",
+      apxproof.synctex_fix, "apxproof.synctex")
+    luatexbase.add_to_callback("hpack_filter",
+      apxproof.synctex_fix, "apxproof.synctex")
+  }
+\else
+  \def\axp@region@input{%
+    \axp@region@altfile
+    \expandafter\axp@skiplines\@@input\axp@replay@altfile\relax}
+  \let\axp@region@input@done\relax
+\fi
+\let\axp@region@pwd\relax
+\def\axp@region@altfile{%
+  \ifx\axp@region@pwd\relax
+    \axp@region@findpwd
+  \fi
+  \ifx\axp@region@pwd\@empty
+    \let\axp@replay@altfile\axp@replay@file
+  \else
+    \expandafter\axp@region@altfile@i\axp@replay@file\@nil
+  \fi}
+\def\axp@region@altfile@i#1#2\@nil{%
+  \if/#1%
+    \edef\axp@replay@altfile{/\axp@replay@file}%
+  \else
+    \edef\axp@replay@altfile{%
+      \axp@region@pwd/../\axp@region@pwdbase/\axp@replay@file}%
+  \fi}
+\def\axp@region@findpwd{%
+  \gdef\axp@region@pwd{}%
+  \IfFileExists{\jobname.fls}{%
+    \begingroup
+      \endlinechar\m@ne
+      \openin\axp@readfile=\jobname.fls\relax
+      \ifeof\axp@readfile\else
+        \readline\axp@readfile to\axp@line
+        \expandafter\axp@region@findpwd@i\axp@line
+          \relax\relax\relax\relax\@nil
+      \fi
+      \closein\axp@readfile
+    \endgroup
+    \gdef\axp@region@openfile{}%
+  }{}%
+}
+\def\axp@region@findpwd@i#1#2#3#4\@nil{%
+  \def\axp@tmp{#1#2#3}%
+  \edef\axp@tmpa{\detokenize{PWD}}%
+  \ifx\axp@tmp\axp@tmpa
+    \axp@region@findpwd@ii#4\@nil
+  \fi}
+\def\axp@region@findpwd@ii#1\relax#2\@nil{%
+  \axp@region@findpwd@iii#1\@nnil\@nnil}
+\def\axp@region@findpwd@iii#1#2\@nnil#3\@nnil{%
+  \ifx\@nnil#1\else
+    \xdef\axp@region@pwd{#1#2}%
+    \xdef\axp@region@pwdbase{\axp@region@lastcomponent#1#2/\@nil}%
+    \ifx\axp@region@pwdbase\@empty
+      \gdef\axp@region@pwd{}%
+    \fi
+  \fi}
+\def\axp@region@lastcomponent#1/#2\@nil{%
+  \ifx\@empty#2\@empty
+    #1%
+  \else
+    \axp@region@lastcomponent#2\@nil
+  \fi}
+\def\axp@skiplines{%
+  \ifnum\axp@skipcount>\z@
+    \advance\axp@skipcount\m@ne
+    \expandafter\axp@gobbleline
+  \else
+    \axp@region@setcatcodes{12}%
+    \axp@skipcount=\axp@region@begins
+    \expandafter\axp@gobbletobegin
+  \fi}
+\def\axp@region@nextbegin{%
+  \ifnum\axp@skipcount>\z@
+    \advance\axp@skipcount\m@ne
+    \expandafter\axp@gobbletobegin
+  \else
+    \expandafter\axp@region@afterbegin
+  \fi}
+\def\axp@region@afterbegin{%
+  \endgroup
+  \catcode`\@=12
+  \def\axp@region@name{}%
+  \axp@region@readname}
+\def\axp@region@readname{%
+  \futurelet\axp@region@next\axp@region@readname@i}
+\def\axp@region@readname@i{%
+  \ifx\axp@region@next\egroup
+    \expandafter\axp@region@readname@done
+  \else
+    \expandafter\axp@region@readname@ii
+  \fi}
+\def\axp@region@readname@ii#1{%
+  \edef\axp@region@name{\axp@region@name#1}\axp@region@readname}
+\def\axp@region@readname@done{%
+  \afterassignment\axp@region@readname@go\let\axp@region@next= }
+\def\axp@region@readname@go{%
+  \ifx\axp@region@name\axp@replay@env
+    \expandafter\axp@region@go@direct
+  \else
+    \expandafter\axp@region@go@wrapped
+  \fi}
+\def\axp@region@go@direct{%
+  \expandafter\let\csname axp@region@isregion@\axp@replay@env\endcsname
+    \@empty
+  \let\end\axp@region@endcmd
+  \axp@replay@begin}
+\def\axp@region@go@wrapped{%
+  \axp@region@wrappedtrue
+  \expandafter\let\expandafter\axp@region@savedwrappedend
+    \csname end\axp@region@name\endcsname
+  \expandafter\def\csname end\axp@region@name\endcsname{%
+    \axp@region@savedwrappedend\aftergroup\axp@region@finish}%
+  \expandafter\begin\expandafter{\axp@region@name}}
+\def\axp@region@endcmd#1{%
+  \ifcsname axp@region@isregion@#1\endcsname
+    \expandafter\axp@region@endregion
+  \else
+    \expandafter\axp@region@savedendcmd
+  \fi
+  {#1}}
+\def\axp@region@endregion#1{\axp@replay@end\axp@region@finish}
+\def\axp@region@finish{\axp@region@setcatcodes{9}\endinput}
+\def\axp@region@proof#1#2{%
+  \ltx@ifnextchar@nospace[%
+    {\axp@region@proof@opt{#1}}{\axp@region@proof@noopt{#1}{#2}}}
+\def\axp@region@proof@opt#1[#2]{\begin{#1}[#2]\ignorespaces}
+\def\axp@region@proof@noopt#1#2{%
+  \ifnum#2=\@ne
+    \expandafter\axp@apxproofstart
+  \else
+    \expandafter\begin
+  \fi
+  {#1}\ignorespaces}
+\def\axp@region@toappendix{%
+  \ifx\axp@region@pendingsection\relax
+    \expandafter\ignorespaces
+  \else
+    \expandafter\axp@region@toappendix@section
+  \fi}
+\def\axp@region@toappendix@section{%
+  \edef\axp@tmp{\expandonce\axp@region@pendingsection}%
+  \global\let\axp@region@pendingsection\relax
+  \expandafter\axp@section\expandafter{\axp@tmp}%
+}
+\def\axp@region@rp#1#2{%
+  \@ifnextchar[{\axp@region@rp@i{#1}{#2}}{\axp@region@rp@i{#1}{#2}[]}}
+\def\axp@region@rp@i#1#2[#3]{%
+  \begin{axp@#1rp}[%
+    \axp@refstar{axp@r#2}%
+    \@ifnotempty{#3}{%
+      \ifdefined\theopargself\else
+        \ifdefined\@acmplainnotefont
+          \@acmplainnotefont
+        \else
+          \ifdefined\thm@notefont\the\thm@notefont\fi
+        \fi
+      \fi
+      {} ({#3})%
+    }%
+  ]%
+  \axp@forward@target{axp@fw@r#2}{}%
+  \axp@redefinelabels
+}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
-    \NewEnviron{#1rep}[1][]{%
-      \ifx\relax##1\relax
-        \begin{#1}\axp@redefinelabels\BODY\end{#1}%
-      \else
-        \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
-      \fi
-    }
+    \ifbool{axp@synctex}{%
+      \newenvironment{#1rep}[1][]{%
+        \ifx\relax##1\relax
+          \begin{#1}\axp@redefinelabels
+        \else
+          \begin{#1}[##1]\axp@redefinelabels
+        \fi
+      }{\end{#1}}%
+    }{%
+      \NewEnviron{#1rep}[1][]{%
+        \ifx\relax##1\relax
+          \begin{#1}\axp@redefinelabels\BODY\end{#1}%
+        \else
+          \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+        \fi
+      }%
+    }%
   }
   \let\inlineproof\proof
   \let\endinlineproof\endproof
@@ -275,7 +819,11 @@
       \FV@DefineWhiteSpace
       \def\FV@Space{\space}%
       \FV@DefineTabOut
-      \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      \ifbool{axp@synctex}{%
+        \let\FV@ProcessLine\@gobble
+      }{%
+        \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      }%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
       \def\FV@CatCodesHook{}%
@@ -285,8 +833,19 @@
       \endgroup\@esphack}
   \newcommand{\axp@markchapterhasappendix}{}
   \newenvironment{toappendix}
-    {\axp@markchapterhasappendix\axp@writesection\axp@VerbatimOut}
-    {\endaxp@VerbatimOut}
+    {\axp@markchapterhasappendix
+     \ifbool{axp@synctex}{%
+       \def\axp@sectioncmd{\axp@region@section}%
+       \axp@writesection
+       \axp@region@record
+     }{%
+       \axp@writesection
+     }%
+     \axp@VerbatimOut}
+    {\endaxp@VerbatimOut
+     \ifbool{axp@synctex}{%
+       \axp@region@write{\noexpand\axp@region@toappendix}{\relax}%
+     }{}}
   \newtoggle{axp@seenreptheorem}
   \newcounter{axp@rpcounter}
   \newcounter{axp@equation}
@@ -298,60 +857,83 @@
       \axp@newtheorem*{axp@#1rp}{#3}%
     }%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
-    \NewEnviron{#1rep}[1][]{%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \setcounter{axp@equation}{\value{equation}}%
-      }{}%
-      \addtocounter{axp@rpcounter}{1}%
-      \ifx\relax##1\relax
-        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
-      \else
-        \axp@with@forward{#1}{\begin{#1}[{##1}]}\label{axp@r\roman{axp@rpcounter}}%
-      \fi
-      \mainbodyrepeatedtheorem
-      \BODY\end{#1}%
-      \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
-                             \endcsname
-      \BODY
-      \axp@markchapterhasappendix
-      \axp@writesection%
-      \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\setcounter{axp@equationx}{\value{equation}}%
-          \noexpand\setcounter{equation}{\theaxp@equation}%
-        }%
-      }{}%
-      \ifbool{axp@forward@suppress}{%
-        \global\def\axp@refstar{\ref*}
+    \ifbool{axp@synctex}{%
+      \newenvironment{#1rep}[1][]{%
+        \axp@region@record
+        \axp@newtheoremrep@begin{#1}{##1}%
       }{%
-        \global\def\axp@refstar{\ref}
-      }
-      \immediate\write\axp@proofsfile{%
-        \noexpand\gdef\noexpand\axp@nextproofof@type{#3}%
-        \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+        \end{#1}%
+        \axp@newtheoremrep@end{#1}{#3}{}%
       }%
-      \ifcsdef{axp@proofof@#1}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
-        }%
-      }{%
-        \immediate\write\axp@proofsfile{{%
-          \ifdefined\theopargself
-            \noexpand\theopargself
-          \else
-            \noexpand\pretocmd{\noexpand\@begintheorem}{%
-              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
-            }{}{}
-          \fi
+    }{%
+      \NewEnviron{#1rep}[1][]{%
+        \axp@newtheoremrep@begin{#1}{##1}%
+        \BODY\end{#1}%
+        \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
+                               \endcsname
+        \BODY
+        \axp@newtheoremrep@end{#1}{#3}{##1}%
+      }%
+    }%
+  }
+  \def\axp@newtheoremrep@begin#1#2{%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \setcounter{axp@equation}{\value{equation}}%
+    }{}%
+    \addtocounter{axp@rpcounter}{1}%
+    \ifx\relax#2\relax
+      \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
+    \else
+      \axp@with@forward{#1}{\begin{#1}[{#2}]}\label{axp@r\roman{axp@rpcounter}}%
+    \fi
+    \mainbodyrepeatedtheorem
+  }
+  \def\axp@newtheoremrep@end#1#2#3{%
+    \global\toggletrue{axp@seenreptheorem}%
+    \axp@markchapterhasappendix
+    \axp@writesection%
+    \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\setcounter{axp@equationx}{\value{equation}}%
+        \noexpand\setcounter{equation}{\theaxp@equation}%
+      }%
+    }{}%
+    \ifbool{axp@forward@suppress}{%
+      \global\def\axp@refstar{\ref*}
+    }{%
+      \global\def\axp@refstar{\ref}
+    }
+    \immediate\write\axp@proofsfile{%
+      \noexpand\gdef\noexpand\axp@nextproofof@type{#2}%
+      \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+    }%
+    \ifcsdef{axp@proofof@#1}{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
+      }%
+    }{%
+      \immediate\write\axp@proofsfile{{%
+        \ifdefined\theopargself
+          \noexpand\theopargself
+        \else
+          \noexpand\pretocmd{\noexpand\@begintheorem}{%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
+          }{}{}
+        \fi
+        \ifbool{axp@synctex}{%
+          \noexpand\axp@replaybody{\axp@region@file}{\axp@region@line}%
+            {\the\inputlineno}{\axp@region@env}%
+            {\noexpand\axp@region@rp{#1}{\roman{axp@rpcounter}}}%
+            {\noexpand\end{axp@#1rp}}{\axp@region@tag}%
+        }{%
           \noexpand\begin{axp@#1rp}
             [%
               \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
-              \@ifnotempty{##1}{%
+              \@ifnotempty{#3}{%
                 \ifdefined\theopargself
                 \else
                   \ifdefined\@acmplainnotefont
@@ -362,7 +944,7 @@
                     \noexpand\fi
                   \fi
                 \fi
-                {} (\unexpanded{{##1}})%
+                {} (\unexpanded{{#3}})%
               }%
             ]%
             \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
@@ -370,14 +952,14 @@
             \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                  \endcsname
           \noexpand\end{axp@#1rp}
-        }}%
-      }%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\setcounter{equation}{\value{axp@equationx}}%
         }%
-      }{}%
+      }}%
     }%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\setcounter{equation}{\value{axp@equationx}}%
+      }%
+    }{}%
   }
 
    \newcommand{\axp@with@forward}[2]{%
@@ -485,12 +1067,22 @@
       \axp@markchapterhasappendix
       \axp@writesection
       \iftoggle{axp@seenreptheorem}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\makeatletter\noexpand\axp@apxproofstart{#1}\noexpand\makeatother%
+        \ifbool{axp@synctex}{%
+          \axp@region@record
+          \def\axp@region@flag{1}%
+        }{%
+          \immediate\write\axp@proofsfile{%
+            \noexpand\makeatletter\noexpand\axp@apxproofstart{#1}\noexpand\makeatother%
+          }%
         }%
       }{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+        \ifbool{axp@synctex}{%
+          \axp@region@record
+          \def\axp@region@flag{0}%
+        }{%
+          \immediate\write\axp@proofsfile{%
+            \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+          }%
         }%
       }%
       \axp@VerbatimOut
@@ -499,17 +1091,31 @@
     {%
       \axp@markchapterhasappendix
       \axp@writesection
-      \immediate\write\axp@proofsfile{%
-        \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
+      \ifbool{axp@synctex}{%
+        \axp@region@record
+        \def\axp@region@flag{0}%
+      }{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
+        }%
       }%
       \axp@VerbatimOut
     }
+  \def\axp@appendixproof@write#1{%
+    \ifbool{axp@synctex}{%
+      \axp@region@write
+        {\noexpand\axp@region@proof{#1}{\axp@region@flag}}%
+        {\noexpand\end{#1}}%
+    }{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\end{#1}%
+      }%
+    }%
+  }
   \def\endappendixproof
     {%
       \endaxp@VerbatimOut
-      \immediate\write\axp@proofsfile{%
-        \noexpand\end{axp@oldproof}%
-      }%
+      \axp@appendixproof@write{axp@oldproof}%
       \noproofinappendix
     }
   \def\proof{\catcode`\^^M=\active\ltx@ifnextchar@nospace[{\catcode`\^^M=5\axp@@proof}{\catcode`\^^M=5\axp@proof}}
@@ -571,9 +1177,7 @@
     \def\endappendixclaimproof
     {%
       \endaxp@VerbatimOut
-      \immediate\write\axp@proofsfile{%
-      \noexpand\end{axp@oldclaimproof}%
-      }%
+      \axp@appendixproof@write{axp@oldclaimproof}%
       \noproofinappendix
     }
     \fi
@@ -633,6 +1237,7 @@
   \newcommand{\nosectionappendix}{
     \global\def\axp@sectitle{}%
   }
+  \def\axp@sectioncmd{\axp@section}
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
@@ -645,7 +1250,7 @@
       \immediate\write\@auxout{\expandonce\axp@tmp}
       \immediate\write\axp@proofsfile{%
         \expandonce\axp@tmp^^J%
-        \noexpand\axp@section{%
+        \expandafter\noexpand\axp@sectioncmd{%
           \noexpand\appendixsectionformat{%
             \protect
             \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%

@@ -7,6 +7,7 @@ typesetopts = " --interaction=nonstopmode"
 typesetsuppfiles = {"*.bib"}
 bibfiles = {"support/*.bib"}
 textfiles = {"README.md", "LICENSE"}
+scriptfiles = {"apxproof-synctex"}
 
 function typeset(file, dir)
   local errorlevel = tex(file, dir)

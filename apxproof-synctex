@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+
+# apxproof-synctex: merge, in a SyncTeX file, the records of the source files
+# re-read by apxproof (synctex option, pdfTeX and XeTeX) into those of the
+# original reading of the same files, so that forward search (from the
+# source to the PDF) finds appendix material as well as the main text.
+#
+# usage: apxproof-synctex JOBNAME   (reads and rewrites JOBNAME.synctex.gz or
+#        JOBNAME.synctex; a .pdf extension is ignored)
+#
+# With LuaTeX this is not needed, nor is it with pdfTeX/XeTeX for inverse
+# search (from the PDF to the source): apxproof re-reads each source file
+# under the name <cwd>/../<dir>/<file> (with <dir> the last component of
+# <cwd>), which viewers resolve to the file but which the SyncTeX parser
+# used by viewers does not identify with <cwd>/./<file>, the name under
+# which the file was first read. The parser resolves a file name to a single
+# tag (the last one registered for that name), so this keeps forward search
+# from the main text working; the price is that forward search from a proof
+# only finds the nearest main-text line. This script rewrites the tags of all
+# records of the re-read files to the tag of the original file and drops the
+# superfluous Input lines, after which forward search finds both the main
+# text and the appendix. Run it after each compilation, e.g., with latexmk:
+#   $success_cmd = 'apxproof-synctex %R';
+
+import gzip
+import os
+import re
+import sys
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit('usage: apxproof-synctex JOBNAME')
+    job = re.sub(r'\.(pdf|dvi|synctex(\.gz)?)$', '', sys.argv[1])
+    for name, opener in ((job + '.synctex.gz', gzip.open),
+                         (job + '.synctex', open)):
+        if os.path.exists(name):
+            break
+    else:
+        sys.exit('apxproof-synctex: no SyncTeX file for %s' % job)
+    with opener(name, 'rt', encoding='utf-8', errors='surrogateescape') as f:
+        lines = f.read().split('\n')
+
+    # First pass: map tags of re-read files to those of the originals
+    inputs = {}          # name -> tag of first registration
+    mapping = {}         # tag -> tag
+    drop = set()         # indices of Input lines to drop
+    alt = re.compile(r'^(.*)/\.\./([^/]+)/(.*)$')
+    for i, line in enumerate(lines):
+        if not line.startswith('Input:'):
+            continue
+        _, tag, path = line.split(':', 2)
+        m = alt.match(path)
+        if m and m.group(1).split('/')[-1] == m.group(2):
+            original = '%s/./%s' % (m.group(1), m.group(3))
+            if original in inputs:
+                mapping[tag] = inputs[original]
+                drop.add(i)
+                continue
+        if path not in inputs:
+            inputs[path] = tag
+    if not mapping:
+        return
+
+    # Second pass: rewrite records "<kind><tag>,<line>..." of mapped tags
+    record = re.compile(r'^([\[\](){}hvgkxr$!f]*)(\d+),(\d+)(.*)$')
+    # Kinds: [ ] ( ) vertical/horizontal boxes, h v void boxes, g glue,
+    # k kern, x current, r rule, $ math, f form reference; ! anchors and
+    # { } sheets carry no tag but are harmless to the regular expression.
+    out = []
+    for i, line in enumerate(lines):
+        if i in drop:
+            continue
+        if line and line[0] in '[]()hvgkxr$f':
+            m = record.match(line)
+            if m and m.group(2) in mapping:
+                line = '%s%s,%s%s' % (m.group(1), mapping[m.group(2)],
+                                      m.group(3), m.group(4))
+        out.append(line)
+    with opener(name, 'wt', encoding='utf-8', errors='surrogateescape') as f:
+        f.write('\n'.join(out))
+
+
+if __name__ == '__main__':
+    main()

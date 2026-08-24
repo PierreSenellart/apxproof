@@ -1,0 +1,4 @@
+# Same document as ../synctex, compiled with LuaTeX (where the re-read
+# material carries the SyncTeX tag of the original file). The test suite
+# calls latexmk with -pdf, which selects $pdflatex, so that is what we set.
+$pdflatex = 'lualatex -synctex=1 %O %S';

@@ -1,0 +1,2 @@
+# Build with SyncTeX so that the synctex.expect file can be checked
+$pdflatex = 'pdflatex -synctex=1 %O %S';

@@ -1,0 +1,122 @@
+\documentclass{article}
+\date{}
+\usepackage[synctex=auto]{../../apxproof}
+\usepackage{hyperref}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep{lemma}[theorem]{Lemma}
+% A user environment wrapping a repeated theorem
+\newenvironment{mylemma}[1][]{\begin{lemmarep}[#1]}{\end{lemmarep}}
+
+\title{SyncTeX support}
+\author{Author}
+
+\begin{document}
+
+\maketitle
+
+With the \texttt{synctex} option, appendix material and repeated
+theorems are re-read from the source files, so that SyncTeX points to
+the right lines. The check script queries SyncTeX for the position of
+the marked words on the appendix pages.
+
+\section{Repeated Theorems}
+
+\begin{theoremrep}[Named]
+  \label{th:named}%
+  This is the statement of the named theorem, marked quokka.
+  It has an equation:
+  \begin{equation}
+    \label{eq:sum}
+    \sum_{k=1}^\infty \frac1{k^2}=\frac{\pi^2}6
+  \end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  This is the proof of the named theorem, marked wombat, and it refers
+  to~(\ref{eq:sum-apx}).
+\end{proof}
+
+\begin{mylemma}[Wrapped]
+  This lemma is wrapped in a user environment, marked numbat.
+\end{mylemma}
+
+\begin{proof}[Proof of the wrapped lemma]
+  [This proof starts with a bracket and is marked bilby.]
+\end{proof}
+
+\begin{center}\begin{theoremrep}
+  Centered statement, marked dingo.
+\end{theoremrep}\end{center}
+
+\begin{proof}
+  Proof of the centered statement, marked echidna.
+\end{proof}
+
+\begin{theoremrep} Single-line statement, marked kookaburra. \end{theoremrep} Text after the end, marked platypus.
+
+\begin{proof}
+  Single-line proof, marked cassowary.
+\end{proof}
+
+\section{Material Sent to the Appendix}
+
+\begin{toappendix}
+  Appendix material, marked wallaby, with a proof:
+  \begin{proof}[Nested]
+    Nested proof, marked koala.
+  \end{proof}
+\end{toappendix}
+
+Some main text.
+
+\begin{toappendix}
+
+\section{Own section, marked galah}
+This appendix section replaces the automatic heading.
+\end{toappendix}
+
+Two cases found in real documents. First, an appendix block that consists of
+a heading only: the paragraph that follows it comes from another block, and
+must be treated as following a heading (no indentation, no page break) just
+as when appendix material is copied.
+
+\begin{toappendix}
+  \subsection{Heading alone in its block}
+\end{toappendix}
+\begin{toappendix}
+  Paragraph after the heading, marked kiwi.
+\end{toappendix}
+
+Second, an alignment ended in the block: the \verb|\end| of an environment must
+remain expandable when \TeX{} scans the start of an alignment row, or an
+empty row is added.
+
+\begin{toappendix}
+  \begin{center}
+    \begin{tabular}{lr}
+      \hline
+      Marked & tenrec \\
+      Second & row \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{toappendix}
+
+Third, a repeated theorem stated inside an appendix block, which is then
+just a theorem of the appendix.
+
+\begin{toappendix}
+  Before the nested theorem, marked lorikeet, on the same line.
+  \begin{lemmarep}
+    Nested lemma, marked pademelon.
+  \end{lemmarep}
+  \begin{proof}
+    Its proof, marked possum.
+  \end{proof}
+  After the nested theorem, marked tuatara.
+\end{toappendix}
+
+\input{sub}
+
+\end{document}

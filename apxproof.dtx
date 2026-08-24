@@ -46,7 +46,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1430}
+% \CheckSum{2482}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -535,6 +535,82 @@
 % value |no| to the |forwardlinking| option when loading the package. (By
 % default this option is set to |yes|.)
 %
+% \subsection{Sync\TeX{} Support}
+% \label{sec:synctex}
+% \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
+% \DescribeOption{synctex}
+% Sync\TeX{} lets editors and PDF viewers jump between a position in the
+% PDF and the source line that produced it. By default, it does not work
+% well with \textsf{apxproof}: the body of a |foobarrep| environment is
+% attributed to the line of its |\end{foobarrep}|, and appendix material
+% is attributed to the auxiliary |.axp| file it was copied to, rather than
+% to the source. Sync\TeX{} only knows about tokens that \TeX{} reads
+% directly from a file, so this can only be fixed by not copying:
+% \begin{quote}|\usepackage[synctex=yes]{apxproof}|\end{quote}
+% makes \textsf{apxproof} typeset repeated theorems directly from the
+% source, and, when the appendix is typeset, re-read every piece of
+% appendix material (proofs, |toappendix| environments and repeated
+% theorems) from the source file it came from, at the recorded lines.
+% Sync\TeX{} then points to the source for all of them, in both the main
+% text and the appendix.
+%
+% The option can take three values. With |auto| (the default), the source
+% is re-read exactly when Sync\TeX{} output was requested (i.e., when the
+% engine was run with |-synctex=1| or a similar option, which is what
+% editors and \textsf{latexmk} do), and appendix material is copied to
+% the |.axp| file, as it always was, otherwise. With |yes|, the source is
+% always re-read; with |no|, it never is, and Sync\TeX{} is not supported.
+% In all cases the typeset output is the same; only the way appendix
+% material is obtained differs.
+%
+% Both directions of synchronization are concerned. From the PDF to the
+% source (inverse search), the appendix now points to the source, with
+% every engine. From the source to the PDF (forward search), a line of
+% the main text is found in the main text as before, and a line of a
+% proof or of a |toappendix| environment is found in the appendix with
+% Lua\TeX{}; with pdf\TeX{} and Xe\TeX{}, the way Sync\TeX{} identifies files
+% and the way viewers resolve them make this impossible without breaking
+% forward search from the main text, so such a line is resolved, as
+% before, to the nearest line of the main text (see the implementation
+% for details). This last point requires that the working directory of
+% the compilation be known, which is read from the |.fls| file written by
+% the |-recorder| option of the engine (\textsf{latexmk} and most editors
+% use it); without it, forward search from the main text of a file that
+% has appendix material would land in the appendix.
+%
+% With pdf\TeX{} and Xe\TeX{}, forward search can nevertheless be made to
+% find the appendix as well by running, after each compilation, the
+% |apxproof-synctex| script distributed with the package (it requires
+% Python~3), which merges the records of the re-read files into those of
+% the original ones in the |.synctex.gz| file:
+% \begin{quote}|apxproof-synctex |\meta{jobname}\end{quote}
+% With \textsf{latexmk}, adding
+% \begin{quote}|$success_cmd = 'apxproof-synctex %R';|\end{quote}
+% to a |latexmkrc| file does this automatically.
+%
+% For this to work, the source files must still be readable, under the same
+% names, when the appendix is typeset (which is the case in any normal
+% compilation), and each |\begin{foobarrep}|, |\begin{proof}|,
+% |\begin{toappendix}|, etc., must appear literally in the source: material
+% produced by a macro cannot be re-read (nor could it be captured before,
+% except for repeated theorems). Wrapping a |foobarrep| environment in a
+% user-defined environment is fine (it is in fact only supported with this
+% option: otherwise the body of a repeated theorem is collected up to a
+% literal |\end{foobarrep}|). The name of the file each environment
+% is in is determined by the kernel's |\CurrentFileUsed| (available since
+% \LaTeX{} 2020-10-01; with an older kernel, everything is assumed to be in
+% |\jobname.tex|); the main file itself is assumed to be
+% |\jobname.tex|, which is the case unless the document was compiled by
+% giving \TeX{} a path to it. When some material cannot be re-read, an
+% error message explains why and that material is missing from the
+% appendix; the rest of the document is unaffected. Finally, re-reading
+% has a cost: for each piece of appendix material, the source file is read
+% from its beginning up to that piece (skipping lines is fast, but a
+% document with hundreds of proofs in a very long file will notice).
+%
+% Should the re-reading cause trouble in a document, |synctex=no| restores
+% the previous behavior.
+%
 % \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, the usage of
 % which is limited to special cases:
@@ -659,10 +735,13 @@
 % \item |appendixproof|, |proof|, |toappendix| environments cannot be nested. This is a limitation of
 % the \textsf{fancyvrb} package that \textsf{apxproof} relies on. Note
 % the existence of the |nestedproof| environment for nested proofs.
-% \item \textsf{apxproof} poorly interacts with Sync\TeX: identifying
-% which source line has produced which box does not work for appendix
-% content managed by \textsf{apxproof} or repeated theorems. No obvious
-% fix is known, though this issue will be investigated in the long term.
+% \item Sync\TeX{} support (Section~\ref{sec:synctex}) relies on
+% re-reading the source files when the appendix is typeset, which
+% requires each captured environment to appear literally in a source file
+% that is still readable under the recorded name; without this
+% (|synctex=no|, or a compilation without Sync\TeX{}), identifying which
+% source line has produced which box does not work for appendix content
+% managed by \textsf{apxproof} or repeated theorems.
 % \item By default, when |bibliography=separate|, \textsf{apxproof}
 % uses the \textsf{bibunits} package to generate a second bibliography.
 % Packages incompatible with \textsf{bibunits} (notably
@@ -837,6 +916,12 @@
 \DeclareStringOption[yes]{forwardlinking}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\axp@synctex}
+% \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
+%    \begin{macrocode}
+\DeclareStringOption[auto]{synctex}
+%    \end{macrocode}
+% \end{macro}
 %    \begin{macrocode}
 \ProcessLocalKeyvalOptions*
 %    \end{macrocode}
@@ -910,6 +995,34 @@
   \errmessage{Error: unsupported option forwardlinking=\axp@repeqn\ for
   package apxproof}
 }}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{axp@synctex}
+% The |axp@synctex| Boolean records whether appendix material is to be
+% re-read from the source files rather than copied to the |.axp| file (see
+% Section~\ref{sec:synctex-impl}). With |synctex=auto|, this is decided by
+% the |\synctex| primitive of the engine, which is nonzero exactly when
+% Sync\TeX{} output was requested (positive for compressed, negative for
+% uncompressed |.synctex| files); the primitive is only tested if it exists.
+%    \begin{macrocode}
+\newbool{axp@synctex}
+\ifthenelse{\equal{\axp@synctex}{no}}{
+}{\ifthenelse{\equal{\axp@synctex}{yes}}{
+  \booltrue{axp@synctex}
+}{\ifthenelse{\equal{\axp@synctex}{auto}}{
+  \ifdefined\synctex
+    \ifnum\synctex=\z@\else
+      \booltrue{axp@synctex}
+    \fi
+  \fi
+}{
+  \errmessage{Error: unsupported option synctex=\axp@synctex\ for
+  package apxproof}
+}}}
+\ifbool{axp@synctex}{
+  \message{apxproof: SyncTeX support enabled, appendix material re-read
+    from source files}
+}{}
 %    \end{macrocode}
 % \end{macro}
 % \subsection{Macros Common to All Compilation Modes}
@@ -1075,9 +1188,9 @@
 % same treatment as |\label|; it has no optional argument.
 % \begin{macro}{\axp@label}
 % \begin{macro}{\axp@label@in@display}
-% \changes{v1.4.1}{2026/08/03}{Support the optional argument that
+% \changes{v1.4.1-dev}{2026/08/03}{Support the optional argument that
 % \textsf{cleveref} adds to \cs{label} (R. Rowe)}
-% \changes{v1.4.1}{2026/08/03}{Support \cs{zlabel} of \textsf{zref-clever}}
+% \changes{v1.4.1-dev}{2026/08/03}{Support \cs{zlabel} of \textsf{zref-clever}}
 %    \begin{macrocode}
   \def\axp@label{\@ifnextchar[\axp@label@opt\axp@label@noopt}%]
   \def\axp@label@opt[#1]#2{\axp@label@do{[#1]}{#2}}
@@ -1178,6 +1291,846 @@
   \AtBeginDocument{\let\ACM@origsection\section}
 \fi
 %    \end{macrocode}
+% \subsection{Sync\TeX{} Support}
+% \label{sec:synctex-impl}
+% \changes{v1.4.1-dev}{2026/08/19}{Sync\TeX{} support: appendix material can
+% be re-read from the source files instead of being copied to the
+% \texttt{.axp} file}
+% Sync\TeX{} records, for every box in the output, the file and line
+% from which the tokens that produced it were read. Two things defeat it
+% in \textsf{apxproof}: the body of a |foobarrep| environment collected by
+% \textsf{environ} is typeset from a macro, so all of it is attributed to
+% the line of the |\end{foobarrep}|; and appendix material copied
+% verbatim to the |.axp| file is attributed to that file when it is
+% typeset. There is no way to tell Sync\TeX{} that some tokens ``really''
+% come from elsewhere; the only tokens it attributes correctly are those
+% read directly from a file. When the |synctex| option is enabled, we
+% therefore do just that: repeated theorems are typeset directly from the
+% source instead of being collected, and instead of copying appendix
+% material to the |.axp| file, we write there the name of the source
+% file, the line where the environment begins, the line where it ends
+% and its name; when the appendix is typeset, the source file is opened
+% again with the primitive |\input|, all lines up to the beginning of the
+% environment are skipped, and the environment is executed anew, with its
+% begin and end code replaced by what the appendix needs. All of this
+% happens with the source file open, so Sync\TeX{} attributes every box
+% to the right file and line.
+%
+% We store, at the beginning of each captured environment, where it was
+% found. The line comes from |\@currenvline|, which |\begin| sets before
+% reading any optional argument (|\inputlineno| would be off when the
+% argument or the body starts on a later line). The file comes from the
+% kernel's |\CurrentFileUsed| and |\CurrentFilePathUsed|, which are empty
+% for the main file, in which case we assume the source is
+% |\jobname.tex|; older kernels lack these macros, and we then have to make
+% that assumption for every environment.
+%
+% We also need to know how Sync\TeX{} identifies the file, see
+% |\axp@region@input| below: with Lua\TeX{}, we record the tag it gave
+% the file (|\axp@region@tag| is 0 elsewhere).
+% \begin{macro}{\axp@region@file}
+% \begin{macro}{\axp@region@line}
+% \begin{macro}{\axp@region@env}
+% \begin{macro}{\axp@region@tag}
+% \begin{macro}{\axp@extract@line}
+% \begin{macro}{\axp@region@record}
+%    \begin{macrocode}
+\def\axp@region@file{}
+\def\axp@region@line{}
+\def\axp@region@env{}
+\def\axp@region@tag{0}
+\def\axp@extract@line#1line #2\@nil#3\@nnil{#2}
+\def\axp@region@record{%
+  \ifdefined\CurrentFileUsed
+    \ifx\CurrentFileUsed\@empty
+      \edef\axp@region@file{\jobname.tex}%
+    \else
+      \ifx\CurrentFilePathUsed\@empty
+        \edef\axp@region@file{\CurrentFileUsed}%
+      \else
+        \edef\axp@region@file{\CurrentFilePathUsed/\CurrentFileUsed}%
+      \fi
+    \fi
+  \else
+    \edef\axp@region@file{\jobname.tex}%
+  \fi
+  \edef\axp@region@line{%
+    \expandafter\axp@extract@line\@currenvline\@nil line 0\@nil\@nnil}%
+  \edef\axp@region@env{\@currenvir}%
+  \ifdefined\directlua
+    \edef\axp@region@tag{\directlua{tex.sprint(tex.get_synctex_tag())}}%
+  \else
+    \def\axp@region@tag{0}%
+  \fi
+}
+\ifbool{axp@synctex}{
+  \ifdefined\CurrentFileUsed\else
+    \PackageWarning{apxproof}{%
+      This LaTeX kernel does not provide \string\CurrentFileUsed;
+      the synctex option assumes\MessageBreak
+      that all appendix material is in \jobname.tex}
+  \fi
+}{}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@write}
+% At the end of the environment, this writes to the |.axp| file the
+% |\axp@replaybody| command replaying it, with the recorded position, the
+% current line (that of the |\end|), the two arguments passed by
+% the caller: the tokens that will replace the begin code of the
+% environment in the appendix, and those that will replace its end code,
+% and the Sync\TeX{} tag.
+% The trailing |\relax| ensures that the end of the line in the |.axp|
+% file, which is only tokenized once the replay is over, does not
+% produce a space, as the copied material never ended with one.
+%    \begin{macrocode}
+\def\axp@region@write#1#2{%
+  \immediate\write\axp@proofsfile{%
+    \noexpand\axp@replaybody{\axp@region@file}{\axp@region@line}%
+      {\the\inputlineno}{\axp@region@env}{#1}{#2}{\axp@region@tag}\relax
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@replaybody}
+% |\axp@replaybody|\marg{file}\marg{start}\marg{end}\marg{env}\marg{begin}\marg{end code}\marg{tag}
+% is executed in the appendix. It first checks, by reading the file with
+% |\readline| (which does not affect Sync\TeX{}), that the file exists and
+% that its \meta{start} line does contain |\begin{|\meta{env}|}| and its
+% \meta{end} line an |\end{|; if not, an error is raised and nothing is
+% typeset. Otherwise the file is replayed. The state of the replay is kept
+% in |\axp@replay@...| macros, distinct from the |\axp@region@...| ones
+% set by |\axp@region@record|: a |foobarrep| environment nested in a
+% |toappendix| environment runs its main-text begin code when replayed,
+% and must not disturb the replay of the enclosing environment.
+%    \begin{macrocode}
+\newif\ifaxp@region@ok
+\newif\ifaxp@region@wrapped
+\def\axp@replaybody#1#2#3#4#5#6#7{%
+  \def\axp@replay@file{#1}%
+  \def\axp@replay@line{#2}%
+  \def\axp@replay@endline{#3}%
+  \def\axp@replay@env{#4}%
+  \def\axp@replay@begin{#5}%
+  \def\axp@replay@end{#6}%
+  \def\axp@replay@tag{#7}%
+  \axp@region@check
+  \ifaxp@region@ok
+    \axp@region@replay
+  \else
+    \axp@region@flushsection
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@region@section}
+% \begin{macro}{\axp@region@flushsection}
+% For |toappendix| environments, the appendix section heading is written
+% to the |.axp| file as |\axp@region@section|, which stores it; it is
+% typeset by |\axp@region@toappendix| below with the same look-ahead as
+% |\axp@section|, once the content of the environment is available, or
+% by |\axp@region@flushsection| without look-ahead if the environment
+% cannot be replayed. The assignments are global, as the heading is
+% typeset from within the group of the environment.
+%    \begin{macrocode}
+\let\axp@region@pendingsection\relax
+\def\axp@region@section#1{\gdef\axp@region@pendingsection{#1}}
+\def\axp@region@flushsection{%
+  \ifx\axp@region@pendingsection\relax\else
+    \expandafter\axp@oldsection\expandafter
+      {\axp@region@pendingsection}%
+    \global\let\axp@region@pendingsection\relax
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@check}
+% \begin{macro}{\axp@region@readto}
+% \begin{macro}{\axp@region@readone}
+% Lines are read one at a time into |\axp@line|, with |\endlinechar|
+% disabled so that no end-of-line character is appended, until the
+% desired line number is reached; |\axp@region@readcount| counts the lines
+% read so far. We never read from a stream on which |\ifeof| is true, since
+% \TeX{} would then read from the terminal. As the environments of a
+% given file are replayed in the order in which they appear, we keep the
+% stream open from one replay to the next and only reopen the file when
+% we need an earlier line or a different file (|\axp@region@openfile|
+% records the file currently open); each source file is thus read at
+% most a few times overall. This state is global, as |\axp@replaybody|
+% may be called within a group.
+%    \begin{macrocode}
+\newread\axp@readfile
+\newcount\axp@region@readcount
+\def\axp@region@openfile{}
+\def\axp@line{}
+\def\axp@region@readto#1{%
+  \loop
+    \ifnum\axp@region@readcount<#1\relax
+      \axp@region@readone{#1}%
+  \repeat
+}
+\def\axp@region@readone#1{%
+  \ifeof\axp@readfile
+    \def\axp@line{}%
+    \global\axp@region@readcount=#1\relax
+  \else
+    \global\advance\axp@region@readcount\@ne
+    \readline\axp@readfile to\axp@line
+  \fi
+}
+\def\axp@region@check{%
+  \axp@region@okfalse
+  \edef\axp@region@saveendlinechar{\the\endlinechar}%
+  \endlinechar\m@ne
+  \ifx\axp@region@openfile\axp@replay@file
+    \ifnum\axp@region@readcount<\axp@replay@line\relax
+    \else
+      \gdef\axp@region@openfile{}%
+    \fi
+  \else
+    \gdef\axp@region@openfile{}%
+  \fi
+  \ifx\axp@region@openfile\@empty
+    \closein\axp@readfile
+    \openin\axp@readfile=\axp@replay@file\relax
+    \global\axp@region@readcount=\z@
+    \global\let\axp@region@openfile\axp@replay@file
+  \fi
+  \ifeof\axp@readfile
+    \ifnum\axp@region@readcount=\z@
+      \PackageError{apxproof}{%
+        Cannot open `\axp@replay@file' to re-read the\MessageBreak
+        \axp@replay@env\space environment starting on line
+        \axp@replay@line}{%
+        The synctex option of apxproof requires the source files of the
+        document\MessageBreak
+        to be readable under the same names when the appendix is
+        typeset.\MessageBreak
+        This appendix material will be missing.}%
+      \gdef\axp@region@openfile{}%
+    \else
+      \axp@region@toofar
+    \fi
+  \else
+    \axp@region@readto{\axp@replay@line}%
+    \ifeof\axp@readfile
+      \axp@region@toofar
+    \else
+      \axp@region@analyze
+      \ifaxp@region@ok
+        \axp@region@readto{\axp@replay@endline}%
+        \axp@region@checkend
+      \fi
+    \fi
+  \fi
+  \endlinechar\axp@region@saveendlinechar\relax
+}
+\def\axp@region@toofar{%
+  \axp@region@okfalse
+  \PackageError{apxproof}{%
+    File `\axp@replay@file' has fewer than \axp@replay@line\space
+    lines, where\MessageBreak
+    the \axp@replay@env\space environment to re-read was expected}{%
+    The source file has probably changed since the main text was
+    processed,\MessageBreak
+    or the main file is not `\jobname.tex'.
+    This appendix material will be missing.}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% Several macros need |\begin{|, |\end{|, |}| or an end-of-line character
+% as delimiters, with the catcode 12 that these characters have when
+% read from |\readline| or with the catcodes we set to skip lines. We define
+% them with |\lowercase|, mapping placeholder characters to the ones we need,
+% which preserves catcodes.
+% \begin{macro}{\axp@region@scanline}
+% \begin{macro}{\axp@region@scan}
+% \begin{macro}{\axp@region@getname}
+% \begin{macro}{\axp@region@scanendline}
+% \begin{macro}{\axp@region@scanend}
+% \begin{macro}{\axp@gobbleline}
+% \begin{macro}{\axp@gobbletobegin}
+% \begin{itemize}
+% \item |\axp@region@scanline| splits its argument at the first |\begin{|;
+% \item |\axp@region@getname| splits its argument at the first |}|;
+% \item |\axp@region@scanendline| splits its argument at the first |\end{|;
+% \item |\axp@gobbleline| discards the input up to and including the next
+% end of line;
+% \item |\axp@gobbletobegin| discards the input up to and including the
+% next |\begin{|.
+% \end{itemize}
+% In the first three, a sentinel is appended so that a match is always
+% found; the last two then continue with the macros indicated.
+%    \begin{macrocode}
+\begingroup
+  \lccode`\!=`\\ \lccode`\?=`\{ \lccode`\|=`\} \lccode`\"=`\^^M
+  \lccode`\+=`\b \lccode`\-=`\e \lccode`\*=`\g \lccode`\/=`\i
+  \lccode`\==`\n \lccode`\,=`\d
+  \catcode`\!=12 \catcode`\?=12 \catcode`\|=12 \catcode`\"=12
+  \catcode`\+=12 \catcode`\-=12 \catcode`\*=12 \catcode`\/=12
+  \catcode`\==12 \catcode`\,=12
+  \lowercase{\endgroup
+    \long\def\axp@region@scanline#1{%
+      \axp@region@scan#1!+-*/=?\axp@region@marker\@nil}
+    \long\def\axp@region@scan#1!+-*/=?#2\@nil{\axp@region@scan@i{#2}}
+    \long\def\axp@region@getname#1{\axp@region@getname@i#1|\@nil}
+    \long\def\axp@region@getname@i#1|#2\@nil{\def\axp@region@name{#1}}
+    \long\def\axp@region@scanendline#1{%
+      \axp@region@scanend#1!-=,?\axp@region@marker\@nil}
+    \long\def\axp@region@scanend#1!-=,?#2\@nil{%
+      \def\axp@region@rest{#2}}
+    \long\def\axp@gobbleline#1"{\axp@skiplines}
+    \long\def\axp@gobbletobegin#1!+-*/=?{\axp@region@nextbegin}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@analyze}
+% \begin{macro}{\axp@region@scan@i}
+% We look on the start line for |\begin{|\meta{env}|}|. As the
+% environment may be wrapped in a user-defined environment (in which
+% case the line contains, say, |\begin{mythm}|), we settle for the first
+% |\begin{| on the line if the exact one is absent. |\axp@region@begins|
+% is set to the number of |\begin{| to skip on the line before the one
+% to use.
+%    \begin{macrocode}
+\newcount\axp@region@begins
+\newcount\axp@skipcount
+\newif\ifaxp@region@found
+\def\axp@region@marker{\axp@region@marker}
+\def\axp@region@analyze{%
+  \axp@region@begins=\z@
+  \axp@region@foundfalse
+  \edef\axp@region@target{%
+    \expandafter\detokenize\expandafter{\axp@replay@env}}%
+  \expandafter\axp@region@scanline\expandafter{\axp@line}%
+  \ifaxp@region@found
+    \axp@region@oktrue
+  \else
+    \ifnum\axp@region@begins>\z@
+      \axp@region@begins=\z@
+      \axp@region@oktrue
+    \else
+      \PackageError{apxproof}{%
+        Cannot find \string\begin\@charlb\axp@replay@env\@charrb\space
+        on line \axp@replay@line\space of\MessageBreak
+        `\axp@replay@file' to re-read it}{%
+        The synctex option of apxproof requires
+        \string\begin\@charlb\axp@replay@env\@charrb\space
+        to appear\MessageBreak
+        literally in the source file, on the line where the environment
+        starts.\MessageBreak
+        This appendix material will be missing.}%
+    \fi
+  \fi
+}
+%    \end{macrocode}
+% |\axp@region@scan@i| receives what follows a |\begin{|. If this is only
+% the sentinel, there is no further |\begin{| on the line. Otherwise
+% we extract the environment name and compare it with the target,
+% moving on to the next |\begin{| if it differs.
+%    \begin{macrocode}
+\long\def\axp@region@scan@i#1{%
+  \def\axp@region@rest{#1}%
+  \ifx\axp@region@rest\axp@region@marker
+  \else
+    \axp@region@getname{#1}%
+    \ifx\axp@region@name\axp@region@target
+      \axp@region@foundtrue
+    \else
+      \advance\axp@region@begins\@ne
+      \axp@region@scan#1\@nil
+    \fi
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@checkend}
+% Similarly, we check that the end line contains an |\end{|.
+%    \begin{macrocode}
+\def\axp@region@checkend{%
+  \expandafter\axp@region@scanendline\expandafter{\axp@line}%
+  \ifx\axp@region@rest\axp@region@marker
+    \axp@region@okfalse
+    \PackageError{apxproof}{%
+      Cannot find the \string\end\space of the \axp@replay@env\space
+      environment\MessageBreak
+      starting on line \axp@replay@line\space of `\axp@replay@file'
+      (expected on line \axp@replay@endline)}{%
+      The synctex option of apxproof requires the \string\end\space
+      of the environment\MessageBreak
+      to appear literally in the source file. This appendix material
+      will be missing.}%
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@region@replay}
+% \begin{macro}{\axp@region@cleanup}
+% \begin{macro}{\axp@region@catcodes}
+% Now the actual replay. Within the appendix, |\begin{|\meta{env}|}| must
+% run the begin code we were given and |\end{|\meta{env}|}| the end code;
+% we save the current meaning of the corresponding macros, and of |\end|
+% itself (see below), to restore them afterwards. We also save the catcodes of all characters, as they will
+% be modified at the end of the replay (see below): |\axp@region@catcodes|
+% expands to the assignments restoring them. We deliberately do not
+% wrap the replay in a group, so that whatever the |\end| of the
+% environment does to the paragraph that follows (as |\@doendpe| does)
+% survives it, exactly as when the material is copied to the |.axp| file.
+% The file is then opened by the primitive |\input| in a group where every
+% character is ignored (catcode 9) except the end-of-line character,
+% which is an ordinary one: lines are skipped without \TeX{} building any
+% token, until the start line, which is read with every character an
+% ordinary one (so that none is special, no control sequence is formed
+% and no line can be mistaken for a paragraph break); the group ends when
+% we hand over to the environment.
+%    \begin{macrocode}
+\def\axp@region@catcodes#1{%
+  \catcode#1=\the\catcode#1\relax
+  \ifnum#1<255
+    \expandafter\axp@region@catcodes\expandafter
+      {\number\numexpr#1+1\expandafter}%
+  \fi}
+\def\axp@region@setcatcodes#1{%
+  \count@=\z@
+  \loop
+    \catcode\count@=#1\relax
+    \ifnum\count@<255
+    \advance\count@\@ne
+  \repeat}
+\def\axp@region@replay{%
+  \edef\axp@region@catcoderestore{\axp@region@catcodes{0}}%
+  \expandafter\let\expandafter\axp@region@savedbegin
+    \csname\axp@replay@env\endcsname
+  \expandafter\let\expandafter\axp@region@savedend
+    \csname end\axp@replay@env\endcsname
+  \expandafter\let\csname\axp@replay@env\endcsname\axp@replay@begin
+  \expandafter\let\csname end\axp@replay@env\endcsname\axp@replay@end
+  \let\axp@region@savedendcmd\end
+  \axp@region@wrappedfalse
+  \begingroup
+    \axp@region@setcatcodes{9}%
+    \catcode13=12\relax
+    \endlinechar=13\relax
+    \axp@skipcount=\axp@replay@line\relax
+    \advance\axp@skipcount\m@ne
+    \axp@region@input
+  \axp@region@cleanup
+}
+\def\axp@region@cleanup{%
+  \axp@region@input@done
+  \expandafter\let\csname\axp@replay@env\endcsname\axp@region@savedbegin
+  \expandafter\let\csname end\axp@replay@env\endcsname\axp@region@savedend
+  \let\end\axp@region@savedendcmd
+  \expandafter\let\csname axp@region@isregion@\axp@replay@env\endcsname
+    \undefined
+  \ifaxp@region@wrapped
+    \expandafter\let\csname end\axp@region@name\endcsname
+      \axp@region@savedwrappedend
+  \fi
+  \axp@region@catcoderestore
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@input}
+% \begin{macro}{\axp@region@input@done}
+% \begin{macro}{\axp@region@altfile}
+% Opening the file is where we have to care about the way Sync\TeX{}
+% names files. \TeX{} gives every file it opens a new tag, and records
+% the tag and name in the |.synctex| file, so re-reading a file
+% registers it a second time under the same name; and the parser used by
+% viewers and editors, when asked (forward search, from the editor to
+% the PDF) for a source line of some file, resolves the name to a single
+% tag, the last one registered under that name. With the re-read
+% registered as is, forward search from the main text would then land in
+% the appendix, or nowhere. Two remedies:
+% \begin{itemize}
+% \item With Lua\TeX{}, we can have the nodes created while re-reading
+% carry the file's original tag, with the Lua function
+% |tex.force_synctex_tag| (which requires |tex.set_synctex_mode(2)|;
+% line numbers remain the actual ones), and
+% not register the re-read at all (|tex.set_synctex_no_files|). Both
+% directions then work everywhere. Files |\input| from within the
+% material are handled normally again during their reading, thanks to
+% the kernel's file hooks. All this is done in Lua, see below.
+% \item With other engines, we open the file under a name that the parser
+% does not consider equivalent to the recorded one, but which designates
+% the same file and which editors normalize:
+% \meta{cwd}|/../|\meta{cwd name}|/|\meta{file}. Forward search then
+% behaves as when the material was copied (main text only), while
+% inverse search from the appendix gives the right file and line. The
+% working directory is read from the |.fls| file written by the
+% |-recorder| option (used by \textsf{latexmk} and most editors);
+% failing that, the file is opened under its plain name.
+% \end{itemize}
+%    \begin{macrocode}
+\ifdefined\directlua
+  \def\axp@region@input{%
+    \ifnum\axp@replay@tag>\z@
+      \directlua{apxproof.synctex_force(\axp@replay@tag)}%
+      \global\let\axp@region@forcedtag\axp@replay@tag
+    \fi
+    \expandafter\axp@skiplines\@@input\axp@replay@file\relax}
+  \def\axp@region@input@done{%
+    \ifnum\axp@replay@tag>\z@
+      \directlua{apxproof.synctex_unforce()}%
+      \global\let\axp@region@forcedtag\relax
+    \fi}
+  \let\axp@region@forcedtag\relax
+  \ifdefined\AddToHook
+    \AddToHook{file/before}{%
+      \ifx\axp@region@forcedtag\relax\else
+        \directlua{apxproof.synctex_unforce()}%
+      \fi}
+    \AddToHook{file/after}{%
+      \ifx\axp@region@forcedtag\relax\else
+        \directlua{apxproof.synctex_force(\axp@region@forcedtag)}%
+      \fi}
+  \fi
+%    \end{macrocode}
+% The Lua side. Forcing the tag does not reach nodes created from Lua
+% (such as the glyphs that \textsf{luaotfload} inserts for ligatures),
+% which in this mode get no tag and line at all and would be attributed,
+% when the page is shipped out, to wherever \TeX{} is then. A filter run
+% before line breaking and box packing therefore gives such nodes, while
+% a tag is forced, the tag and the line of the nearest preceding node
+% (or following one, at the start of a list). (Font kerns are a
+% different matter: Lua\TeX{} records them with the position of the
+% enclosing |\input| rather than with the position of the glyphs they
+% sit between, in the main text just as well, and does not use the
+% fields we could set; this is a Lua\TeX{} peculiarity that we leave
+% alone.)
+%    \begin{macrocode}
+  \directlua{
+    apxproof = apxproof or {}
+    apxproof.forced_tag = 0
+    local get, set = node.direct.get_synctex_fields,
+                     node.direct.set_synctex_fields
+    local traverse, todirect = node.direct.traverse, node.direct.todirect
+    function apxproof.synctex_force(tag)
+      apxproof.saved_tag, apxproof.saved_line =
+        tex.get_synctex_tag(), tex.get_synctex_line()
+      tex.set_synctex_no_files(1)
+      tex.set_synctex_mode(2)
+      tex.force_synctex_tag(tag)
+      tex.set_synctex_tag(tag)
+      tex.set_synctex_line(0)
+      apxproof.forced_tag = tag
+    end
+    function apxproof.synctex_unforce()
+      apxproof.forced_tag = 0
+      tex.force_synctex_tag(0)
+      tex.set_synctex_tag(apxproof.saved_tag or 0)
+      tex.set_synctex_line(apxproof.saved_line or 0)
+      tex.set_synctex_mode(0)
+      tex.set_synctex_no_files(0)
+    end
+    local getprev, tail = node.direct.getprev, node.direct.tail
+    function apxproof.synctex_fix(head)
+      local tag = apxproof.forced_tag
+      if tag == 0 then return true end
+      local last_l = 0
+      local pending = false
+      for n in traverse(todirect(head)) do
+        local t, l = get(n)
+        if t == 0 or (t == tag and l == 0) then
+          if last_l > 0 then
+            set(n, tag, last_l)
+          else
+            pending = true
+          end
+        elseif t == tag then
+          last_l = l
+        end
+      end
+      if pending then
+        local n = tail(todirect(head))
+        last_l = 0
+        while n do
+          local t, l = get(n)
+          if t == 0 or (t == tag and l == 0) then
+            if last_l > 0 then set(n, tag, last_l) end
+          elseif t == tag then
+            last_l = l
+          end
+          n = getprev(n)
+        end
+      end
+      return true
+    end
+    luatexbase.add_to_callback("pre_linebreak_filter",
+      apxproof.synctex_fix, "apxproof.synctex")
+    luatexbase.add_to_callback("hpack_filter",
+      apxproof.synctex_fix, "apxproof.synctex")
+  }
+\else
+  \def\axp@region@input{%
+    \axp@region@altfile
+    \expandafter\axp@skiplines\@@input\axp@replay@altfile\relax}
+  \let\axp@region@input@done\relax
+\fi
+%    \end{macrocode}
+% |\axp@region@altfile| defines |\axp@replay@altfile| from
+% |\axp@replay@file|. The working directory is looked up once, in the
+% first line of the |.fls| file, which reads |PWD |\meta{directory}; its
+% last component is extracted by |\axp@region@lastcomponent|. An
+% absolute file name (an unusual case) is prefixed with a second |/|
+% instead, which has the same effect. As the same read stream is used, we
+% forget the file the check pass may have kept open.
+%    \begin{macrocode}
+\let\axp@region@pwd\relax
+\def\axp@region@altfile{%
+  \ifx\axp@region@pwd\relax
+    \axp@region@findpwd
+  \fi
+  \ifx\axp@region@pwd\@empty
+    \let\axp@replay@altfile\axp@replay@file
+  \else
+    \expandafter\axp@region@altfile@i\axp@replay@file\@nil
+  \fi}
+\def\axp@region@altfile@i#1#2\@nil{%
+  \if/#1%
+    \edef\axp@replay@altfile{/\axp@replay@file}%
+  \else
+    \edef\axp@replay@altfile{%
+      \axp@region@pwd/../\axp@region@pwdbase/\axp@replay@file}%
+  \fi}
+\def\axp@region@findpwd{%
+  \gdef\axp@region@pwd{}%
+  \IfFileExists{\jobname.fls}{%
+    \begingroup
+      \endlinechar\m@ne
+      \openin\axp@readfile=\jobname.fls\relax
+      \ifeof\axp@readfile\else
+        \readline\axp@readfile to\axp@line
+        \expandafter\axp@region@findpwd@i\axp@line
+          \relax\relax\relax\relax\@nil
+      \fi
+      \closein\axp@readfile
+    \endgroup
+    \gdef\axp@region@openfile{}%
+  }{}%
+}
+\def\axp@region@findpwd@i#1#2#3#4\@nil{%
+  \def\axp@tmp{#1#2#3}%
+  \edef\axp@tmpa{\detokenize{PWD}}%
+  \ifx\axp@tmp\axp@tmpa
+    \axp@region@findpwd@ii#4\@nil
+  \fi}
+\def\axp@region@findpwd@ii#1\relax#2\@nil{%
+  \axp@region@findpwd@iii#1\@nnil\@nnil}
+\def\axp@region@findpwd@iii#1#2\@nnil#3\@nnil{%
+  \ifx\@nnil#1\else
+    \xdef\axp@region@pwd{#1#2}%
+    \xdef\axp@region@pwdbase{\axp@region@lastcomponent#1#2/\@nil}%
+    \ifx\axp@region@pwdbase\@empty
+      \gdef\axp@region@pwd{}%
+    \fi
+  \fi}
+\def\axp@region@lastcomponent#1/#2\@nil{%
+  \ifx\@empty#2\@empty
+    #1%
+  \else
+    \axp@region@lastcomponent#2\@nil
+  \fi}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@skiplines}
+% \begin{macro}{\axp@region@nextbegin}
+% \begin{macro}{\axp@region@afterbegin}
+% Note that the tokens following |\@@input| in |\axp@region@replay|
+% are only read once the file has been closed, and that when
+% |\axp@skiplines| starts, the first line of the file has been read into
+% \TeX's buffer but nothing has been tokenized yet. We gobble whole lines
+% until the start line, which is read with all characters ordinary,
+% then |\begin{| as many times as needed, and
+% close the catcode group: the rest of the line, still in the buffer,
+% will be tokenized with the normal catcodes, but with |@| an ordinary
+% character as in the rest of the document.
+%    \begin{macrocode}
+\def\axp@skiplines{%
+  \ifnum\axp@skipcount>\z@
+    \advance\axp@skipcount\m@ne
+    \expandafter\axp@gobbleline
+  \else
+    \axp@region@setcatcodes{12}%
+    \axp@skipcount=\axp@region@begins
+    \expandafter\axp@gobbletobegin
+  \fi}
+\def\axp@region@nextbegin{%
+  \ifnum\axp@skipcount>\z@
+    \advance\axp@skipcount\m@ne
+    \expandafter\axp@gobbletobegin
+  \else
+    \expandafter\axp@region@afterbegin
+  \fi}
+\def\axp@region@afterbegin{%
+  \endgroup
+  \catcode`\@=12
+  \def\axp@region@name{}%
+  \axp@region@readname}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@readname}
+% \begin{macro}{\axp@region@readname@go}
+% The name of the environment is then read character by character up to
+% the closing brace, which is consumed by a |\let|. (A macro cannot insert
+% an unbalanced |{| into the input, and a delimited argument cannot be
+% delimited by |}|.)
+%
+% If the name is the expected one, we do not execute |\begin| at all,
+% as material copied to the |.axp| file was not enclosed in a group, and
+% we want the same here (a group would, e.g., undo what a
+% |\subsection| in a |toappendix| environment does to the paragraph that
+% follows it). We run the begin code directly, and let |\end| be
+% |\axp@region@endcmd|, which runs the end code and |\axp@region@finish|
+% for the expected environment, and delegates every other name to the
+% saved |\end|; nested environments in the material thus behave as usual.
+% The test on the name is done with |\ifcsname| on a flag set for the
+% expected environment, so that the wrapper is expandable, as the kernel's
+% |\end| is, up to the point where the original |\end| takes over: this
+% matters when |\end{tabular}| is met while \TeX{} scans the beginning of
+% an alignment row, where anything unexpandable would open a new row.
+% |\axp@region@finish| makes every character ignored, so that whatever
+% remains of the |\end| line is dropped by \TeX's tokenizer, and stops
+% reading the file with |\endinput|. Doing this with catcodes rather than
+% by grabbing the rest of the line is necessary, because pending tokens
+% of the macros being executed would otherwise be grabbed as well.
+%
+% If the name is different (the environment is wrapped in a user
+% environment), we execute |\begin| with that name; the environment's
+% end code (the user's) is extended with |\aftergroup\axp@region@finish|
+% so that the file is closed right after the group of the environment
+% ends.
+%    \begin{macrocode}
+\def\axp@region@readname{%
+  \futurelet\axp@region@next\axp@region@readname@i}
+\def\axp@region@readname@i{%
+  \ifx\axp@region@next\egroup
+    \expandafter\axp@region@readname@done
+  \else
+    \expandafter\axp@region@readname@ii
+  \fi}
+\def\axp@region@readname@ii#1{%
+  \edef\axp@region@name{\axp@region@name#1}\axp@region@readname}
+\def\axp@region@readname@done{%
+  \afterassignment\axp@region@readname@go\let\axp@region@next= }
+\def\axp@region@readname@go{%
+  \ifx\axp@region@name\axp@replay@env
+    \expandafter\axp@region@go@direct
+  \else
+    \expandafter\axp@region@go@wrapped
+  \fi}
+\def\axp@region@go@direct{%
+  \expandafter\let\csname axp@region@isregion@\axp@replay@env\endcsname
+    \@empty
+  \let\end\axp@region@endcmd
+  \axp@replay@begin}
+\def\axp@region@go@wrapped{%
+  \axp@region@wrappedtrue
+  \expandafter\let\expandafter\axp@region@savedwrappedend
+    \csname end\axp@region@name\endcsname
+  \expandafter\def\csname end\axp@region@name\endcsname{%
+    \axp@region@savedwrappedend\aftergroup\axp@region@finish}%
+  \expandafter\begin\expandafter{\axp@region@name}}
+\def\axp@region@endcmd#1{%
+  \ifcsname axp@region@isregion@#1\endcsname
+    \expandafter\axp@region@endregion
+  \else
+    \expandafter\axp@region@savedendcmd
+  \fi
+  {#1}}
+\def\axp@region@endregion#1{\axp@replay@end\axp@region@finish}
+\def\axp@region@finish{\axp@region@setcatcodes{9}\endinput}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@proof}
+% \begin{macro}{\axp@region@rp}
+% Finally, the begin codes used in the appendix, which read the optional
+% argument of the environment from the source. For proofs, the first argument
+% is the proof environment to use and the second is |1| if the proof is
+% to be titled by |\axp@apxproofstart| (this is decided in the main text,
+% and thus passed along). The optional argument is looked for exactly as
+% in the main text, without skipping spaces. The end of the
+% |\begin{proof}| line was not copied to the |.axp| file, and we
+% |\ignorespaces| it, which also prevents the proof environment from
+% mistaking a |[| at the start of the body for an optional argument.
+%    \begin{macrocode}
+\def\axp@region@proof#1#2{%
+  \ltx@ifnextchar@nospace[%
+    {\axp@region@proof@opt{#1}}{\axp@region@proof@noopt{#1}{#2}}}
+\def\axp@region@proof@opt#1[#2]{\begin{#1}[#2]\ignorespaces}
+\def\axp@region@proof@noopt#1#2{%
+  \ifnum#2=\@ne
+    \expandafter\axp@apxproofstart
+  \else
+    \expandafter\begin
+  \fi
+  {#1}\ignorespaces}
+%    \end{macrocode}
+% For |toappendix| environments, we typeset the pending appendix section
+% heading, if any, using |\axp@section| which looks at what follows in the
+% source, and otherwise skip the end of the |\begin{toappendix}| line, which
+% was not copied to the |.axp| file.
+%    \begin{macrocode}
+\def\axp@region@toappendix{%
+  \ifx\axp@region@pendingsection\relax
+    \expandafter\ignorespaces
+  \else
+    \expandafter\axp@region@toappendix@section
+  \fi}
+\def\axp@region@toappendix@section{%
+  \edef\axp@tmp{\expandonce\axp@region@pendingsection}%
+  \global\let\axp@region@pendingsection\relax
+  \expandafter\axp@section\expandafter{\axp@tmp}%
+}
+%    \end{macrocode}
+% For repeated theorems, the arguments are the theorem name and the value of
+% |axp@rpcounter|; the heading is built as in |\axp@newtheoremrep| below.
+%    \begin{macrocode}
+\def\axp@region@rp#1#2{%
+  \@ifnextchar[{\axp@region@rp@i{#1}{#2}}{\axp@region@rp@i{#1}{#2}[]}}
+\def\axp@region@rp@i#1#2[#3]{%
+  \begin{axp@#1rp}[%
+    \axp@refstar{axp@r#2}%
+    \@ifnotempty{#3}{%
+      \ifdefined\theopargself\else
+        \ifdefined\@acmplainnotefont
+          \@acmplainnotefont
+        \else
+          \ifdefined\thm@notefont\the\thm@notefont\fi
+        \fi
+      \fi
+      {} ({#3})%
+    }%
+  ]%
+  \axp@forward@target{axp@fw@r#2}{}%
+  \axp@redefinelabels
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
 % \subsection{Inline Compilation Mode}
 %    \begin{macrocode}
 \ifthenelse{\equal{\axp@appendix}{inline}}{
@@ -1191,16 +2144,29 @@
 % of equation counters are defined.
 % \changes{v1.2.0}{2019/02/15}{Fix formatting of theorems without
 % notes in some document classes in inline mode}
+% With the |synctex| option, the environment is defined with
+% |\newenvironment| so that its body is typeset directly from the source
+% file (see Section~\ref{sec:synctex-impl}).
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
-    \NewEnviron{#1rep}[1][]{%
-      \ifx\relax##1\relax
-        \begin{#1}\axp@redefinelabels\BODY\end{#1}%
-      \else
-        \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
-      \fi
-    }
+    \ifbool{axp@synctex}{%
+      \newenvironment{#1rep}[1][]{%
+        \ifx\relax##1\relax
+          \begin{#1}\axp@redefinelabels
+        \else
+          \begin{#1}[##1]\axp@redefinelabels
+        \fi
+      }{\end{#1}}%
+    }{%
+      \NewEnviron{#1rep}[1][]{%
+        \ifx\relax##1\relax
+          \begin{#1}\axp@redefinelabels\BODY\end{#1}%
+        \else
+          \begin{#1}[##1]\axp@redefinelabels\BODY\end{#1}%
+        \fi
+      }%
+    }%
   }
 %    \end{macrocode}
 % \end{macro}
@@ -1318,6 +2284,11 @@
 % \textsf{xypic} package}
 % \changes{v1.2.1}{2020/10/15}{Fix compatibility with other uses of \textsf{fancyvrb} that set
 % \texttt{\textbackslash FV@CatCodesHook}}
+% With the |synctex| option, the environment is still scanned line by line by
+% \textsf{fancyvrb} (this is how we skip its content in the main text and
+% find its end), but the lines are not written to the |.axp| file, which
+% instead receives an |\axp@replaybody| command
+% (Section~\ref{sec:synctex-impl}).
 %    \begin{macrocode}
   \DefineVerbatimEnvironment{axp@VerbatimOut}{axp@VerbatimOut}{}
   \def\FVB@axp@VerbatimOut{%
@@ -1327,7 +2298,11 @@
       \FV@DefineWhiteSpace
       \def\FV@Space{\space}%
       \FV@DefineTabOut
-      \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      \ifbool{axp@synctex}{%
+        \let\FV@ProcessLine\@gobble
+      }{%
+        \def\FV@ProcessLine{\immediate\write\axp@proofsfile}%
+      }%
       \let\FV@FontScanPrep\relax
       \let\@noligs\relax
       \def\FV@CatCodesHook{}%
@@ -1348,11 +2323,30 @@
 % \end{macro}
 % \begin{environment}{toappendix}
 % The entire content of this environment is put in appendix,
-% starting a new appendix section beforehand if needed.
+% starting a new appendix section beforehand if needed. With the
+% |synctex| option, we record where the environment starts and, at its
+% end, write the replay command; in the appendix, the begin code is
+% |\axp@region@toappendix| and there is no end code. As
+% |\axp@section| looks at what follows it to decide whether to
+% typeset a heading, and the content is now only available once the
+% environment is replayed, we have the section command written as
+% |\axp@region@section|, which merely stores the heading for
+% |\axp@region@toappendix| to handle.
 %    \begin{macrocode}
   \newenvironment{toappendix}
-    {\axp@markchapterhasappendix\axp@writesection\axp@VerbatimOut}
-    {\endaxp@VerbatimOut}
+    {\axp@markchapterhasappendix
+     \ifbool{axp@synctex}{%
+       \def\axp@sectioncmd{\axp@region@section}%
+       \axp@writesection
+       \axp@region@record
+     }{%
+       \axp@writesection
+     }%
+     \axp@VerbatimOut}
+    {\endaxp@VerbatimOut
+     \ifbool{axp@synctex}{%
+       \axp@region@write{\noexpand\axp@region@toappendix}{\relax}%
+     }{}}
 %    \end{macrocode}
 % \end{environment}
 %    \subsubsection{Definition of New Theorems}
@@ -1396,8 +2390,42 @@
     }%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
 %    \end{macrocode}
-% We then define a |foobarrep| environment that increments the
-% |axp@rpcounter| and typeset the regular |foobar| theorem with a label
+% We then define a |foobarrep| environment, whose begin code and code
+% writing the appendix material are the two macros described below,
+% |\axp@newtheoremrep@begin| and |\axp@newtheoremrep@end|. Normally, the
+% body of the environment is collected by \textsf{environ}, typeset, and
+% stored in a macro for the appendix. With the |synctex| option, the environment
+% is instead an ordinary one, so that its body is typeset directly from the
+% source file, and the appendix will re-read the body from there
+% (Section~\ref{sec:synctex-impl}); we first record where the environment
+% starts.
+% \changes{v1.4.1-dev}{2026/08/19}{Repeated theorems typeset directly from
+% the source with the \texttt{synctex} option}
+%    \begin{macrocode}
+    \ifbool{axp@synctex}{%
+      \newenvironment{#1rep}[1][]{%
+        \axp@region@record
+        \axp@newtheoremrep@begin{#1}{##1}%
+      }{%
+        \end{#1}%
+        \axp@newtheoremrep@end{#1}{#3}{}%
+      }%
+    }{%
+      \NewEnviron{#1rep}[1][]{%
+        \axp@newtheoremrep@begin{#1}{##1}%
+        \BODY\end{#1}%
+        \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
+                               \endcsname
+        \BODY
+        \axp@newtheoremrep@end{#1}{#3}{##1}%
+      }%
+    }%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@newtheoremrep@begin}
+% The begin code of a |foobarrep| environment increments the
+% |axp@rpcounter| and typesets the regular |foobar| theorem with a label
 % derived from the counter, along with a possible custom command to
 % identify repeated theorems. We distinguish the case when the theorem
 % argument has a note and when it does not.
@@ -1410,27 +2438,28 @@
 % \changes{v1.2.2}{2020/11/25}{Fix handling of optional arguments of
 % repeated theorems containing optional arguments}
 %    \begin{macrocode}
-    \NewEnviron{#1rep}[1][]{%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \setcounter{axp@equation}{\value{equation}}%
-      }{}%
-      \addtocounter{axp@rpcounter}{1}%
-      \ifx\relax##1\relax
-        \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
-      \else
-        \axp@with@forward{#1}{\begin{#1}[{##1}]}\label{axp@r\roman{axp@rpcounter}}%
-      \fi
-      \mainbodyrepeatedtheorem
-      \BODY\end{#1}%
+  \def\axp@newtheoremrep@begin#1#2{%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \setcounter{axp@equation}{\value{equation}}%
+    }{}%
+    \addtocounter{axp@rpcounter}{1}%
+    \ifx\relax#2\relax
+      \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
+    \else
+      \axp@with@forward{#1}{\begin{#1}[{#2}]}\label{axp@r\roman{axp@rpcounter}}%
+    \fi
+    \mainbodyrepeatedtheorem
+  }
 %    \end{macrocode}
-% We set the |axp@seenreptheorem| toggle to indicate that we are looking
-% for the proof of the theorem, then store in a macro the content of the
-% theorem's body.
+% \end{macro}
+% \begin{macro}{\axp@newtheoremrep@end}
+% Once the theorem has been typeset, with arguments the theorem name, its
+% title and its note (the latter is only needed when the body was
+% collected), we set the |axp@seenreptheorem| toggle to indicate that we
+% are looking for the proof of the theorem.
 %    \begin{macrocode}
-      \global\toggletrue{axp@seenreptheorem}%
-      \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
-                             \endcsname
-      \BODY
+  \def\axp@newtheoremrep@end#1#2#3{%
+    \global\toggletrue{axp@seenreptheorem}%
 %    \end{macrocode}
 % Possibly after starting a new appendix section if needed, we typeset a
 % repeated version of the theorem using the |axp@foobarrp| environment
@@ -1454,20 +2483,20 @@
 % in optional argument of macro environment}
 % \changes{v1.2.0}{2019/10/07}{Fix display of theorem notes}
 %    \begin{macrocode}
-      \axp@markchapterhasappendix
-      \axp@writesection%
-      \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\setcounter{axp@equationx}{\value{equation}}%
-          \noexpand\setcounter{equation}{\theaxp@equation}%
-        }%
-      }{}%
-      \ifbool{axp@forward@suppress}{%
-        \global\def\axp@refstar{\ref*}
-      }{%
-        \global\def\axp@refstar{\ref}
-      }
+    \axp@markchapterhasappendix
+    \axp@writesection%
+    \immediate\write\axp@proofsfile{\noexpand\makeatletter}%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\setcounter{axp@equationx}{\value{equation}}%
+        \noexpand\setcounter{equation}{\theaxp@equation}%
+      }%
+    }{}%
+    \ifbool{axp@forward@suppress}{%
+      \global\def\axp@refstar{\ref*}
+    }{%
+      \global\def\axp@refstar{\ref}
+    }
 %    \end{macrocode}
 % We write the auto-title state to the |.axp| file so that the following
 % deferred proof can title itself via |\appendixproofname|. In starred
@@ -1477,35 +2506,44 @@
 % \changes{v1.4.0}{2026/05/14}{Write auto-title state for
 % \cs{appendixproofname} hook}
 %    \begin{macrocode}
+    \immediate\write\axp@proofsfile{%
+      \noexpand\gdef\noexpand\axp@nextproofof@type{#2}%
+      \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+    }%
+    \ifcsdef{axp@proofof@#1}{%
       \immediate\write\axp@proofsfile{%
-        \noexpand\gdef\noexpand\axp@nextproofof@type{#3}%
-        \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+        \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
       }%
-      \ifcsdef{axp@proofof@#1}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
-        }%
-      }{%
+    }{%
 %    \end{macrocode}
 % In the default (unstarred) mode, we emit the repeated version of the
 % theorem to the appendix; the forward-link target sits inside the
 % restated theorem. In starred mode, we skip this block entirely.
+% With the |synctex| option, the restated theorem is produced by
+% replaying the source, and the heading is built by |\axp@region@rp|;
+% otherwise we write it out here, followed by the stored body.
 %    \begin{macrocode}
-        \immediate\write\axp@proofsfile{{%
-          \ifdefined\theopargself
-            \noexpand\theopargself
-          \else
-            \noexpand\pretocmd{\noexpand\@begintheorem}{%
-              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
-              \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
-            }{}{}
-          \fi
+      \immediate\write\axp@proofsfile{{%
+        \ifdefined\theopargself
+          \noexpand\theopargself
+        \else
+          \noexpand\pretocmd{\noexpand\@begintheorem}{%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\@acmplainnotefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{\noexpand\the\noexpand\thm@notefont}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{(}{}{}{}%
+            \noexpand\patchcmd{\noexpand\thmhead}{)}{}{}{}%
+          }{}{}
+        \fi
+        \ifbool{axp@synctex}{%
+          \noexpand\axp@replaybody{\axp@region@file}{\axp@region@line}%
+            {\the\inputlineno}{\axp@region@env}%
+            {\noexpand\axp@region@rp{#1}{\roman{axp@rpcounter}}}%
+            {\noexpand\end{axp@#1rp}}{\axp@region@tag}%
+        }{%
           \noexpand\begin{axp@#1rp}
             [%
               \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
-              \@ifnotempty{##1}{%
+              \@ifnotempty{#3}{%
                 \ifdefined\theopargself
                 \else
                   \ifdefined\@acmplainnotefont
@@ -1516,7 +2554,7 @@
                     \noexpand\fi
                   \fi
                 \fi
-                {} (\unexpanded{{##1}})%
+                {} (\unexpanded{{#3}})%
               }%
             ]%
             \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
@@ -1524,14 +2562,14 @@
             \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
                                  \endcsname
           \noexpand\end{axp@#1rp}
-        }}%
-      }%
-      \ifthenelse{\equal{\axp@repeqn}{same}}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\setcounter{equation}{\value{axp@equationx}}%
         }%
-      }{}%
+      }}%
     }%
+    \ifthenelse{\equal{\axp@repeqn}{same}}{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\setcounter{equation}{\value{axp@equationx}}%
+      }%
+    }{}%
   }
 %    \end{macrocode}
 % \end{macro}
@@ -1721,7 +2759,7 @@
 % active~|~| and may carry other fragile material, which an auxiliary typeset
 % pass would perturb or, with |\protect| neutralised, send into an infinite
 % loop.
-% \changes{v1.4.1}{2026/08/03}{Recognize \cs{zcref} of \textsf{zref-clever} in
+% \changes{v1.4.1-dev}{2026/08/03}{Recognize \cs{zcref} of \textsf{zref-clever} in
 % the title of an inline proof}
 % \textsf{zref-clever}'s |\zcref| is the only one of these that is not simply
 % \meta{cs}\marg{label}: it is |\zcref*[|\meta{options}|]|\marg{labels}, whose
@@ -1792,6 +2830,12 @@
 % appendix typeset time. A user-supplied optional argument or a manual
 % |\appendixproof| call (toggle false) bypasses this and uses
 % the standard ``Proof.'' heading.
+% With the |synctex| option, nothing is written when the proof starts:
+% we record its position and whether it is to be titled by
+% |\axp@apxproofstart|, and the replay command written at the end
+% (by |\axp@appendixproof@write|, with the name of the proof environment
+% to use in the appendix) carries this information to |\axp@region@proof|,
+% which reads the optional argument, if any, from the source.
 %    \begin{macrocode}
   \def\appendixproof{\catcode`\^^M=\active\@ifnextchar[{\catcode`\^^M=5\@@appendixproof[axp@oldproof]}{\catcode`\^^M=5\@appendixproof[axp@oldproof]}}
   \def\@appendixproof[#1]%
@@ -1799,12 +2843,22 @@
       \axp@markchapterhasappendix
       \axp@writesection
       \iftoggle{axp@seenreptheorem}{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\makeatletter\noexpand\axp@apxproofstart{#1}\noexpand\makeatother%
+        \ifbool{axp@synctex}{%
+          \axp@region@record
+          \def\axp@region@flag{1}%
+        }{%
+          \immediate\write\axp@proofsfile{%
+            \noexpand\makeatletter\noexpand\axp@apxproofstart{#1}\noexpand\makeatother%
+          }%
         }%
       }{%
-        \immediate\write\axp@proofsfile{%
-          \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+        \ifbool{axp@synctex}{%
+          \axp@region@record
+          \def\axp@region@flag{0}%
+        }{%
+          \immediate\write\axp@proofsfile{%
+            \noexpand\makeatletter\noexpand\begin{#1}\noexpand\makeatother%
+          }%
         }%
       }%
       \axp@VerbatimOut
@@ -1813,17 +2867,31 @@
     {%
       \axp@markchapterhasappendix
       \axp@writesection
-      \immediate\write\axp@proofsfile{%
-        \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
+      \ifbool{axp@synctex}{%
+        \axp@region@record
+        \def\axp@region@flag{0}%
+      }{%
+        \immediate\write\axp@proofsfile{%
+          \noexpand\makeatletter\noexpand\begin{#1}[\unexpanded{#2}]\noexpand\makeatother%
+        }%
       }%
       \axp@VerbatimOut
     }
+  \def\axp@appendixproof@write#1{%
+    \ifbool{axp@synctex}{%
+      \axp@region@write
+        {\noexpand\axp@region@proof{#1}{\axp@region@flag}}%
+        {\noexpand\end{#1}}%
+    }{%
+      \immediate\write\axp@proofsfile{%
+        \noexpand\end{#1}%
+      }%
+    }%
+  }
   \def\endappendixproof
     {%
       \endaxp@VerbatimOut
-      \immediate\write\axp@proofsfile{%
-        \noexpand\end{axp@oldproof}%
-      }%
+      \axp@appendixproof@write{axp@oldproof}%
       \noproofinappendix
     }
 %    \end{macrocode}
@@ -1903,9 +2971,7 @@
     \def\endappendixclaimproof
     {%
       \endaxp@VerbatimOut
-      \immediate\write\axp@proofsfile{%
-      \noexpand\end{axp@oldclaimproof}%
-      }%
+      \axp@appendixproof@write{axp@oldclaimproof}%
       \noproofinappendix
     }
     \fi
@@ -2055,7 +3121,13 @@
 % \changes{v1.1.0}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust.
 % Resolves issues from use of section title in \textsf{fancyhdr},
 % and in \cs{tableofcontents} (K. D. Bauer).}
+%
+% The command written is normally |\axp@section|; the |toappendix|
+% environment substitutes |\axp@region@section| for it with the |synctex|
+% option, so that the heading is decided when the material is replayed
+% (Section~\ref{sec:synctex-impl}).
 %    \begin{macrocode}
+  \def\axp@sectioncmd{\axp@section}
   \newcommand\axp@writesection{%
     \ifx\axp@sectitle\@empty
     \else
@@ -2068,7 +3140,7 @@
       \immediate\write\@auxout{\expandonce\axp@tmp}
       \immediate\write\axp@proofsfile{%
         \expandonce\axp@tmp^^J%
-        \noexpand\axp@section{%
+        \expandafter\noexpand\axp@sectioncmd{%
           \noexpand\appendixsectionformat{%
             \protect
             \expandonce{\csname axp@protectref@\roman{axp@seccounter}\endcsname}%

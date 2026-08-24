@@ -112,6 +112,11 @@ Let(T_CS('\ver@catchfile.sty'), T_CS('\fmtversion'), 'global');
 
 my $axp_name = ToString(Expand(T_CS('\@currname')));
 my $axp_opts = LookupValue('opt@' . $axp_name . '.sty') || [];
+# The synctex option makes apxproof re-read appendix material from the
+# source files with the primitive \input, which is pointless without
+# SyncTeX output and not something LaTeXML's emulation is meant to do:
+# drop it, so that the material is copied to the .axp file as usual.
+$axp_opts = [grep { !/^\s*synctex\s*(=|$)/ } @$axp_opts];
 # Set up the package loading context by hand rather than through
 # InputDefinitions' handleoptions: the latter stores \@currext and the
 # option list with all-OTHER catcodes, which breaks the \ifx-based

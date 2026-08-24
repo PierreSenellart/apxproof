@@ -1,0 +1,33 @@
+# page word file line: the first occurrence of word on the page must be
+# attributed by SyncTeX to that line of that file (see ../checksynctex.py).
+# LuaTeX records font kerns, and the glyphs following them, with a stale
+# position (that of the enclosing \input at shipout), in the main text as
+# well; words right after a kerned word are therefore not checked here.
+# Main text: repeated theorems are typeset from the source
+1 quokka test.tex 27
+1 wrapped test.tex 41
+2 emu sub.tex 4
+# Appendix: everything is re-read from the source files
+3 quokka test.tex 27
+3 wombat test.tex 36
+3 wrapped test.tex 41
+3 bilby test.tex 45
+3 dingo test.tex 49
+3 echidna test.tex 53
+3 kookaburra test.tex 56
+3 cassowary test.tex 59
+3 wallaby test.tex 65
+3 koala test.tex 67
+3 galah test.tex 75
+3 kiwi test.tex 88
+3 tenrec test.tex 99
+3 lorikeet test.tex 110
+3 pademelon test.tex 112
+3 possum test.tex 115
+4 emu sub.tex 4
+# Forward search: with LuaTeX both the main text and the appendix are found
+view test.tex 19 1
+view test.tex 27 1,3
+view sub.tex 4 2,4
+view test.tex 36 3
+view sub.tex 8 4
