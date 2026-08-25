@@ -1,7 +1,9 @@
 test.pdf
+merged.pdf
 test.test
 test.html
 reference.html
 test.latexml.log
 *.css
 *.lxml
+*.synctex.gz
