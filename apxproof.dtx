@@ -697,6 +697,29 @@
 % Other classes may work out of the box. Adding support for specific
 % classes is possible and can be requested from the
 % author of this package.
+% \section{HTML Conversion with \textsf{LaTeXML}}
+% \label{sec:latexml}
+% \changes{v1.4.1-dev}{2026/08/25}{Document the \textsf{LaTeXML} binding}
+% \textsf{LaTeXML} (\url{https://math.nist.gov/~BMiller/LaTeXML/}) converts
+% \LaTeX{} documents to HTML. It cannot read |apxproof.sty| itself, so the
+% package comes with a binding, |apxproof.sty.ltxml|, which reproduces its
+% behavior in the conversion: proofs deferred to the appendix, repeated
+% theorem statements with their original numbering, automatic appendix
+% sectioning, forward links from theorems to their proofs, and a separate
+% appendix bibliography.
+%
+% The binding is distributed with the package, and \textsf{LaTeXML} finds it
+% on its own if it sits next to the document; otherwise, point
+% \textsf{LaTeXML} at the directory holding it:
+% \begin{quote}|latexmlc --path=|\meta{dir}| --dest=paper.html paper.tex|\end{quote}
+% Do \emph{not} pass |--includestyles|: the binding is self-contained, and
+% that option makes \textsf{LaTeXML} process the dependencies of the real
+% |apxproof.sty|, which fails. \textsf{LaTeXML}~0.8.8 or later is required.
+%
+% Documents based on KOMA-Script (|scrartcl|, |scrbook|) or |memoir|, on the
+% LIPIcs classes, or using \textsf{biblatex}, cannot be converted. These are
+% \textsf{LaTeXML} limitations unrelated to \textsf{apxproof}: they affect
+% such documents whether or not they use this package.
 % \section{Known Issues and Limitations}
 % \label{sec:issues}
 % We report here some issues we are currently aware of:
