@@ -16,5 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update
-      - run: apt-get install -y poppler-utils imagemagick pdftk qpdf
+      # latexml is for the LaTeXML binding; Debian sid in this image ships
+      # 0.8.8, the earliest release the binding works with.
+      - run: apt-get install -y poppler-utils imagemagick pdftk qpdf latexml
       - run: make clean && make && make test
+      - run: make test-latexml
