@@ -525,7 +525,11 @@
 % that \textsf{cleveref} adds to |\label| (as in
 % |\label[equation]{|\meta{counter}|}|) may be used within repeated material,
 % and so may the |\zlabel| command of \textsf{zref-clever}, both giving rise
-% to the same |-apx| variants as |\label| does.
+% to the same |-apx| variants as |\label| does. Note that \textsf{cleveref}
+% loses that optional argument inside \textsf{amsmath} display environments
+% (|equation|, |align|, etc.), where the label ends up unreferenceable; this
+% happens with or without \textsf{apxproof}, and affects neither plain
+% |\label| nor \textsf{zref-clever}.
 %
 % \DescribeOption{forwardlinking}
 % Another customization option concerns hyperlinking.
@@ -726,23 +730,11 @@
 % (in addition to |bibliography=separate|) to use \textsf{biblatex}'s
 % own |refsection| machinery instead. The |bibliography=common| mode
 % remains a third option that works with most bibliography packages.
-% \item With \textsf{cleveref}, the optional argument of |\label| is lost
-% within \textsf{amsmath} display environments (|equation|, |align|, etc.):
-% the label ends up named |[|\meta{type}|]{|\meta{counter}|}| and cannot be
-% referenced. This is unrelated to \textsf{apxproof}, and happens just as
-% well in a document that does not use it; it is a consequence of
-% \textsf{amsmath} now saving the meaning of |\label| in the
-% |begindocument/end| hook, thereby overwriting the redefinition of
-% |\ltx@label| on which \textsf{cleveref} relies. Plain |\label| is
-% unaffected, and so is \textsf{zref-clever}.
-% \item In the optional title of a proof, a cross-reference that itself
-% takes an optional argument (typically
-% |\zcref[|\meta{options}|]|\marg{labels}) must be surrounded by braces, as
-% in |\begin{proof}[Proof of {\zcref[noname]{thm:x}}]|, since the |]| would
-% otherwise be taken to end the title. This is a general \LaTeX{}
-% requirement about optional arguments within optional arguments, and
-% applies just as well without \textsf{apxproof}. Such a braced
-% cross-reference is however invisible to the token scan of the title, so
+% \item A cross-reference that itself takes an optional argument, such as
+% \textsf{zref-clever}'s |\zcref|, has to be braced in the optional title of
+% a proof, as anywhere else in \LaTeX{}:
+% \begin{quote}|\begin{proof}[Proof of {\zcref[noname]{thm:x}}]|\end{quote}
+% Braced that way, it is invisible to the scan of the title, so
 % |\apxproofhook| does not fire for that proof.
 % \end{itemize}
 %
