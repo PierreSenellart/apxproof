@@ -11,6 +11,9 @@ scriptfiles = {"apxproof-synctex"}
 -- Also listed as sources so that l3build copies them into the unpack
 -- directory (where scriptfiles are looked up) and into the CTAN archive.
 sourcefiles = {"*.dtx", "*.ins", "apxproof-synctex", "apxproof.sty.ltxml"}
+-- The LaTeXML binding goes next to apxproof.sty, on TEXINPUTS, which is
+-- where LaTeXML looks for it through kpsewhich (as emo and stex do).
+installfiles = {"*.sty", "*.cls", "apxproof.sty.ltxml"}
 
 function typeset(file, dir)
   local errorlevel = tex(file, dir)

@@ -708,9 +708,9 @@
 % sectioning, forward links from theorems to their proofs, and a separate
 % appendix bibliography.
 %
-% The binding is distributed with the package, and \textsf{LaTeXML} finds it
-% on its own if it sits next to the document; otherwise, point
-% \textsf{LaTeXML} at the directory holding it:
+% The binding is installed with the package, next to |apxproof.sty|.
+% \textsf{LaTeXML} looks for it there, and in the directory of the document;
+% should it be kept anywhere else, point \textsf{LaTeXML} at that directory:
 % \begin{quote}|latexmlc --path=|\meta{dir}| --dest=paper.html paper.tex|\end{quote}
 % Do \emph{not} pass |--includestyles|: the binding is self-contained, and
 % that option makes \textsf{LaTeXML} process the dependencies of the real

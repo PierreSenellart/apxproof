@@ -59,8 +59,10 @@ repeated theorem statements with their original numbering, automatic
 appendix sectioning, forward links from theorems to their proofs, and a
 separate appendix bibliography.
 
-To use it, copy `apxproof.sty.ltxml` next to your document, or keep it in
-any other directory and point LaTeXML at it with `--path`:
+Nothing is needed to use it when `apxproof` is installed in your TeX tree:
+LaTeXML finds `apxproof.sty.ltxml` next to `apxproof.sty`. Otherwise, copy
+it next to your document, or keep it in any other directory and point
+LaTeXML at it with `--path`:
 
 ```
 latexmlc --path=/path/to/apxproof --dest=paper.html paper.tex
