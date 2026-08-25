@@ -38,7 +38,7 @@ directory, or in any other directory where LaTeX searches for packages.
 
 ## SyncTeX
 
-Since version 1.4.1-dev, apxproof supports SyncTeX (synchronization between
+Since version 1.5.0, apxproof supports SyncTeX (synchronization between
 the source and the PDF in editors and viewers) for appendix material and
 repeated theorems, by re-reading them from the source files when the
 appendix is typeset; this is enabled by default whenever the engine is run

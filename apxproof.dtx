@@ -25,7 +25,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2026/06/02 v1.4.1-dev Automatic proofs in appendix]
+%<package>  [2026/08/25 v1.5.0 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -542,7 +542,7 @@
 %
 % \subsection{Sync\TeX{} Support}
 % \label{sec:synctex}
-% \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
+% \changes{v1.5.0}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
 % \DescribeOption{synctex}
 % Sync\TeX{} lets editors and PDF viewers jump between a position in the
 % PDF and the source line that produced it. \textsf{apxproof} supports it
@@ -701,7 +701,7 @@
 % author of this package.
 % \section{HTML Conversion with \textsf{LaTeXML}}
 % \label{sec:latexml}
-% \changes{v1.4.1-dev}{2026/08/25}{Document the \textsf{LaTeXML} binding}
+% \changes{v1.5.0}{2026/08/25}{Document the \textsf{LaTeXML} binding}
 % \textsf{LaTeXML} (\url{https://math.nist.gov/~BMiller/LaTeXML/}) converts
 % \LaTeX{} documents to HTML. It cannot read |apxproof.sty| itself, so the
 % package comes with a binding, |apxproof.sty.ltxml|, which reproduces its
@@ -910,7 +910,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@synctex}
-% \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
+% \changes{v1.5.0}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
 %    \begin{macrocode}
 \DeclareStringOption[auto]{synctex}
 %    \end{macrocode}
@@ -1180,9 +1180,9 @@
 % same treatment as |\label|; it has no optional argument.
 % \begin{macro}{\axp@label}
 % \begin{macro}{\axp@label@in@display}
-% \changes{v1.4.1-dev}{2026/08/03}{Support the optional argument that
+% \changes{v1.5.0}{2026/08/03}{Support the optional argument that
 % \textsf{cleveref} adds to \cs{label} (R. Rowe)}
-% \changes{v1.4.1-dev}{2026/08/03}{Support \cs{zlabel} of \textsf{zref-clever}}
+% \changes{v1.5.0}{2026/08/03}{Support \cs{zlabel} of \textsf{zref-clever}}
 %    \begin{macrocode}
   \def\axp@label{\@ifnextchar[\axp@label@opt\axp@label@noopt}%]
   \def\axp@label@opt[#1]#2{\axp@label@do{[#1]}{#2}}
@@ -1285,7 +1285,7 @@
 %    \end{macrocode}
 % \subsection{Sync\TeX{} Support}
 % \label{sec:synctex-impl}
-% \changes{v1.4.1-dev}{2026/08/19}{Sync\TeX{} support: appendix material can
+% \changes{v1.5.0}{2026/08/19}{Sync\TeX{} support: appendix material can
 % be re-read from the source files instead of being copied to the
 % \texttt{.axp} file}
 % Sync\TeX{} records, for every box in the output, the file and line
@@ -1950,7 +1950,7 @@
 % \end{macro}
 % \end{macro}
 % \begin{macro}{\axp@region@findmain}
-% \changes{v1.4.1-dev}{2026/08/25}{Locate the main source file through the
+% \changes{v1.5.0}{2026/08/25}{Locate the main source file through the
 % \texttt{.fls} file, and fall back to copying when it cannot be read}
 % The kernel leaves |\CurrentFileUsed| empty for the main file and tells us
 % nothing about the name \TeX{} opened it under, so |\jobname.tex| is the
@@ -2489,7 +2489,7 @@
 % source file, and the appendix will re-read the body from there
 % (Section~\ref{sec:synctex-impl}); we first record where the environment
 % starts.
-% \changes{v1.4.1-dev}{2026/08/19}{Repeated theorems typeset directly from
+% \changes{v1.5.0}{2026/08/19}{Repeated theorems typeset directly from
 % the source with the \texttt{synctex} option}
 %    \begin{macrocode}
     \ifbool{axp@synctex}{%
@@ -2849,7 +2849,7 @@
 % active~|~| and may carry other fragile material, which an auxiliary typeset
 % pass would perturb or, with |\protect| neutralised, send into an infinite
 % loop.
-% \changes{v1.4.1-dev}{2026/08/03}{Recognize \cs{zcref} of \textsf{zref-clever} in
+% \changes{v1.5.0}{2026/08/03}{Recognize \cs{zcref} of \textsf{zref-clever} in
 % the title of an inline proof}
 % \textsf{zref-clever}'s |\zcref| is the only one of these that is not simply
 % \meta{cs}\marg{label}: it is |\zcref*[|\meta{options}|]|\marg{labels}, whose
