@@ -74,11 +74,7 @@ binding is self-contained, and that option makes LaTeXML process the raw
 `apxproof.sty` dependencies, which fails.
 
 LaTeXML 0.8.8 or later is required. `make test-latexml` runs the LaTeXML
-conversion over the example suite. Documents based on KOMA-Script
-(`scrartcl`, `scrbook`) or `memoir`, and documents using `biblatex`,
-cannot currently be converted, but these are LaTeXML limitations
-unrelated to `apxproof`: they affect such documents whether or not they
-use this package.
+conversion over the example suite.
 
 ## License
 
