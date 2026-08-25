@@ -724,13 +724,14 @@
 % the document complete but without Sync\TeX{} support for that material;
 % when a single piece cannot be re-read, an error message explains why and
 % that piece is missing from the appendix.
-% \item With pdf\TeX{} and Xe\TeX{}, forward search from a line of a proof
-% or of a |toappendix| environment lands on the nearest line of the main
-% text unless the |apxproof-synctex| script is run
-% (Section~\ref{sec:synctex}): the way Sync\TeX{} identifies files makes
+% \item Sync\TeX{} forward search, from the source to the PDF, reaches
+% appendix material with Lua\TeX{} only: with pdf\TeX{} and Xe\TeX{}, a line
+% of a proof or of a |toappendix| environment lands on the nearest line of
+% the main text unless the |apxproof-synctex| script is run
+% (Section~\ref{sec:synctex}), the way Sync\TeX{} identifies files making
 % it impossible to do better without breaking forward search from the main
-% text. Re-reading also has a cost: each piece of appendix material is
-% reached by reading its source file from the beginning, which a document
+% text. Sync\TeX{} support also has a cost: each piece of appendix material
+% is reached by reading its source file from the beginning, which a document
 % with hundreds of proofs in a very long file will notice.
 % \item By default, when |bibliography=separate|, \textsf{apxproof}
 % uses the \textsf{bibunits} package to generate a second bibliography.
