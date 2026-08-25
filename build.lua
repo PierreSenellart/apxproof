@@ -8,6 +8,9 @@ typesetsuppfiles = {"*.bib"}
 bibfiles = {"support/*.bib"}
 textfiles = {"README.md", "LICENSE"}
 scriptfiles = {"apxproof-synctex"}
+-- Also listed as sources so that l3build copies them into the unpack
+-- directory (where scriptfiles are looked up) and into the CTAN archive.
+sourcefiles = {"*.dtx", "*.ins", "apxproof-synctex", "apxproof.sty.ltxml"}
 
 function typeset(file, dir)
   local errorlevel = tex(file, dir)
