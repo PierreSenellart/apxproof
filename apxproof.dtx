@@ -541,15 +541,17 @@
 % \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
 % \DescribeOption{synctex}
 % Sync\TeX{} lets editors and PDF viewers jump between a position in the
-% PDF and the source line that produced it. By default, it does not work
-% well with \textsf{apxproof}: the body of a |foobarrep| environment is
-% attributed to the line of its |\end{foobarrep}|, and appendix material
-% is attributed to the auxiliary |.axp| file it was copied to, rather than
-% to the source. Sync\TeX{} only knows about tokens that \TeX{} reads
-% directly from a file, so this can only be fixed by not copying:
+% PDF and the source line that produced it. Making it work with
+% \textsf{apxproof} needs special treatment: without it, the body of a
+% |foobarrep| environment is attributed to the line of its
+% |\end{foobarrep}|, and appendix material is attributed to the auxiliary
+% |.axp| file it was copied to, rather than to the source. Sync\TeX{} only
+% knows about tokens that \TeX{} reads directly from a file, so the remedy
+% is not to copy. This is what \textsf{apxproof} does, by default whenever
+% the engine is run with Sync\TeX{} output enabled, and always with
 % \begin{quote}|\usepackage[synctex=yes]{apxproof}|\end{quote}
-% makes \textsf{apxproof} typeset repeated theorems directly from the
-% source, and, when the appendix is typeset, re-read every piece of
+% It typesets repeated theorems directly from the
+% source, and, when the appendix is typeset, re-reads every piece of
 % appendix material (proofs, |toappendix| environments and repeated
 % theorems) from the source file it came from, at the recorded lines.
 % Sync\TeX{} then points to the source for all of them, in both the main
