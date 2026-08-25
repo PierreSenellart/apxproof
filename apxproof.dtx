@@ -593,6 +593,16 @@
 % for which a section in the appendix should not be created. This should
 % be rarely needed. When this command is present, appendix material is
 % appended to the end of the previously created section.
+% \item[\textbackslash|apxproofhook|]\DescribeMacro{\apxproofhook}
+% is a one-argument hook, doing nothing by default, that
+% \textsf{apxproof} runs inside every proof it typesets in the appendix,
+% and inside an inline proof whose title names its result through a
+% cross-reference (|\ref|, |\cref|, |\Cref|, |\autoref|, |\vref| or
+% |\zcref|). Its argument is a label of the result the proof establishes:
+% the label of the preceding repeated theorem in the first case, the target
+% of the title's cross-reference in the second. Redefining it is how a
+% companion package, such as \textsf{proofgraph}, attributes each proof to
+% the result it proves; documents have no reason to.
 % \end{description}
 % \subsection{Grouping Appendix Material Under a Single Section}
 % \changes{v1.4.0}{2026/05/14}{Documented workarounds for grouping
