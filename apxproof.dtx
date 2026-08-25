@@ -730,12 +730,6 @@
 % (in addition to |bibliography=separate|) to use \textsf{biblatex}'s
 % own |refsection| machinery instead. The |bibliography=common| mode
 % remains a third option that works with most bibliography packages.
-% \item A cross-reference that itself takes an optional argument, such as
-% \textsf{zref-clever}'s |\zcref|, has to be braced in the optional title of
-% a proof, as anywhere else in \LaTeX{}:
-% \begin{quote}|\begin{proof}[Proof of {\zcref[noname]{thm:x}}]|\end{quote}
-% Braced that way, it is invisible to the scan of the title, so
-% |\apxproofhook| does not fire for that proof.
 % \end{itemize}
 %
 % Issues not listed here should be reported to the author.
@@ -2832,6 +2826,15 @@
 % comma-separated list, of which we keep the first label. Each grabber is
 % handed the whole remainder of the title and swallows it up to
 % |\axp@refstop|, so that nothing of it is left to be typeset.
+%
+% The matching is |\in@|, hence \TeX{} delimited-argument matching, which only
+% sees tokens at brace level~0. A cross-reference buried in a brace group is
+% therefore not found, and the hook does not fire for such a title. This is the
+% case when the cross-reference takes an optional argument of its own, since
+% \LaTeX{} then requires it to be braced within the optional title, as in
+% |\begin{proof}[Proof of {\zcref[noname]{thm:x}}]|. Nothing else is affected:
+% the title is typeset as given, and |\apxproofhook| is a no-op unless a
+% companion package has defined it.
 %    \begin{macrocode}
   \newif\ifaxp@inlineproofof
   \long\def\axp@inlineproofhook#1{%
