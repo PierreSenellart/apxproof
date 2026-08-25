@@ -541,85 +541,32 @@
 % \changes{v1.4.1-dev}{2026/08/19}{\texttt{synctex} option, \texttt{auto} by default}
 % \DescribeOption{synctex}
 % Sync\TeX{} lets editors and PDF viewers jump between a position in the
-% PDF and the source line that produced it. Making it work with
-% \textsf{apxproof} needs special treatment: without it, the body of a
-% |foobarrep| environment is attributed to the line of its
-% |\end{foobarrep}|, and appendix material is attributed to the auxiliary
-% |.axp| file it was copied to, rather than to the source. Sync\TeX{} only
-% knows about tokens that \TeX{} reads directly from a file, so the remedy
-% is not to copy. This is what \textsf{apxproof} does, by default whenever
-% the engine is run with Sync\TeX{} output enabled, and always with
-% \begin{quote}|\usepackage[synctex=yes]{apxproof}|\end{quote}
-% It typesets repeated theorems directly from the
-% source, and, when the appendix is typeset, re-reads every piece of
-% appendix material (proofs, |toappendix| environments and repeated
-% theorems) from the source file it came from, at the recorded lines.
-% Sync\TeX{} then points to the source for all of them, in both the main
-% text and the appendix.
+% PDF and the source line that produced it. \textsf{apxproof} supports it
+% in the appendix as well as in the main text, and nothing has to be done
+% for that: rather than copying appendix material and repeated theorems to
+% an auxiliary file, which would attribute them to that file, the package
+% typesets them from the source itself.
 %
-% The option can take three values. With |auto| (the default), the source
-% is re-read exactly when Sync\TeX{} output was requested (i.e., when the
-% engine was run with |-synctex=1| or a similar option, which is what
-% editors and \textsf{latexmk} do), and appendix material is copied to
-% the |.axp| file, as it always was, otherwise. With |yes|, the source is
-% always re-read; with |no|, it never is, and Sync\TeX{} is not supported.
-% In all cases the typeset output is the same; only the way appendix
-% material is obtained differs.
+% The |synctex| option says when it does so. With |auto| (the default),
+% exactly when Sync\TeX{} output was requested (i.e., when the engine was
+% run with |-synctex=1| or a similar option, which is what editors and
+% \textsf{latexmk} do); with |yes|, always; with |no|, never, and
+% Sync\TeX{} is then not supported. The typeset output is the same in all
+% cases. Should the re-reading cause trouble in a document, |synctex=no|
+% restores the previous behavior.
 %
-% Both directions of synchronization are concerned. From the PDF to the
-% source (inverse search), the appendix now points to the source, with
-% every engine. From the source to the PDF (forward search), a line of
-% the main text is found in the main text as before, and a line of a
-% proof or of a |toappendix| environment is found in the appendix with
-% Lua\TeX{}; with pdf\TeX{} and Xe\TeX{}, the way Sync\TeX{} identifies files
-% and the way viewers resolve them make this impossible without breaking
-% forward search from the main text, so such a line is resolved, as
-% before, to the nearest line of the main text (see the implementation
-% for details). This last point requires that the working directory of
-% the compilation be known, which is read from the |.fls| file written by
-% the |-recorder| option of the engine (\textsf{latexmk} and most editors
-% use it); without it, forward search from the main text of a file that
-% has appendix material would land in the appendix.
-%
-% With pdf\TeX{} and Xe\TeX{}, forward search can nevertheless be made to
-% find the appendix as well by running, after each compilation, the
-% |apxproof-synctex| script distributed with the package (it requires
-% Python~3), which merges the records of the re-read files into those of
-% the original ones in the |.synctex.gz| file:
+% Jumping from the PDF to the source (inverse search) works with every
+% engine. Jumping from the source to the PDF (forward search) finds
+% appendix material with Lua\TeX{}; with pdf\TeX{} and Xe\TeX{}, it does so
+% only if the |apxproof-synctex| script distributed with the package (it
+% requires Python~3) is run after each compilation:
 % \begin{quote}|apxproof-synctex |\meta{jobname}\end{quote}
 % With \textsf{latexmk}, adding
 % \begin{quote}|$success_cmd = 'apxproof-synctex %R';|\end{quote}
 % to a |latexmkrc| file does this automatically.
 %
-% For this to work, the source files must still be readable, under the same
-% names, when the appendix is typeset (which is the case in any normal
-% compilation), and each |\begin{foobarrep}|, |\begin{proof}|,
-% |\begin{toappendix}|, etc., must appear literally in the source: material
-% produced by a macro cannot be re-read (nor could it be captured before,
-% except for repeated theorems). Wrapping a |foobarrep| environment in a
-% user-defined environment is fine (it is in fact only supported with this
-% option: otherwise the body of a repeated theorem is collected up to a
-% literal |\end{foobarrep}|). The name of the file each environment
-% is in is determined by the kernel's |\CurrentFileUsed| (available since
-% \LaTeX{} 2020-10-01; with an older kernel, everything is assumed to be in
-% the main file). The main file itself is |\jobname.tex|, except when the
-% document was compiled by giving \TeX{} a path to it, as in
-% |pdflatex |\meta{dir}|/|\meta{file}|.tex|: the name it was opened under
-% is then read from the |.fls| file, so nothing special is required of the
-% way the document is compiled, as long as the |-recorder| option is in
-% use (\textsf{latexmk} and most editors pass it). Failing that, the
-% package cannot locate the main file, and says so: appendix material is
-% copied to the |.axp| file as with |synctex=no|, leaving the document
-% complete but without Sync\TeX{} support for that material. When an
-% individual piece of material cannot be re-read, an error message
-% explains why and that material is missing from the appendix; the rest of
-% the document is unaffected. Finally, re-reading
-% has a cost: for each piece of appendix material, the source file is read
-% from its beginning up to that piece (skipping lines is fast, but a
-% document with hundreds of proofs in a very long file will notice).
-%
-% Should the re-reading cause trouble in a document, |synctex=no| restores
-% the previous behavior.
+% Section~\ref{sec:issues} lists what re-reading the source asks of a
+% document, and Section~\ref{sec:synctex-impl} explains how it is done.
 %
 % \subsection{Advanced Features}
 % We now describe a few advanced macros and environments, the usage of
@@ -737,6 +684,7 @@
 % classes is possible and can be requested from the
 % author of this package.
 % \section{Known Issues and Limitations}
+% \label{sec:issues}
 % We report here some issues we are currently aware of:
 % \begin{itemize}
 % \item When using \textsf{hyperref}, the appendix in the bibliography is
@@ -745,14 +693,31 @@
 % \item |appendixproof|, |proof|, |toappendix| environments cannot be nested. This is a limitation of
 % the \textsf{fancyvrb} package that \textsf{apxproof} relies on. Note
 % the existence of the |nestedproof| environment for nested proofs.
-% \item Sync\TeX{} support (Section~\ref{sec:synctex}) relies on
-% re-reading the source files when the appendix is typeset, which
-% requires each captured environment to appear literally in a source file
-% that is still readable under the recorded name; without this
-% (|synctex=no|, a compilation without Sync\TeX{}, or a main file that
-% cannot be located), identifying which source line has produced which box
-% does not work for appendix content managed by \textsf{apxproof} or
-% repeated theorems.
+% \item Sync\TeX{} support (Section~\ref{sec:synctex}) works by re-reading
+% the source when the appendix is typeset, which requires each captured
+% environment to appear literally in a source file: |\begin{foobarrep}|,
+% |\begin{proof}|, |\begin{toappendix}| and their |\end| counterparts
+% cannot come from a macro (nor could they be captured before, except for
+% repeated theorems). Conversely, wrapping a |foobarrep| environment in a
+% user-defined environment is supported only with this option.
+% \item Re-reading also requires the source files to be readable, under
+% the same names, when the appendix is typeset, which is the case in any
+% normal compilation. The main file is |\jobname.tex|, or, when \TeX{} was
+% given a path to it, the name recorded in the |.fls| file written by the
+% |-recorder| option (\textsf{latexmk} and most editors pass it). When the
+% main file cannot be located, \textsf{apxproof} says so and copies
+% appendix material to the |.axp| file as with |synctex=no|, which leaves
+% the document complete but without Sync\TeX{} support for that material;
+% when a single piece cannot be re-read, an error message explains why and
+% that piece is missing from the appendix.
+% \item With pdf\TeX{} and Xe\TeX{}, forward search from a line of a proof
+% or of a |toappendix| environment lands on the nearest line of the main
+% text unless the |apxproof-synctex| script is run
+% (Section~\ref{sec:synctex}): the way Sync\TeX{} identifies files makes
+% it impossible to do better without breaking forward search from the main
+% text. Re-reading also has a cost: each piece of appendix material is
+% reached by reading its source file from the beginning, which a document
+% with hundreds of proofs in a very long file will notice.
 % \item By default, when |bibliography=separate|, \textsf{apxproof}
 % uses the \textsf{bibunits} package to generate a second bibliography.
 % Packages incompatible with \textsf{bibunits} (notably
