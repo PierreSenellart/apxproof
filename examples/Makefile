@@ -18,10 +18,17 @@ LATEXML_SKIP = preamble synctex synctex-lualatex biblatex-separate \
 LATEXML_TARGET = $(filter-out $(addsuffix /test.lxml,$(LATEXML_SKIP)),\
   $(patsubst %.tex,%.lxml,$(wildcard */test.tex)))
 
-all: $(TARGET)
-test: $(TARGET)
+all: $(TARGET) mainpath
+test: $(TARGET) mainpath
 
 test-latexml: $(LATEXML_TARGET)
+
+# Not a %/test.test target: this one compiles its own document from a
+# directory other than the one holding it, which the rules below cannot do.
+mainpath:
+	@echo -n "Testing main file given as a path... "
+	@./checkmainpath.sh || (echo ko; false)
+	@echo ok
 
 clean:
 	rm -f */*.aux */*.blg */*.bbl */*.axp
@@ -64,4 +71,4 @@ preamble/test.pdf: preamble/test_preamble.fmt
 ../apxproof.sty: ../apxproof.ins ../apxproof.dtx
 	make -C .. apxproof.sty
 
-.PHONY: all test test-latexml clean
+.PHONY: all test test-latexml mainpath clean

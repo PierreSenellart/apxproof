@@ -46,7 +46,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{2482}
+% \CheckSum{2586}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -599,11 +599,18 @@
 % literal |\end{foobarrep}|). The name of the file each environment
 % is in is determined by the kernel's |\CurrentFileUsed| (available since
 % \LaTeX{} 2020-10-01; with an older kernel, everything is assumed to be in
-% |\jobname.tex|); the main file itself is assumed to be
-% |\jobname.tex|, which is the case unless the document was compiled by
-% giving \TeX{} a path to it. When some material cannot be re-read, an
-% error message explains why and that material is missing from the
-% appendix; the rest of the document is unaffected. Finally, re-reading
+% the main file). The main file itself is |\jobname.tex|, except when the
+% document was compiled by giving \TeX{} a path to it, as in
+% |pdflatex |\meta{dir}|/|\meta{file}|.tex|: the name it was opened under
+% is then read from the |.fls| file, so nothing special is required of the
+% way the document is compiled, as long as the |-recorder| option is in
+% use (\textsf{latexmk} and most editors pass it). Failing that, the
+% package cannot locate the main file, and says so: appendix material is
+% copied to the |.axp| file as with |synctex=no|, leaving the document
+% complete but without Sync\TeX{} support for that material. When an
+% individual piece of material cannot be re-read, an error message
+% explains why and that material is missing from the appendix; the rest of
+% the document is unaffected. Finally, re-reading
 % has a cost: for each piece of appendix material, the source file is read
 % from its beginning up to that piece (skipping lines is fast, but a
 % document with hundreds of proofs in a very long file will notice).
@@ -739,9 +746,10 @@
 % re-reading the source files when the appendix is typeset, which
 % requires each captured environment to appear literally in a source file
 % that is still readable under the recorded name; without this
-% (|synctex=no|, or a compilation without Sync\TeX{}), identifying which
-% source line has produced which box does not work for appendix content
-% managed by \textsf{apxproof} or repeated theorems.
+% (|synctex=no|, a compilation without Sync\TeX{}, or a main file that
+% cannot be located), identifying which source line has produced which box
+% does not work for appendix content managed by \textsf{apxproof} or
+% repeated theorems.
 % \item By default, when |bibliography=separate|, \textsf{apxproof}
 % uses the \textsf{bibunits} package to generate a second bibliography.
 % Packages incompatible with \textsf{bibunits} (notably
@@ -1019,11 +1027,10 @@
   \errmessage{Error: unsupported option synctex=\axp@synctex\ for
   package apxproof}
 }}}
-\ifbool{axp@synctex}{
-  \message{apxproof: SyncTeX support enabled, appendix material re-read
-    from source files}
-}{}
 %    \end{macrocode}
+% Whether re-reading is actually possible further depends on the main source
+% file being locatable, which is settled at the end of
+% Section~\ref{sec:synctex-impl}; the Boolean may still be cleared there.
 % \end{macro}
 % \subsection{Macros Common to All Compilation Modes}
 % \begin{macro}{\axp@newtheoremrep@definetheorem}
@@ -1321,9 +1328,10 @@
 % reading any optional argument (|\inputlineno| would be off when the
 % argument or the body starts on a later line). The file comes from the
 % kernel's |\CurrentFileUsed| and |\CurrentFilePathUsed|, which are empty
-% for the main file, in which case we assume the source is
-% |\jobname.tex|; older kernels lack these macros, and we then have to make
-% that assumption for every environment.
+% for the main file, in which case we use |\axp@region@mainfile|, the name
+% under which the main file can be read (see |\axp@region@findmain| below);
+% older kernels lack these macros, and we then have to assume that every
+% environment is in the main file.
 %
 % We also need to know how Sync\TeX{} identifies the file, see
 % |\axp@region@input| below: with Lua\TeX{}, we record the tag it gave
@@ -1332,6 +1340,7 @@
 % \begin{macro}{\axp@region@line}
 % \begin{macro}{\axp@region@env}
 % \begin{macro}{\axp@region@tag}
+% \begin{macro}{\axp@region@mainfile}
 % \begin{macro}{\axp@extract@line}
 % \begin{macro}{\axp@region@record}
 %    \begin{macrocode}
@@ -1339,11 +1348,12 @@
 \def\axp@region@line{}
 \def\axp@region@env{}
 \def\axp@region@tag{0}
+\edef\axp@region@mainfile{\jobname.tex}
 \def\axp@extract@line#1line #2\@nil#3\@nnil{#2}
 \def\axp@region@record{%
   \ifdefined\CurrentFileUsed
     \ifx\CurrentFileUsed\@empty
-      \edef\axp@region@file{\jobname.tex}%
+      \let\axp@region@file\axp@region@mainfile
     \else
       \ifx\CurrentFilePathUsed\@empty
         \edef\axp@region@file{\CurrentFileUsed}%
@@ -1352,7 +1362,7 @@
       \fi
     \fi
   \else
-    \edef\axp@region@file{\jobname.tex}%
+    \let\axp@region@file\axp@region@mainfile
   \fi
   \edef\axp@region@line{%
     \expandafter\axp@extract@line\@currenvline\@nil line 0\@nil\@nnil}%
@@ -1372,6 +1382,7 @@
   \fi
 }{}
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -1952,6 +1963,100 @@
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@findmain}
+% \changes{v1.4.1-dev}{2026/08/25}{Locate the main source file through the
+% \texttt{.fls} file, and fall back to copying when it cannot be read}
+% The kernel leaves |\CurrentFileUsed| empty for the main file and tells us
+% nothing about the name \TeX{} opened it under, so |\jobname.tex| is the
+% obvious guess; it is wrong whenever the document was compiled by giving
+% \TeX{} a path, as in |pdflatex sub/doc.tex|, and the material would then
+% all be missing from the appendix. The |.fls| file records the name that
+% was actually used, in the first |INPUT| line whose last component is
+% |\jobname.tex| (the entries before it are the configuration files and the
+% format). We look it up once, here, rather than at replay time: the
+% Boolean is consulted while theorems are being defined in the preamble,
+% and the |.fls| is already complete that early, since \TeX{} opens the
+% main file before reading anything of it. The lines are parsed as in
+% |\axp@region@findpwd| above, with |INPUT| in place of |PWD|, and
+% |\axp@region@stopmain| ends the scan on the first match or at the end of
+% the file.
+%    \begin{macrocode}
+\newif\ifaxp@region@stopmain
+\def\axp@region@findmain{%
+  \IfFileExists{\jobname.fls}{%
+    \begingroup
+      \endlinechar\m@ne
+      \edef\axp@tmp{\jobname.tex}%
+      \edef\axp@region@jobnametex{%
+        \expandafter\detokenize\expandafter{\axp@tmp}}%
+      \openin\axp@readfile=\jobname.fls\relax
+      \axp@region@stopmainfalse
+      \loop
+        \ifaxp@region@stopmain\else
+          \ifeof\axp@readfile
+            \axp@region@stopmaintrue
+          \else
+            \readline\axp@readfile to\axp@line
+            \expandafter\axp@region@findmain@i\axp@line
+              \relax\relax\relax\relax\relax\relax\@nil
+          \fi
+      \repeat
+      \closein\axp@readfile
+    \endgroup
+    \gdef\axp@region@openfile{}%
+  }{}%
+}
+\def\axp@region@findmain@i#1#2#3#4#5#6\@nil{%
+  \def\axp@tmp{#1#2#3#4#5}%
+  \edef\axp@tmpa{\detokenize{INPUT}}%
+  \ifx\axp@tmp\axp@tmpa
+    \axp@region@findmain@ii#6\@nil
+  \fi}
+\def\axp@region@findmain@ii#1\relax#2\@nil{%
+  \axp@region@findmain@iii#1\@nnil\@nnil}
+\def\axp@region@findmain@iii#1#2\@nnil#3\@nnil{%
+  \ifx\@nnil#1\else
+    \edef\axp@tmpa{\axp@region@lastcomponent#1#2/\@nil}%
+    \ifx\axp@tmpa\axp@region@jobnametex
+      \xdef\axp@region@mainfile{#1#2}%
+      \axp@region@stopmaintrue
+    \fi
+  \fi}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\axp@region@setup}
+% We can now settle whether re-reading is possible at all. If the main file
+% cannot be read under the name we have, nothing of it could be replayed,
+% and every piece of appendix material coming from it would be lost; we
+% therefore clear the Boolean, so that the whole package behaves exactly as
+% with |synctex=no|, and say so. The document is then complete, only
+% without Sync\TeX{} support for appendix material. This has to happen
+% before any |\newtheoremrep|, which consults the Boolean to decide how to
+% define the |foobarrep| environment.
+%    \begin{macrocode}
+\ifbool{axp@synctex}{
+  \axp@region@findmain
+  \IfFileExists{\axp@region@mainfile}{%
+    \message{apxproof: SyncTeX support enabled, appendix material re-read
+      from source files}%
+  }{%
+    \boolfalse{axp@synctex}%
+    \PackageWarning{apxproof}{%
+      Cannot read the main source file `\axp@region@mainfile';
+      the synctex\MessageBreak
+      option cannot re-read appendix material from it. Falling back
+      to\MessageBreak
+      copying it to the .axp file, as with synctex=no: the document
+      is\MessageBreak
+      complete, but SyncTeX does not cover appendix material.
+      This\MessageBreak
+      happens when TeX is given a path to the main file and no .fls
+      file\MessageBreak
+      is available to resolve it (option -recorder)}%
+  }%
+}{}
+%    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\axp@skiplines}
 % \begin{macro}{\axp@region@nextbegin}

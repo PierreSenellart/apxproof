@@ -126,10 +126,6 @@
   \errmessage{Error: unsupported option synctex=\axp@synctex\ for
   package apxproof}
 }}}
-\ifbool{axp@synctex}{
-  \message{apxproof: SyncTeX support enabled, appendix material re-read
-    from source files}
-}{}
 \def\axp@newtheoremrep@definetheorem#1#2#3#4{%
   \expandafter\let\csname #1\endcsname\undefined
   \expandafter\let\csname the#1\endcsname\undefined
@@ -238,11 +234,12 @@
 \def\axp@region@line{}
 \def\axp@region@env{}
 \def\axp@region@tag{0}
+\edef\axp@region@mainfile{\jobname.tex}
 \def\axp@extract@line#1line #2\@nil#3\@nnil{#2}
 \def\axp@region@record{%
   \ifdefined\CurrentFileUsed
     \ifx\CurrentFileUsed\@empty
-      \edef\axp@region@file{\jobname.tex}%
+      \let\axp@region@file\axp@region@mainfile
     \else
       \ifx\CurrentFilePathUsed\@empty
         \edef\axp@region@file{\CurrentFileUsed}%
@@ -251,7 +248,7 @@
       \fi
     \fi
   \else
-    \edef\axp@region@file{\jobname.tex}%
+    \let\axp@region@file\axp@region@mainfile
   \fi
   \edef\axp@region@line{%
     \expandafter\axp@extract@line\@currenvline\@nil line 0\@nil\@nnil}%
@@ -648,6 +645,68 @@
   \else
     \axp@region@lastcomponent#2\@nil
   \fi}
+\newif\ifaxp@region@stopmain
+\def\axp@region@findmain{%
+  \IfFileExists{\jobname.fls}{%
+    \begingroup
+      \endlinechar\m@ne
+      \edef\axp@tmp{\jobname.tex}%
+      \edef\axp@region@jobnametex{%
+        \expandafter\detokenize\expandafter{\axp@tmp}}%
+      \openin\axp@readfile=\jobname.fls\relax
+      \axp@region@stopmainfalse
+      \loop
+        \ifaxp@region@stopmain\else
+          \ifeof\axp@readfile
+            \axp@region@stopmaintrue
+          \else
+            \readline\axp@readfile to\axp@line
+            \expandafter\axp@region@findmain@i\axp@line
+              \relax\relax\relax\relax\relax\relax\@nil
+          \fi
+      \repeat
+      \closein\axp@readfile
+    \endgroup
+    \gdef\axp@region@openfile{}%
+  }{}%
+}
+\def\axp@region@findmain@i#1#2#3#4#5#6\@nil{%
+  \def\axp@tmp{#1#2#3#4#5}%
+  \edef\axp@tmpa{\detokenize{INPUT}}%
+  \ifx\axp@tmp\axp@tmpa
+    \axp@region@findmain@ii#6\@nil
+  \fi}
+\def\axp@region@findmain@ii#1\relax#2\@nil{%
+  \axp@region@findmain@iii#1\@nnil\@nnil}
+\def\axp@region@findmain@iii#1#2\@nnil#3\@nnil{%
+  \ifx\@nnil#1\else
+    \edef\axp@tmpa{\axp@region@lastcomponent#1#2/\@nil}%
+    \ifx\axp@tmpa\axp@region@jobnametex
+      \xdef\axp@region@mainfile{#1#2}%
+      \axp@region@stopmaintrue
+    \fi
+  \fi}
+\ifbool{axp@synctex}{
+  \axp@region@findmain
+  \IfFileExists{\axp@region@mainfile}{%
+    \message{apxproof: SyncTeX support enabled, appendix material re-read
+      from source files}%
+  }{%
+    \boolfalse{axp@synctex}%
+    \PackageWarning{apxproof}{%
+      Cannot read the main source file `\axp@region@mainfile';
+      the synctex\MessageBreak
+      option cannot re-read appendix material from it. Falling back
+      to\MessageBreak
+      copying it to the .axp file, as with synctex=no: the document
+      is\MessageBreak
+      complete, but SyncTeX does not cover appendix material.
+      This\MessageBreak
+      happens when TeX is given a path to the main file and no .fls
+      file\MessageBreak
+      is available to resolve it (option -recorder)}%
+  }%
+}{}
 \def\axp@skiplines{%
   \ifnum\axp@skipcount>\z@
     \advance\axp@skipcount\m@ne
