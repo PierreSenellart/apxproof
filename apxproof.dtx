@@ -70,14 +70,14 @@
 % Taken from xkeyval.dtx
 %\fi
 %\makeatletter
-%\def\DescribeOption#1{\leavevmode\@bsphack
-%              \marginpar{\raggedleft\PrintDescribeOption{#1}}%
-%              \SpecialOptionIndex{#1}\@esphack\ignorespaces}
+%\def\DescribeOption#1{\leavevmode\@bsphack\marginpar
+%              {\raggedleft\PrintDescribeOption{#1}}\SpecialOptionIndex
+%              {#1}\@esphack\ignorespaces}
 %\def\PrintDescribeOption#1{\strut\emph{option}\\\MacroFont #1\ }
 %\def\SpecialOptionIndex#1{\@bsphack
 %    \index{#1\actualchar{\protect\ttfamily#1}
-%           (option)\encapchar usage}%
-%    \index{options:\levelchar#1\actualchar{\protect\ttfamily#1}\encapchar
+%           (option)\encapchar usage}\index
+%          {options:\levelchar#1\actualchar{\protect\ttfamily#1}\encapchar
 %           usage}\@esphack}
 %\def\DescribeOptions#1{\leavevmode\@bsphack
 %  \marginpar{\raggedleft\strut\emph{options}%
