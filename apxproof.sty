@@ -900,6 +900,7 @@
        \axp@region@record
      }{%
        \axp@writesection
+       \immediate\write\axp@proofsfile{\noexpand\makeatother}%
      }%
      \axp@VerbatimOut}
     {\endaxp@VerbatimOut
@@ -1250,6 +1251,12 @@
   \newcounter{axp@seccounter}
   \def\axp@sectitle{}
   \def\axp@section#1{%
+    \@ifnextchar\makeatother
+      {\axp@@sectionskipmakeatother{#1}}%
+      {\axp@@sectioncheckpar{#1}}%
+  }
+  \def\axp@@sectionskipmakeatother#1\makeatother{\axp@section{#1}}
+  \def\axp@@sectioncheckpar#1{%
     \@ifnextchar\par
       {\axp@@sectionskippar{#1}}%
       {\@ifnextchar\input
@@ -1346,6 +1353,7 @@
           \begin{refsection}
         }
       }{}
+        \immediate\write\axp@proofsfile{\noexpand\makeatother}%
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{

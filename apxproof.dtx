@@ -47,7 +47,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{2586}
+% \CheckSum{2606}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -2422,6 +2422,16 @@
 % environment is replayed, we have the section command written as
 % |\axp@region@section|, which merely stores the heading for
 % |\axp@region@toappendix| to handle.
+%
+% Without the |synctex| option, the content is copied to the |.axp| file,
+% where |@| is a letter (see |\axp@writeproofsfilepreamble|); we therefore
+% write |\makeatother| before it, as is done for deferred proofs, so that
+% it is typeset with the usual category codes. The
+% |\axp@section| command skips this token when it looks at what follows
+% the heading.
+% \changes{v1.5.1}{2026/09/03}{Typeset the content of \texttt{toappendix}
+% with \texttt{@} an ordinary character, as for deferred proofs, whether
+% or not a section heading precedes it}
 %    \begin{macrocode}
   \newenvironment{toappendix}
     {\axp@markchapterhasappendix
@@ -2431,6 +2441,7 @@
        \axp@region@record
      }{%
        \axp@writesection
+       \immediate\write\axp@proofsfile{\noexpand\makeatother}%
      }%
      \axp@VerbatimOut}
     {\endaxp@VerbatimOut
@@ -3110,6 +3121,8 @@
 % a section command}
 % \changes{v1.3.0}{2026/04/09}{Detect a section within an
 % \cs{include}'d file}
+% \begin{macro}{\axp@@sectionskipmakeatother}
+% \begin{macro}{\axp@@sectioncheckpar}
 % \begin{macro}{\axp@@sectionskippar}
 % \begin{macro}{\axp@@sectiontestinput}
 % \begin{macro}{\axp@@sectiontestinclude}
@@ -3121,9 +3134,18 @@
 % sections in the appendix. Using the \textsf{catchfile} package, we
 % also check whether a |\section| is within an |\input| or |\include|
 % that immediately follows. We also skip any |\par| tokens (produced by
-% blank lines) before performing the check.
+% blank lines), as well as the |\makeatother| written by the
+% |toappendix| environment, before performing the check.
+% \changes{v1.5.1}{2026/09/03}{Skip a \cs{makeatother} before detecting
+% a section command}
 %    \begin{macrocode}
   \def\axp@section#1{%
+    \@ifnextchar\makeatother
+      {\axp@@sectionskipmakeatother{#1}}%
+      {\axp@@sectioncheckpar{#1}}%
+  }
+  \def\axp@@sectionskipmakeatother#1\makeatother{\axp@section{#1}}
+  \def\axp@@sectioncheckpar#1{%
     \@ifnextchar\par
       {\axp@@sectionskippar{#1}}%
       {\@ifnextchar\input
@@ -3155,6 +3177,8 @@
   }
   \def\axp@@sectiontestsection#1{\@ifnextchar\section{\makeatother}{\axp@oldsection{#1}\makeatother}}
 %    \end{macrocode}
+% \end{macro}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -3316,6 +3340,11 @@
 % \changes{v1.2.3}{2021/08/03}{More robust redefinition of
 % \texttt{thebibliography} environment, for compatibility with
 % \textsf{tocbibind}}
+% Before reading the |.axp| file, we terminate it with |\makeatother|,
+% so that the |\makeatletter| written after each deferred block does not
+% outlive the file.
+% \changes{v1.5.1}{2026/09/03}{End the \texttt{.axp} file with
+% \cs{makeatother}}
 %    \begin{macrocode}
     \pretocmd{\@enddocumenthook}{%
       \ifdefined\NAT@testdef
@@ -3332,6 +3361,7 @@
           \begin{refsection}
         }
       }{}
+        \immediate\write\axp@proofsfile{\noexpand\makeatother}%
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
