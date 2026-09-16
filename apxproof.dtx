@@ -785,10 +785,12 @@
 % preferably be submitted through the \emph{Issues} feature of GitHub.
 %
 % \section{Acknowledgments}
-% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
-% Bauer for the implementation of the forward-linking mechanism, and
-% for various bugfixes. Thanks to  Leonid Kostrykin for an initial
-% implementation of the |forwardlinking| option.
+% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to
+% Klaus-Dieter Bauer for the implementation of the forward-linking mechanism,
+% and for various bugfixes. Thanks to Leonid Kostrykin for an initial
+% implementation of the |forwardlinking| option. Thanks to Yuichi Komorida
+% for the handling of |@| as a delimiter in appendix material and for a fix
+% of the documentation build.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -1197,7 +1199,7 @@
 % \begin{macro}{\axp@redefinelabels}
 % \changes{v1.1.0}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
-% used instead (K. D. Bauer)}
+% used instead (Klaus-Dieter Bauer)}
 % \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
@@ -2371,7 +2373,7 @@
 % precaution, we reset |\FV@CatCodesHook| that is for example set by the
 % |commandchars| or |commentchar| option of |\fvset|.
 % \changes{v1.2.1}{2020/01/01}{Fix compatibility with
-% \textsf{xypic} package}
+% \textsf{xypic} package (Yuichi Komorida)}
 % \changes{v1.2.1}{2020/10/15}{Fix compatibility with other uses of \textsf{fancyvrb} that set
 % \texttt{\textbackslash FV@CatCodesHook}}
 % With the |synctex| option, the environment is still scanned line by line by
@@ -2665,7 +2667,7 @@
 % \end{macro}
 %
 %    \subsubsection{Forward-Linking Mechanism}
-% \changes{v1.1.0}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
+% \changes{v1.1.0}{2018/07/02}{Added forward-link mechanism (Klaus-Dieter Bauer)}
 %
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
@@ -3164,7 +3166,7 @@
 % \begin{macro}{\axp@oldsection}
 % \begin{macro}{\section}
 % \changes{v1.1.0}{2018/07/25}{Rewrote definition of \cs{section}
-% to enable optional argument. See \#23. (K. D. Bauer)}
+% to enable optional argument. See \#23. (Klaus-Dieter Bauer)}
 % \changes{v1.1.0}{2018/07/25}{Fix handling of fragile macros within
 % section headings. See \#22.}
 % \begin{macro}{\@section}
@@ -3219,7 +3221,7 @@
 % in appendix titles}
 % \changes{v1.1.0}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust.
 % Resolves issues from use of section title in \textsf{fancyhdr},
-% and in \cs{tableofcontents} (K. D. Bauer).}
+% and in \cs{tableofcontents} (Klaus-Dieter Bauer).}
 %
 % The command written is normally |\axp@section|; the |toappendix|
 % environment substitutes |\axp@region@section| for it with the |synctex|
