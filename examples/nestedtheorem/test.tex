@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage[appendix=inline]{../../apxproof}
+\usepackage{hyperref}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep{lemma}[theorem]{Lemma}
+
+\begin{document}
+
+\section{Main text}
+
+% A repeated theorem nested in another one, both labeled: the inner
+% \label used to recurse until TeX's input stack overflowed.
+\begin{theoremrep}\label{th:outer}%
+  An outer theorem,
+  \begin{lemmarep}\label{lem:inner}%
+    with an inner lemma
+    \begin{equation}\label{eq:inner}1=1\end{equation}
+  \end{lemmarep}
+  and some text after it.
+\end{theoremrep}
+
+References: Theorem~\ref{th:outer}, Lemma~\ref{lem:inner},
+equation~(\ref{eq:inner}), and the \texttt{-apx} variants
+\ref{th:outer-apx}, \ref{lem:inner-apx}, (\ref{eq:inner-apx}).
+
+\end{document}

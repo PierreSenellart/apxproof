@@ -25,19 +25,45 @@ sub axp_end_env {
   my ($name) = @_;
   return Tokens(T_CS('\end'), T_BEGIN, ExplodeText($name), T_END); }
 
-# Read (balanced) tokens until \end{name}, consuming the \end{name}.
-# Modeled on readUntilMatch in beamer.cls.ltxml.
+# Number of \begin{name} in a list of tokens.
+sub axp_countBegins {
+  my ($name, @tokens) = @_;
+  my $begin = T_CS('\begin');
+  my $count = 0;
+  for (my $i = 0 ; $i < @tokens ; $i++) {
+    next unless $tokens[$i]->equals($begin);
+    my $j = $i + 1;
+    $j++ while $j < @tokens && $tokens[$j]->getCatcode == CC_SPACE;
+    next unless $j < @tokens && $tokens[$j]->getCatcode == CC_BEGIN;
+    my $k = $j + 1;
+    my $text = '';
+    while ($k < @tokens && $tokens[$k]->getCatcode != CC_END) {
+      $text .= $tokens[$k]->getString;
+      $k++; }
+    $count++ if $text eq $name; }
+  return $count; }
+
+# Read (balanced) tokens until the \end{name} matching the \begin{name}
+# just read, consuming it: an environment of the same name may be nested
+# in the body. Modeled on readUntilMatch in beamer.cls.ltxml.
 sub axp_readBody {
   my ($gullet, $name) = @_;
   my ($head, @tail) = axp_end_env($name)->unlist;
   my $tail = Tokens(@tail);
   my @read = ();
+  my $depth = 0;
   while (1) {
     my $chunk = $gullet->readUntil($head);
     return unless defined $chunk;
-    push(@read, $chunk->unlist);
-    return Tokens(@read) if defined $gullet->readMatch($tail->clone);
-    push(@read, $head); } }
+    my @chunk = $chunk->unlist;
+    push(@read, @chunk);
+    $depth += axp_countBegins($name, @chunk);
+    if (defined $gullet->readMatch($tail->clone)) {
+      return Tokens(@read) if $depth == 0;
+      $depth--;
+      push(@read, $head, @tail); }
+    else {
+      push(@read, $head); } } }
 
 sub axp_DefEnviron {
   my ($name, $nargs, $default, $code) = @_;
@@ -53,10 +79,13 @@ sub axp_DefEnviron {
         Error('expected', "\\end{$name}", $gullet,
           "Runaway body of environment {$name}");
         $body = Tokens(); }
-      DefMacroI('\BODY', undef, $body);
       @args = map { defined $_ ? $_ : Tokens() } @args;
-      return Tokens(Invocation($codecs, @args)->unlist,
-        axp_end_env($name)->unlist)->unlist; });
+      # As with environ, the code runs within a group, in which \BODY is
+      # defined: a nested environment must not overwrite either.
+      return (T_CS('\begingroup'),
+        T_CS('\def'), T_CS('\BODY'), T_BEGIN, $body->unlist, T_END,
+        Invocation($codecs, @args)->unlist,
+        axp_end_env($name)->unlist, T_CS('\endgroup')); });
   DefMacroI(T_CS('\end{' . $name . '}'), undef, Tokens());
   return; }
 

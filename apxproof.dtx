@@ -47,7 +47,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{2586}
+% \CheckSum{2726}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -253,6 +253,12 @@
 % defines two environments |foobarstar| and |foobarstarrep|, except that
 % |\begin{foobarstarrep}| does not produce any restatement of the
 % theorem in the appendix; only the following |proof| is deferred.
+%
+% \changes{v1.5.0-dev}{2026/10/20}{Repeated theorems can be nested}
+% Repeated theorems can be nested, e.g., a lemma stated within the
+% statement of a theorem. The nested one is then restated in the appendix
+% as part of the enclosing one, and not on its own; this also holds for
+% a starred one nested within a non-starred one.
 %
 % One interesting feature of \textsf{apxproof} is that in most
 % situations, there is no need to use the |appendixproof| environment.
@@ -1201,12 +1207,23 @@
 % \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
+% \changes{v1.5.0-dev}{2026/10/20}{Fix infinite recursion on a \cs{label}
+% within a repeated theorem nested in another one}
+%
+% Repeated theorems may be nested, in which case this macro is called
+% while the labeling commands are already redefined: we only save their
+% original meaning if it has not been replaced already, or the saved
+% command would call itself.
 %    \begin{macrocode}
   \newcommand{\axp@redefinelabels}{%
     \providecommand\label@in@display{}%
-    \let\axp@oldlabel\label
-    \let\axp@oldlabel@in@display\label@in@display
-    \ifdefined\zlabel\let\axp@oldzlabel\zlabel\fi
+    \ifx\label\axp@label\else\let\axp@oldlabel\label\fi
+    \ifx\label@in@display\axp@label@in@display\else
+      \let\axp@oldlabel@in@display\label@in@display
+    \fi
+    \ifdefined\zlabel
+      \ifx\zlabel\axp@zlabel\else\let\axp@oldzlabel\zlabel\fi
+    \fi
     \ifthenelse{\equal{\axp@appendix}{inline}}{%
       \def\axp@label@do##1##2{%
         \axp@oldlabel##1{##2}%
@@ -1714,8 +1731,9 @@
     \csname\axp@replay@env\endcsname
   \expandafter\let\expandafter\axp@region@savedend
     \csname end\axp@replay@env\endcsname
-  \expandafter\let\csname\axp@replay@env\endcsname\axp@replay@begin
-  \expandafter\let\csname end\axp@replay@env\endcsname\axp@replay@end
+  \global\axp@region@depth\z@
+  \expandafter\let\csname\axp@replay@env\endcsname\axp@region@beginhook
+  \expandafter\let\csname end\axp@replay@env\endcsname\axp@region@endhook
   \let\axp@region@savedendcmd\end
   \axp@region@wrappedfalse
   \begingroup
@@ -1742,6 +1760,35 @@
 }
 %    \end{macrocode}
 % \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\axp@region@beginhook}
+% \begin{macro}{\axp@region@endhook}
+% \changes{v1.5.0-dev}{2026/10/20}{Support repeated theorems nested in
+% one another with the \texttt{synctex} option}
+% The material may contain an environment of the same name as the one
+% replayed, nested in it (a repeated theorem nested in another of the same
+% kind). Only the outermost one must run the begin and end code we were
+% given, the nested ones running the code they normally have.
+% |\axp@region@depth| counts how many of these environments are open; it
+% is global, as environments are groups.
+%    \begin{macrocode}
+\newcount\axp@region@depth
+\def\axp@region@beginhook{%
+  \global\advance\axp@region@depth\@ne
+  \ifnum\axp@region@depth=\@ne
+    \expandafter\axp@replay@begin
+  \else
+    \expandafter\axp@region@savedbegin
+  \fi}
+\def\axp@region@endhook{%
+  \global\advance\axp@region@depth\m@ne
+  \ifnum\axp@region@depth=\z@
+    \expandafter\axp@replay@end
+  \else
+    \expandafter\axp@region@savedend
+  \fi}
+%    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \begin{macro}{\axp@region@input}
@@ -2095,7 +2142,9 @@
 % follows it). We run the begin code directly, and let |\end| be
 % |\axp@region@endcmd|, which runs the end code and |\axp@region@finish|
 % for the expected environment, and delegates every other name to the
-% saved |\end|; nested environments in the material thus behave as usual.
+% saved |\end|; nested environments in the material thus behave as usual,
+% including one of the expected name, which |\axp@region@depth| tells
+% apart (it then goes through |\axp@region@endhook|).
 % The test on the name is done with |\ifcsname| on a flag set for the
 % expected environment, so that the wrapper is expandable, as the kernel's
 % |\end| is, up to the point where the original |\end| takes over: this
@@ -2135,6 +2184,7 @@
   \expandafter\let\csname axp@region@isregion@\axp@replay@env\endcsname
     \@empty
   \let\end\axp@region@endcmd
+  \global\axp@region@depth\@ne
   \axp@replay@begin}
 \def\axp@region@go@wrapped{%
   \axp@region@wrappedtrue
@@ -2145,7 +2195,11 @@
   \expandafter\begin\expandafter{\axp@region@name}}
 \def\axp@region@endcmd#1{%
   \ifcsname axp@region@isregion@#1\endcsname
-    \expandafter\axp@region@endregion
+    \ifnum\axp@region@depth=\@ne
+      \expandafter\expandafter\expandafter\axp@region@endregion
+    \else
+      \expandafter\expandafter\expandafter\axp@region@savedendcmd
+    \fi
   \else
     \expandafter\axp@region@savedendcmd
   \fi
@@ -2198,7 +2252,11 @@
 %    \end{macrocode}
 % For repeated theorems, the arguments are the theorem name and the value of
 % |axp@rpcounter|; the heading is built as in |\axp@newtheoremrep| below.
+% The flag |\ifaxp@restating| is set within the restated theorem, so that
+% repeated theorems nested in it know they are being restated (see
+% |\axp@rp@nested| below).
 %    \begin{macrocode}
+\newif\ifaxp@restating
 \def\axp@region@rp#1#2{%
   \@ifnextchar[{\axp@region@rp@i{#1}{#2}}{\axp@region@rp@i{#1}{#2}[]}}
 \def\axp@region@rp@i#1#2[#3]{%
@@ -2215,8 +2273,39 @@
       {} ({#3})%
     }%
   ]%
+  \axp@restatingtrue
   \axp@forward@target{axp@fw@r#2}{}%
   \axp@redefinelabels
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{axp@rpreplay}
+% \begin{macro}{\axp@rp@nested}
+% \changes{v1.5.0-dev}{2026/10/20}{Support repeated theorems nested in
+% one another in append mode}
+% A repeated theorem nested in another one is restated in the appendix as
+% part of the enclosing one, and not on its own (see
+% |\axp@newtheoremrep@end| below). When the body of the enclosing theorem
+% is typeset in the appendix, the nested |foobarrep| environment is
+% therefore met again, with |\ifaxp@restating| true; |\axp@rp@nested|,
+% with arguments the theorem name and its note, then typesets it as a
+% restated theorem. Its number is that of the enclosing theorem plus the
+% number of repeated theorems begun since, in the order in which their
+% |\begin| appears, since |axp@rpcounter| was incremented in that same
+% order in the main text: we keep that count in |axp@rpreplay|, which each
+% entry in the |.axp| file sets to the number of the enclosing theorem.
+%    \begin{macrocode}
+\newcounter{axp@rpreplay}
+\def\axp@rp@nested#1#2{%
+  \addtocounter{axp@rpreplay}{1}%
+  \edef\axp@tmp{\noexpand\axp@region@rp@i{#1}{\roman{axp@rpreplay}}}%
+  \ifx\relax#2\relax
+    \def\axp@tmpa{[]}%
+  \else
+    \def\axp@tmpa{[{#2}]}%
+  \fi
+  \expandafter\axp@tmp\axp@tmpa
 }
 %    \end{macrocode}
 % \end{macro}
@@ -2453,15 +2542,12 @@
   \newcounter{axp@rpcounter}
 %    \end{macrocode}
 % \end{macro}
-% \begin{macro}{axp@equation}
 % \begin{macro}{axp@equationx}
-% Used to save the value of the |equation| counter, when |repeqn| is set
-% to |same|.
+% Used to save the value of the |equation| counter in the appendix, when
+% |repeqn| is set to |same|.
 %    \begin{macrocode}
-  \newcounter{axp@equation}
   \newcounter{axp@equationx}
 %    \end{macrocode}
-% \end{macro}
 % \end{macro}
 % \begin{macro}{axp@newtheoremrep}
 % With first argument |foobar|, we use
@@ -2469,15 +2555,16 @@
 % theorem |foobar|. We then patch |\begin{foobar}| so as not to
 % expect a proof in the appendix and define an internal theorem |axp@foobarrp| that
 % will be used in the appendix to restate the existing theorem.
-% In the starred mode, the theorem is not restated in the appendix,
-% so we do not define the |axp@foobarrp| environment.
+% In the starred mode, the theorem is not restated in the appendix on its
+% own, but it still is when nested in a theorem that is, so the
+% |axp@foobarrp| environment is defined in both modes.
+% \changes{v1.5.0-dev}{2026/10/20}{Define the restated environment of
+% starred theorems as well, for when they are nested}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
     \axp@newtheoremrep@definetheorem{#1}{#2}{#3}{#4}%
     \expandafter\pretocmd\csname #1\endcsname{\noproofinappendix}{}{}%
-    \ifcsdef{axp@proofof@#1}{}{%
-      \axp@newtheorem*{axp@#1rp}{#3}%
-    }%
+    \axp@newtheorem*{axp@#1rp}{#3}%
     \axp@forward@setup{#1}{#2}{#3}{#4}%
 %    \end{macrocode}
 % We then define a |foobarrep| environment, whose begin code and code
@@ -2491,23 +2578,38 @@
 % starts.
 % \changes{v1.5.0}{2026/08/19}{Repeated theorems typeset directly from
 % the source with the \texttt{synctex} option}
+% When the environment is met in the appendix, nested within a theorem
+% being restated, it is itself restated by |\axp@rp@nested|, and nothing
+% else is done.
 %    \begin{macrocode}
     \ifbool{axp@synctex}{%
       \newenvironment{#1rep}[1][]{%
-        \axp@region@record
-        \axp@newtheoremrep@begin{#1}{##1}%
+        \ifaxp@restating
+          \expandafter\@firstoftwo
+        \else
+          \expandafter\@secondoftwo
+        \fi
+        {\axp@rp@nested{#1}{##1}}%
+        {\axp@region@record\axp@newtheoremrep@begin{#1}{##1}}%
       }{%
-        \end{#1}%
-        \axp@newtheoremrep@end{#1}{#3}{}%
+        \ifaxp@restating
+          \end{axp@#1rp}%
+        \else
+          \end{#1}%
+          \axp@newtheoremrep@end{#1}{#3}{}%
+        \fi
       }%
     }{%
       \NewEnviron{#1rep}[1][]{%
-        \axp@newtheoremrep@begin{#1}{##1}%
-        \BODY\end{#1}%
-        \global\expandafter\let\csname rplet\roman{axp@rpcounter}%
-                               \endcsname
-        \BODY
-        \axp@newtheoremrep@end{#1}{#3}{##1}%
+        \ifaxp@restating
+          \axp@rp@nested{#1}{##1}\BODY\end{axp@#1rp}%
+        \else
+          \axp@newtheoremrep@begin{#1}{##1}%
+          \BODY\end{#1}%
+          \global\expandafter\let\csname rplet\axp@rp@this\endcsname
+            \BODY
+          \axp@newtheoremrep@end{#1}{#3}{##1}%
+        \fi
       }%
     }%
   }
@@ -2527,12 +2629,24 @@
 % value in the repeated environment when |repeqn| is set to |same|.
 % \changes{v1.2.2}{2020/11/25}{Fix handling of optional arguments of
 % repeated theorems containing optional arguments}
+%
+% As repeated theorems may be nested, everything the end code needs is
+% kept in macros local to the environment, which a nested one does
+% not affect: the value of the counter, in Roman (|\axp@rp@this|) and
+% Arabic (|\axp@rp@thisnum|) numerals, and that of the equation counter
+% (|\axp@rp@eqn|). |\axp@rp@inside| is |1| within a repeated theorem
+% that will be restated in the appendix (that is, not starred), |0|
+% elsewhere, and |\axp@rp@nestedin| keeps its value from outside the
+% environment.
 %    \begin{macrocode}
+  \def\axp@rp@inside{0}
   \def\axp@newtheoremrep@begin#1#2{%
-    \ifthenelse{\equal{\axp@repeqn}{same}}{%
-      \setcounter{axp@equation}{\value{equation}}%
-    }{}%
+    \edef\axp@rp@eqn{\the\value{equation}}%
     \addtocounter{axp@rpcounter}{1}%
+    \edef\axp@rp@this{\roman{axp@rpcounter}}%
+    \edef\axp@rp@thisnum{\the\value{axp@rpcounter}}%
+    \let\axp@rp@nestedin\axp@rp@inside
+    \ifcsdef{axp@proofof@#1}{}{\def\axp@rp@inside{1}}%
     \ifx\relax#2\relax
       \axp@with@forward{#1}{\begin{#1}}\label{axp@r\roman{axp@rpcounter}}%
     \else
@@ -2546,10 +2660,21 @@
 % Once the theorem has been typeset, with arguments the theorem name, its
 % title and its note (the latter is only needed when the body was
 % collected), we set the |axp@seenreptheorem| toggle to indicate that we
-% are looking for the proof of the theorem.
+% are looking for the proof of the theorem. Nothing is written to the
+% appendix for a theorem nested in one that will be restated: it is
+% restated along with it.
 %    \begin{macrocode}
   \def\axp@newtheoremrep@end#1#2#3{%
     \global\toggletrue{axp@seenreptheorem}%
+    \ifnum\axp@rp@nestedin=\z@
+      \expandafter\axp@newtheoremrep@write
+    \else
+      \expandafter\axp@gobblethree
+    \fi
+    {#1}{#2}{#3}%
+  }
+  \long\def\axp@gobblethree#1#2#3{}
+  \def\axp@newtheoremrep@write#1#2#3{%
 %    \end{macrocode}
 % Possibly after starting a new appendix section if needed, we typeset a
 % repeated version of the theorem using the |axp@foobarrp| environment
@@ -2579,7 +2704,7 @@
     \ifthenelse{\equal{\axp@repeqn}{same}}{%
       \immediate\write\axp@proofsfile{%
         \noexpand\setcounter{axp@equationx}{\value{equation}}%
-        \noexpand\setcounter{equation}{\theaxp@equation}%
+        \noexpand\setcounter{equation}{\axp@rp@eqn}%
       }%
     }{}%
     \ifbool{axp@forward@suppress}{%
@@ -2598,11 +2723,11 @@
 %    \begin{macrocode}
     \immediate\write\axp@proofsfile{%
       \noexpand\gdef\noexpand\axp@nextproofof@type{#2}%
-      \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\roman{axp@rpcounter}}%
+      \noexpand\gdef\noexpand\axp@nextproofof@label{axp@r\axp@rp@this}%
     }%
     \ifcsdef{axp@proofof@#1}{%
       \immediate\write\axp@proofsfile{%
-        \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
+        \noexpand\axp@forward@target{axp@fw@r\axp@rp@this}{}%
       }%
     }{%
 %    \end{macrocode}
@@ -2614,6 +2739,7 @@
 % otherwise we write it out here, followed by the stored body.
 %    \begin{macrocode}
       \immediate\write\axp@proofsfile{{%
+        \noexpand\setcounter{axp@rpreplay}{\axp@rp@thisnum}%
         \ifdefined\theopargself
           \noexpand\theopargself
         \else
@@ -2627,12 +2753,12 @@
         \ifbool{axp@synctex}{%
           \noexpand\axp@replaybody{\axp@region@file}{\axp@region@line}%
             {\the\inputlineno}{\axp@region@env}%
-            {\noexpand\axp@region@rp{#1}{\roman{axp@rpcounter}}}%
+            {\noexpand\axp@region@rp{#1}{\axp@rp@this}}%
             {\noexpand\end{axp@#1rp}}{\axp@region@tag}%
         }{%
           \noexpand\begin{axp@#1rp}
             [%
-              \noexpand\axp@refstar{axp@r\roman{axp@rpcounter}}%
+              \noexpand\axp@refstar{axp@r\axp@rp@this}%
               \@ifnotempty{#3}{%
                 \ifdefined\theopargself
                 \else
@@ -2647,9 +2773,10 @@
                 {} (\unexpanded{{#3}})%
               }%
             ]%
-            \noexpand\axp@forward@target{axp@fw@r\roman{axp@rpcounter}}{}%
+            \noexpand\axp@restatingtrue
+            \noexpand\axp@forward@target{axp@fw@r\axp@rp@this}{}%
             \noexpand\axp@redefinelabels
-            \expandafter\noexpand\csname rplet\roman{axp@rpcounter}%
+            \expandafter\noexpand\csname rplet\axp@rp@this%
                                  \endcsname
           \noexpand\end{axp@#1rp}
         }%
@@ -2687,7 +2814,11 @@
 % In order to allow users to redefine |\thefoobar| without
 % breaking this feature, we redefine |\thefoobar| only
 % for the duration of the |\begin{foobar}| form,
-% resetting it to the old value as soon as possible.
+% resetting it to the old value as soon as possible. The saved value is
+% then forgotten, so that a theorem nested in this one and sharing its
+% counter gets a link as well.
+% \changes{v1.5.0-dev}{2026/10/20}{Fix missing forward link of a
+% repeated theorem nested in another one sharing its counter}
 %
 % Redefining |\thefoobar| has the side effect of changing |\newlabel| entries
 % in the |.aux| file, so we need to to be able to disable
@@ -2714,6 +2845,7 @@
        #2%
        \ifcsdef{axp@old@the\csname axp@cn@#1\endcsname}{%
          \csletcs{the\csname axp@cn@#1\endcsname}{axp@old@the\csname axp@cn@#1\endcsname}%
+         \csundef{axp@old@the\csname axp@cn@#1\endcsname}%
        }{}%
        \global\boolfalse{axp@forward}
      }}%
