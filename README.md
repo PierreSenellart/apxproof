@@ -76,6 +76,18 @@ binding is self-contained, and that option makes LaTeXML process the raw
 LaTeXML 0.8.8 or later is required. `make test-latexml` runs the LaTeXML
 conversion over the example suite.
 
+## Authorship
+
+`apxproof` was written by Pierre Senellart, with contributions from
+Klaus-Dieter Bauer, Antoine Amarilli, Leonid Kostrykin and Yuichi
+Komorida (see the acknowledgments in the documentation and the git
+history). Since 2026, maintenance and new features have been developed
+with the assistance of generative models from Anthropic (*Claude*); the
+behavior of the package was specified and reviewed by the author, who is
+responsible for the whole. The regression tests, which compare the output
+on the example documents against reference PDFs, run in continuous
+integration on every change.
+
 ## License
 
 Copyright © 2016-2026 by Pierre Senellart.

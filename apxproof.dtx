@@ -47,7 +47,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{2726}
+% \CheckSum{2746}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -254,7 +254,7 @@
 % |\begin{foobarstarrep}| does not produce any restatement of the
 % theorem in the appendix; only the following |proof| is deferred.
 %
-% \changes{v1.5.0-dev}{2026/10/20}{Repeated theorems can be nested}
+% \changes{v1.5.1-dev}{2026/10/20}{Repeated theorems can be nested}
 % Repeated theorems can be nested, e.g., a lemma stated within the
 % statement of a theorem. The nested one is then restated in the appendix
 % as part of the enclosing one, and not on its own; this also holds for
@@ -791,10 +791,12 @@
 % preferably be submitted through the \emph{Issues} feature of GitHub.
 %
 % \section{Acknowledgments}
-% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to K.~D.
-% Bauer for the implementation of the forward-linking mechanism, and
-% for various bugfixes. Thanks to  Leonid Kostrykin for an initial
-% implementation of the |forwardlinking| option.
+% Thanks to Antoine Amarilli for feedback and proofreading. Thanks to
+% Klaus-Dieter Bauer for the implementation of the forward-linking mechanism,
+% and for various bugfixes. Thanks to Leonid Kostrykin for an initial
+% implementation of the |forwardlinking| option. Thanks to Yuichi Komorida
+% for the handling of |@| as a delimiter in appendix material and for a fix
+% of the documentation build.
 %
 % \StopEventually{
 %   \PrintChanges
@@ -1203,11 +1205,11 @@
 % \begin{macro}{\axp@redefinelabels}
 % \changes{v1.1.0}{2018/07/04}{Fix \cs{label} not being disabled
 % in \textsf{amsmath} environments, where \cs{label@in@display} is
-% used instead (K. D. Bauer)}
+% used instead (Klaus-Dieter Bauer)}
 % \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
-% \changes{v1.5.0-dev}{2026/10/20}{Fix infinite recursion on a \cs{label}
+% \changes{v1.5.1-dev}{2026/10/20}{Fix infinite recursion on a \cs{label}
 % within a repeated theorem nested in another one}
 %
 % Repeated theorems may be nested, in which case this macro is called
@@ -1764,7 +1766,7 @@
 % \end{macro}
 % \begin{macro}{\axp@region@beginhook}
 % \begin{macro}{\axp@region@endhook}
-% \changes{v1.5.0-dev}{2026/10/20}{Support repeated theorems nested in
+% \changes{v1.5.1-dev}{2026/10/20}{Support repeated theorems nested in
 % one another with the \texttt{synctex} option}
 % The material may contain an environment of the same name as the one
 % replayed, nested in it (a repeated theorem nested in another of the same
@@ -2282,7 +2284,7 @@
 % \end{macro}
 % \begin{macro}{axp@rpreplay}
 % \begin{macro}{\axp@rp@nested}
-% \changes{v1.5.0-dev}{2026/10/20}{Support repeated theorems nested in
+% \changes{v1.5.1-dev}{2026/10/20}{Support repeated theorems nested in
 % one another in append mode}
 % A repeated theorem nested in another one is restated in the appendix as
 % part of the enclosing one, and not on its own (see
@@ -2460,7 +2462,7 @@
 % precaution, we reset |\FV@CatCodesHook| that is for example set by the
 % |commandchars| or |commentchar| option of |\fvset|.
 % \changes{v1.2.1}{2020/01/01}{Fix compatibility with
-% \textsf{xypic} package}
+% \textsf{xypic} package (Yuichi Komorida)}
 % \changes{v1.2.1}{2020/10/15}{Fix compatibility with other uses of \textsf{fancyvrb} that set
 % \texttt{\textbackslash FV@CatCodesHook}}
 % With the |synctex| option, the environment is still scanned line by line by
@@ -2511,6 +2513,16 @@
 % environment is replayed, we have the section command written as
 % |\axp@region@section|, which merely stores the heading for
 % |\axp@region@toappendix| to handle.
+%
+% Without the |synctex| option, the content is copied to the |.axp| file,
+% where |@| is a letter (see |\axp@writeproofsfilepreamble|); we therefore
+% write |\makeatother| before it, as is done for deferred proofs, so that
+% it is typeset with the usual category codes. The
+% |\axp@section| command skips this token when it looks at what follows
+% the heading.
+% \changes{v1.5.1-dev}{2026/09/03}{Typeset the content of \texttt{toappendix}
+% with \texttt{@} an ordinary character, as for deferred proofs, whether
+% or not a section heading precedes it}
 %    \begin{macrocode}
   \newenvironment{toappendix}
     {\axp@markchapterhasappendix
@@ -2520,6 +2532,7 @@
        \axp@region@record
      }{%
        \axp@writesection
+       \immediate\write\axp@proofsfile{\noexpand\makeatother}%
      }%
      \axp@VerbatimOut}
     {\endaxp@VerbatimOut
@@ -2558,7 +2571,7 @@
 % In the starred mode, the theorem is not restated in the appendix on its
 % own, but it still is when nested in a theorem that is, so the
 % |axp@foobarrp| environment is defined in both modes.
-% \changes{v1.5.0-dev}{2026/10/20}{Define the restated environment of
+% \changes{v1.5.1-dev}{2026/10/20}{Define the restated environment of
 % starred theorems as well, for when they are nested}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
@@ -2792,7 +2805,7 @@
 % \end{macro}
 %
 %    \subsubsection{Forward-Linking Mechanism}
-% \changes{v1.1.0}{2018/07/02}{Added forward-link mechanism (K. D. Bauer)}
+% \changes{v1.1.0}{2018/07/02}{Added forward-link mechanism (Klaus-Dieter Bauer)}
 %
 % When hyperref is loaded, |foobarrep| environments
 % in the main text have their number link to their
@@ -2817,7 +2830,7 @@
 % resetting it to the old value as soon as possible. The saved value is
 % then forgotten, so that a theorem nested in this one and sharing its
 % counter gets a link as well.
-% \changes{v1.5.0-dev}{2026/10/20}{Fix missing forward link of a
+% \changes{v1.5.1-dev}{2026/10/20}{Fix missing forward link of a
 % repeated theorem nested in another one sharing its counter}
 %
 % Redefining |\thefoobar| has the side effect of changing |\newlabel| entries
@@ -3242,6 +3255,8 @@
 % a section command}
 % \changes{v1.3.0}{2026/04/09}{Detect a section within an
 % \cs{include}'d file}
+% \begin{macro}{\axp@@sectionskipmakeatother}
+% \begin{macro}{\axp@@sectioncheckpar}
 % \begin{macro}{\axp@@sectionskippar}
 % \begin{macro}{\axp@@sectiontestinput}
 % \begin{macro}{\axp@@sectiontestinclude}
@@ -3253,9 +3268,18 @@
 % sections in the appendix. Using the \textsf{catchfile} package, we
 % also check whether a |\section| is within an |\input| or |\include|
 % that immediately follows. We also skip any |\par| tokens (produced by
-% blank lines) before performing the check.
+% blank lines), as well as the |\makeatother| written by the
+% |toappendix| environment, before performing the check.
+% \changes{v1.5.1-dev}{2026/09/03}{Skip a \cs{makeatother} before detecting
+% a section command}
 %    \begin{macrocode}
   \def\axp@section#1{%
+    \@ifnextchar\makeatother
+      {\axp@@sectionskipmakeatother{#1}}%
+      {\axp@@sectioncheckpar{#1}}%
+  }
+  \def\axp@@sectionskipmakeatother#1\makeatother{\axp@section{#1}}
+  \def\axp@@sectioncheckpar#1{%
     \@ifnextchar\par
       {\axp@@sectionskippar{#1}}%
       {\@ifnextchar\input
@@ -3293,10 +3317,12 @@
 % \end{macro}
 % \end{macro}
 % \end{macro}
+% \end{macro}
+% \end{macro}
 % \begin{macro}{\axp@oldsection}
 % \begin{macro}{\section}
 % \changes{v1.1.0}{2018/07/25}{Rewrote definition of \cs{section}
-% to enable optional argument. See \#23. (K. D. Bauer)}
+% to enable optional argument. See \#23. (Klaus-Dieter Bauer)}
 % \changes{v1.1.0}{2018/07/25}{Fix handling of fragile macros within
 % section headings. See \#22.}
 % \begin{macro}{\@section}
@@ -3351,7 +3377,7 @@
 % in appendix titles}
 % \changes{v1.1.0}{2018/07/09}{Make \cs{axp@tmp} wrapper more robust.
 % Resolves issues from use of section title in \textsf{fancyhdr},
-% and in \cs{tableofcontents} (K. D. Bauer).}
+% and in \cs{tableofcontents} (Klaus-Dieter Bauer).}
 %
 % The command written is normally |\axp@section|; the |toappendix|
 % environment substitutes |\axp@region@section| for it with the |synctex|
@@ -3448,6 +3474,11 @@
 % \changes{v1.2.3}{2021/08/03}{More robust redefinition of
 % \texttt{thebibliography} environment, for compatibility with
 % \textsf{tocbibind}}
+% Before reading the |.axp| file, we terminate it with |\makeatother|,
+% so that the |\makeatletter| written after each deferred block does not
+% outlive the file.
+% \changes{v1.5.1-dev}{2026/09/03}{End the \texttt{.axp} file with
+% \cs{makeatother}}
 %    \begin{macrocode}
     \pretocmd{\@enddocumenthook}{%
       \ifdefined\NAT@testdef
@@ -3464,6 +3495,7 @@
           \begin{refsection}
         }
       }{}
+        \immediate\write\axp@proofsfile{\noexpand\makeatother}%
         \immediate\closeout\axp@proofsfile
         \input{\jobname.axp}
       \ifthenelse{\equal{\axp@bibliography}{separate}}{
