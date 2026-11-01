@@ -25,7 +25,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
 %<package>\ProvidesPackage{apxproof}
-%<package>  [2026/08/25 v1.5.0-dev Automatic proofs in appendix]
+%<package>  [2026/11/01 v1.5.1 Automatic proofs in appendix]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -254,7 +254,7 @@
 % |\begin{foobarstarrep}| does not produce any restatement of the
 % theorem in the appendix; only the following |proof| is deferred.
 %
-% \changes{v1.5.1-dev}{2026/10/20}{Repeated theorems can be nested}
+% \changes{v1.5.1}{2026/10/20}{Repeated theorems can be nested}
 % Repeated theorems can be nested, e.g., a lemma stated within the
 % statement of a theorem. The nested one is then restated in the appendix
 % as part of the enclosing one, and not on its own; this also holds for
@@ -1209,7 +1209,7 @@
 % \changes{v1.2.0}{2019/02/15}{Fix extra spacing erroneously
 % introduced within the \texttt{\textbackslash axp@redefinelabels}
 % macro}
-% \changes{v1.5.1-dev}{2026/10/20}{Fix infinite recursion on a \cs{label}
+% \changes{v1.5.1}{2026/10/20}{Fix infinite recursion on a \cs{label}
 % within a repeated theorem nested in another one}
 %
 % Repeated theorems may be nested, in which case this macro is called
@@ -1766,7 +1766,7 @@
 % \end{macro}
 % \begin{macro}{\axp@region@beginhook}
 % \begin{macro}{\axp@region@endhook}
-% \changes{v1.5.1-dev}{2026/10/20}{Support repeated theorems nested in
+% \changes{v1.5.1}{2026/10/20}{Support repeated theorems nested in
 % one another with the \texttt{synctex} option}
 % The material may contain an environment of the same name as the one
 % replayed, nested in it (a repeated theorem nested in another of the same
@@ -2284,7 +2284,7 @@
 % \end{macro}
 % \begin{macro}{axp@rpreplay}
 % \begin{macro}{\axp@rp@nested}
-% \changes{v1.5.1-dev}{2026/10/20}{Support repeated theorems nested in
+% \changes{v1.5.1}{2026/10/20}{Support repeated theorems nested in
 % one another in append mode}
 % A repeated theorem nested in another one is restated in the appendix as
 % part of the enclosing one, and not on its own (see
@@ -2520,7 +2520,7 @@
 % it is typeset with the usual category codes. The
 % |\axp@section| command skips this token when it looks at what follows
 % the heading.
-% \changes{v1.5.1-dev}{2026/09/03}{Typeset the content of \texttt{toappendix}
+% \changes{v1.5.1}{2026/09/03}{Typeset the content of \texttt{toappendix}
 % with \texttt{@} an ordinary character, as for deferred proofs, whether
 % or not a section heading precedes it}
 %    \begin{macrocode}
@@ -2571,7 +2571,7 @@
 % In the starred mode, the theorem is not restated in the appendix on its
 % own, but it still is when nested in a theorem that is, so the
 % |axp@foobarrp| environment is defined in both modes.
-% \changes{v1.5.1-dev}{2026/10/20}{Define the restated environment of
+% \changes{v1.5.1}{2026/10/20}{Define the restated environment of
 % starred theorems as well, for when they are nested}
 %    \begin{macrocode}
   \def\axp@newtheoremrep#1[#2]#3[#4]{%
@@ -2830,7 +2830,7 @@
 % resetting it to the old value as soon as possible. The saved value is
 % then forgotten, so that a theorem nested in this one and sharing its
 % counter gets a link as well.
-% \changes{v1.5.1-dev}{2026/10/20}{Fix missing forward link of a
+% \changes{v1.5.1}{2026/10/20}{Fix missing forward link of a
 % repeated theorem nested in another one sharing its counter}
 %
 % Redefining |\thefoobar| has the side effect of changing |\newlabel| entries
@@ -3270,7 +3270,7 @@
 % that immediately follows. We also skip any |\par| tokens (produced by
 % blank lines), as well as the |\makeatother| written by the
 % |toappendix| environment, before performing the check.
-% \changes{v1.5.1-dev}{2026/09/03}{Skip a \cs{makeatother} before detecting
+% \changes{v1.5.1}{2026/09/03}{Skip a \cs{makeatother} before detecting
 % a section command}
 %    \begin{macrocode}
   \def\axp@section#1{%
@@ -3477,7 +3477,7 @@
 % Before reading the |.axp| file, we terminate it with |\makeatother|,
 % so that the |\makeatletter| written after each deferred block does not
 % outlive the file.
-% \changes{v1.5.1-dev}{2026/09/03}{End the \texttt{.axp} file with
+% \changes{v1.5.1}{2026/09/03}{End the \texttt{.axp} file with
 % \cs{makeatother}}
 %    \begin{macrocode}
     \pretocmd{\@enddocumenthook}{%

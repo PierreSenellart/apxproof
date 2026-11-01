@@ -20,7 +20,7 @@ installfiles = {"*.sty", "*.cls", "apxproof.sty.ltxml"}
 -- (an empty announcement means the CTAN update is not announced).
 uploadconfig = {
   pkg          = "apxproof",
-  version      = "1.5.0",
+  version      = "1.5.1",
   author       = "Pierre Senellart",
   uploader     = "Pierre Senellart",
   email        = "pierre@senellart.com",
@@ -72,24 +72,7 @@ uploadconfig = {
   repository   = "https://github.com/PierreSenellart/apxproof",
   bugtracker   = "https://github.com/PierreSenellart/apxproof/issues",
   update       = true,
-  announcement = [[
-Version 1.5.0 of apxproof adds SyncTeX support.
-
-Appendix material and repeated theorems are now typeset from the source files
-instead of being copied to an auxiliary file, so that editors and PDF viewers
-point at the source lines that produced them, in the appendix as well as in the
-main text. This happens by default whenever the engine is run with SyncTeX
-output enabled; the new "synctex" option forces it on or off. With pdfTeX and
-XeTeX, the apxproof-synctex script now distributed with the package
-additionally makes forward search find appendix material.
-
-The optional argument that cleveref adds to \label is now supported within
-repeated material, as are the \zlabel and \zcref commands of zref-clever.
-
-A LaTeXML binding, apxproof.sty.ltxml, is now distributed and documented: it
-converts documents using apxproof to HTML with their proofs deferred, their
-theorems repeated and their appendix bibliography preserved.
-]],
+  announcement = "",
 }
 
 function typeset(file, dir)
