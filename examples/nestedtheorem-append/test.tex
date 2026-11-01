@@ -1,0 +1,52 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[repeqn=same]{../../apxproof}
+\usepackage{hyperref}
+
+\newtheoremrep{theorem}{Theorem}
+\newtheoremrep{lemma}[theorem]{Lemma}
+\newtheoremrep*{claim}[theorem]{Claim}
+
+\begin{document}
+
+\section{Main text}
+
+% Repeated theorems nested in one another: the inner ones are restated in
+% the appendix as part of the outer one, not on their own.
+\begin{theoremrep}[Outer]\label{th:outer}%
+  An outer theorem,
+  \begin{lemmarep}[Inner]\label{lem:inner}%
+    with an inner lemma
+    \begin{equation}\label{eq:inner}1=1\end{equation}
+    \begin{theoremrep}\label{th:innermost}%
+      containing a theorem of the same kind,
+    \end{theoremrep}
+  \end{lemmarep}
+  a starred claim
+  \begin{claimrep}\label{cl:inner}%
+    that is restated with it,
+  \end{claimrep}
+  and some text after them.
+\end{theoremrep}
+
+\begin{proof}
+  Proof of the outer theorem.
+\end{proof}
+
+\begin{theoremrep}\label{th:after}%
+  A theorem after the nested ones.
+  \begin{equation}\label{eq:after}2=2\end{equation}
+\end{theoremrep}
+
+\begin{proof}
+  Proof of the theorem after.
+\end{proof}
+
+References: Theorem~\ref{th:outer}, Lemma~\ref{lem:inner},
+Theorem~\ref{th:innermost}, Claim~\ref{cl:inner}, Theorem~\ref{th:after},
+equations~\eqref{eq:inner} and~\eqref{eq:after}, and the \texttt{-apx}
+variants \ref{th:outer-apx}, \ref{lem:inner-apx}, \ref{th:innermost-apx},
+\ref{cl:inner-apx}, \ref{th:after-apx}, \eqref{eq:inner-apx},
+\eqref{eq:after-apx}.
+
+\end{document}
